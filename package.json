@@ -9,7 +9,7 @@
     },
     "build": {
       "appId": "com.example.mcpservereditor",
-      "productName": "MCP Server Editor",
+      "productName": "MCP Studio",
       "directories": {
         "output": "dist"
       },
