@@ -29,7 +29,38 @@
     color: #c00;
     font-weight: 600;
     margin-bottom: 1em;
+    padding: 10px;
+    background-color: #fff0f0;
+    border-radius: 4px;
   }
+  
+  .version-tag {
+    font-size: 0.5em;
+    background: var(--primary);
+    color: white;
+    padding: 3px 6px;
+    border-radius: 10px;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+  
+  .status-container {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+  }
+  
+  .status-dot.green { background-color: var(--success); }
+  .status-dot.red { background-color: var(--danger); }
   .btn {
     display: inline-block;
     padding: 0.6em 1.2em;
@@ -99,6 +130,32 @@
     color: #999;
   }
   .close:hover { color: #333; }
+  
+  .modal-header {
+    position: relative;
+  }
+  
+  .modal-esc-hint {
+    position: absolute;
+    right: 45px;
+    top: 16px;
+    font-size: 0.8rem;
+    color: #999;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .kbd {
+    display: inline-block;
+    padding: 2px 5px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.75rem;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+  }
   
   .form-group { margin-bottom: 1em; }
   label       { display: block; margin-bottom: 0.3em; font-weight: 600; }

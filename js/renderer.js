@@ -1,6 +1,6 @@
 // File: js/renderer.js
 window.addEventListener('DOMContentLoaded', () => {
-    const { readConfig, writeConfig, revealConfig } = window.api;
+    const { readConfig, writeConfig, revealConfig, openUrl, checkPrerequisites } = window.api;
   
     // —— ACE JSON editor setup —— 
     const editor = ace.edit("json-editor");
@@ -11,13 +11,57 @@ window.addEventListener('DOMContentLoaded', () => {
     // —— Application state —— 
     let mcpConfig = { mcpServers: {} };
     let currentServer = null;
+    
+    // —— Helper: Track active modal for Escape key handling ——
+    let activeModal = null;
+    
+    // Function to close the active modal
+    function closeActiveModal() {
+      if (activeModal) {
+        activeModal.classList.remove('open');
+        activeModal = null;
+        return true;
+      }
+      return false;
+    }
+    
+    // Function to set active modal
+    function setActiveModal(modal) {
+      activeModal = modal;
+      modal.classList.add('open');
+    }
+    
+    // Global keyboard event listener for Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeActiveModal();
+      }
+    });
   
     // —— DOM references —— 
     const serverList      = document.getElementById('server-list');
+    const versionTag      = document.getElementById('version-tag');
+    const prereqWarning   = document.getElementById('prerequisites-warning');
+    const prereqMessage   = document.getElementById('prereq-message');
+    const missingDocker   = document.getElementById('missing-docker');
+    const missingNodejs   = document.getElementById('missing-nodejs');
+    const installDockerBtn= document.getElementById('install-docker-btn');
+    const installNodejsBtn= document.getElementById('install-nodejs-btn');
     const addBtn          = document.getElementById('add-server-btn');
     const exportBtn       = document.getElementById('export-json-btn');
     const revealBtn       = document.getElementById('reveal-btn');
     const pasteBtn        = document.getElementById('paste-btn');
+    const aboutBtn        = document.getElementById('about-btn');
+    const aboutModal      = document.getElementById('about-modal');
+    const aboutClose      = document.getElementById('about-close');
+    const aboutCloseBtn   = document.getElementById('about-close-btn');
+    const aboutVersion    = document.getElementById('about-version');
+    const dockerStatus    = document.getElementById('docker-status');
+    const nodejsStatus    = document.getElementById('nodejs-status');
+    const dockerStatusDot = document.getElementById('docker-status-dot');
+    const nodejsStatusDot = document.getElementById('nodejs-status-dot');
+    const dockerInstLink  = document.getElementById('docker-install-link');
+    const nodejsInstLink  = document.getElementById('nodejs-install-link');
     const pasteModal      = document.getElementById('paste-modal');
     const pasteClose      = document.getElementById('paste-close');
     const pasteCancel     = document.getElementById('paste-cancel-btn');
@@ -112,7 +156,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const sel = document.querySelector(`input[name="type"][value="${t}"]`);
     sel.checked = true;
     sel.dispatchEvent(new Event('change'));
-  
+      
       // Populate per‑type fields
       if (t === 'generic') {
         cmdInput.value = cfg.command;
@@ -150,7 +194,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!cfg.env) addDockerEnv('','');
       }
   
-      serverModal.classList.add('open');
+      setActiveModal(serverModal);
     }
   
     function openServerModal(name) {
@@ -159,12 +203,13 @@ window.addEventListener('DOMContentLoaded', () => {
       } else {
         fillModal('', { command:'', args:[], env:{} }, false);
       }
+      setActiveModal(serverModal);
     }
   
     // —— “Paste Config” logic —— 
-    pasteBtn.onclick    = () => pasteModal.classList.add('open');
-    pasteCancel.onclick = () => pasteModal.classList.remove('open');
-    pasteClose.onclick  = () => pasteModal.classList.remove('open');
+    pasteBtn.onclick    = () => setActiveModal(pasteModal);
+    pasteCancel.onclick = closeActiveModal;
+    pasteClose.onclick  = closeActiveModal;
     pasteLoad.onclick   = () => {
       let txt = pasteTextarea.value;
       let obj;
@@ -177,7 +222,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const entries = Object.entries(obj.mcpServers);
       if (entries.length !== 1) return alert('Paste exactly one server entry');
       const [name, cfg] = entries[0];
-      pasteModal.classList.remove('open');
+      closeActiveModal();
       fillModal(name, cfg, false);
     };
   
@@ -266,7 +311,7 @@ window.addEventListener('DOMContentLoaded', () => {
       mcpConfig.mcpServers[name] = cfg;
       await writeConfig(JSON.stringify(mcpConfig, null, 2));
       refreshTable();
-      serverModal.classList.remove('open');
+      closeActiveModal();
     }
   
     // —— Refresh table view —— 
@@ -304,7 +349,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // —— JSON editor modal —— 
     function showJsonModal() {
       editor.setValue(JSON.stringify(mcpConfig, null, 2), -1);
-      jsonModal.classList.add('open');
+      setActiveModal(jsonModal);
     }
     async function downloadJson() {
       const txt = editor.getValue();
@@ -313,7 +358,7 @@ window.addEventListener('DOMContentLoaded', () => {
         await writeConfig(txt);
         mcpConfig = JSON.parse(txt);
         refreshTable();
-        jsonModal.classList.remove('open');
+        closeActiveModal();
       } catch (e) {
         alert('Invalid JSON: ' + e.message);
       }
@@ -323,12 +368,12 @@ window.addEventListener('DOMContentLoaded', () => {
     addBtn.onclick         = () => openServerModal();
     exportBtn.onclick      = showJsonModal;
     revealBtn.onclick      = () => revealConfig();
-    pasteBtn.onclick       = () => pasteModal.classList.add('open');
-    pasteCancel.onclick    = () => pasteModal.classList.remove('open');
-    pasteClose.onclick     = () => pasteModal.classList.remove('open');
+    pasteBtn.onclick       = () => setActiveModal(pasteModal);
+    pasteCancel.onclick    = closeActiveModal;
+    pasteClose.onclick     = closeActiveModal;
     pasteLoad.onclick      = pasteLoad.onclick; // already defined above
-    closeBtns.forEach(b    => b.onclick = () => b.closest('.modal').classList.remove('open'));
-    cancelBtn.onclick      = () => serverModal.classList.remove('open');
+    closeBtns.forEach(b    => b.onclick = closeActiveModal);
+    cancelBtn.onclick      = closeActiveModal;
     form.addEventListener('submit', saveServer);
     addArgBtnG.onclick     = () => addGenericArg('');
     addEnvBtnG.onclick     = () => addGenericEnv('','');
@@ -338,7 +383,121 @@ window.addEventListener('DOMContentLoaded', () => {
     addVolBtn.onclick      = () => addDockerVolume('');
     addEnvBtnD.onclick     = () => addDockerEnv('','');
     downloadJsonBtn.onclick= downloadJson;
-    jsonCancelBtn.onclick  = () => jsonModal.classList.remove('open');
+    jsonCancelBtn.onclick  = closeActiveModal;
+    
+    // About modal handlers
+    aboutBtn.onclick = () => {
+      checkPrerequisites().then(status => {
+        // Update About modal with prerequisite status
+        const { docker, nodejs, dockerUrl, nodejsUrl } = status;
+        
+        // Docker status
+        if (docker) {
+          dockerStatus.textContent = 'Installed';
+          dockerStatusDot.className = 'status-dot green';
+        } else {
+          dockerStatus.textContent = 'Not Installed';
+          dockerStatusDot.className = 'status-dot red';
+        }
+        
+        // Node.js status
+        if (nodejs) {
+          nodejsStatus.textContent = 'Installed';
+          nodejsStatusDot.className = 'status-dot green';
+        } else {
+          nodejsStatus.textContent = 'Not Installed';
+          nodejsStatusDot.className = 'status-dot red';
+        }
+        
+        // Set version in about modal
+        aboutVersion.textContent = versionTag.textContent;
+        
+        // Installation links
+        dockerInstLink.onclick = (e) => {
+          e.preventDefault();
+          openUrl(dockerUrl);
+        };
+        
+        nodejsInstLink.onclick = (e) => {
+          e.preventDefault();
+          openUrl(nodejsUrl);
+        };
+        
+        // Show modal
+        setActiveModal(aboutModal);
+      });
+    };
+    
+    aboutClose.onclick = closeActiveModal;
+    aboutCloseBtn.onclick = closeActiveModal;
+    
+    // —— Prerequisites handlers ——
+    installDockerBtn.addEventListener('click', () => {
+      checkPrerequisites().then(status => {
+        openUrl(status.dockerUrl);
+      });
+    });
+    
+    installNodejsBtn.addEventListener('click', () => {
+      checkPrerequisites().then(status => {
+        openUrl(status.nodejsUrl);
+      });
+    });
+    
+    // Listen for prerequisites status from main process
+    window.addEventListener('message', event => {
+      if (event.data.type === 'prerequisites-status') {
+        const { docker, nodejs, appVersion } = event.data.data;
+        
+        // Display version
+        versionTag.textContent = `v${appVersion}`;
+        
+        // Check prerequisites
+        let missingDeps = [];
+        
+        if (!docker) {
+          missingDeps.push('Docker');
+          missingDocker.style.display = 'block';
+        } else {
+          missingDocker.style.display = 'none';
+        }
+        
+        if (!nodejs) {
+          missingDeps.push('Node.js');
+          missingNodejs.style.display = 'block';
+        } else {
+          missingNodejs.style.display = 'none';
+        }
+        
+        if (missingDeps.length > 0) {
+          prereqMessage.textContent = `Missing dependencies: ${missingDeps.join(', ')}. Please install to use all features.`;
+          prereqWarning.style.display = 'block';
+        } else {
+          prereqWarning.style.display = 'none';
+        }
+      }
+    });
+    
+    // Manual check for prerequisites (as a backup if IPC event doesn't fire)
+    checkPrerequisites().then(status => {
+      const { docker, nodejs } = status;
+      let missingDeps = [];
+      
+      if (!docker) {
+        missingDeps.push('Docker');
+        missingDocker.style.display = 'block';
+      }
+      
+      if (!nodejs) {
+        missingDeps.push('Node.js');
+        missingNodejs.style.display = 'block';
+      }
+      
+      if (missingDeps.length > 0) {
+        prereqMessage.textContent = `Missing dependencies: ${missingDeps.join(', ')}. Please install to use all features.`;
+        prereqWarning.style.display = 'block';
+      }
+    });
   
     // —— Startup load —— 
     readConfig()
@@ -351,11 +510,19 @@ window.addEventListener('DOMContentLoaded', () => {
           mcpConfig = { mcpServers: {} };
         }
         refreshTable();
+        
+        // If no servers are configured, show the paste dialog automatically
+        if (Object.keys(mcpConfig.mcpServers).length === 0) {
+          setTimeout(() => setActiveModal(pasteModal), 500);
+        }
       })
       .catch(err => {
         console.error("Failed to read config file:", err);
         mcpConfig = { mcpServers: {} };
         refreshTable();
+        
+        // Show the paste dialog on error as well
+        setTimeout(() => setActiveModal(pasteModal), 500);
       });
   });
   

@@ -29,7 +29,19 @@
     <div class="app-header">
       <!-- now the icon is forced to 48×48px -->
       <img src="assets/icon.png" alt="MCP Studio" />
-      <h1>MCP Studio</h1>
+      <h1>MCP Studio <span id="version-tag" class="version-tag"></span></h1>
+    </div>
+    
+    <div id="prerequisites-warning" class="warning" style="display: none;">
+      ⚠️ <span id="prereq-message">Some prerequisites are missing.</span>
+      <div id="missing-docker" style="display: none; margin-top: 5px;">
+        <button id="install-docker-btn" class="btn btn-reveal">Install Docker</button>
+        <span>Docker is required for Docker-based MCP servers.</span>
+      </div>
+      <div id="missing-nodejs" style="display: none; margin-top: 5px;">
+        <button id="install-nodejs-btn" class="btn btn-reveal">Install Node.js</button>
+        <span>Node.js is required for NPX-based MCP servers.</span>
+      </div>
     </div>
     <!-- <div class="warning">
       ⚠️ Never include actual API keys or tokens here—use placeholders like <code>[YOUR_API_KEY]</code>.
@@ -39,6 +51,7 @@
     <button id="export-json-btn" class="btn btn-export">Export JSON</button>
     <button id="reveal-btn"      class="btn btn-reveal">Open Config Folder</button>
     <button id="paste-btn"       class="btn btn-paste">Paste Config</button>
+    <button id="about-btn"       class="btn btn-reveal">About</button>
 
     <table>
       <thead>
@@ -51,8 +64,11 @@
   <!-- Paste JSON Modal -->
   <div id="paste-modal" class="modal">
     <div class="modal-content">
-      <span class="close" id="paste-close">&times;</span>
-      <h2>Paste Server JSON</h2>
+      <div class="modal-header">
+        <span class="close" id="paste-close">&times;</span>
+        <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+        <h2>Paste Server JSON</h2>
+      </div>
       <p>Drop in a snippet containing exactly one server entry under <code>mcpServers</code>:</p>
       <textarea id="paste-json" placeholder='{
   "mcpServers": {
@@ -73,8 +89,11 @@
   <!-- Add/Edit Server Modal -->
   <div id="server-modal" class="modal">
     <div class="modal-content">
-      <span class="close" id="modal-close">&times;</span>
-      <h2 id="modal-title">Add Server</h2>
+      <div class="modal-header">
+        <span class="close" id="modal-close">&times;</span>
+        <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+        <h2 id="modal-title">Add Server</h2>
+      </div>
       <form id="server-form" novalidate>
         <!-- Server Name (always visible) -->
         <div class="form-group">
@@ -181,12 +200,53 @@
   <!-- JSON Editor Modal -->
   <div id="json-modal" class="modal">
     <div class="modal-content">
-      <span class="close" id="json-close">&times;</span>
-      <h2>JSON Configuration</h2>
+      <div class="modal-header">
+        <span class="close" id="json-close">&times;</span>
+        <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+        <h2>JSON Configuration</h2>
+      </div>
       <div class="editor-container" id="json-editor"></div>
       <div class="modal-footer">
         <button id="json-cancel"   class="btn btn-reveal">Close</button>
         <button id="download-json" class="btn btn-success">Download & Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- About Modal -->
+  <div id="about-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close" id="about-close">&times;</span>
+        <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+        <h2>About MCP Studio</h2>
+      </div>
+      <div class="about-content">
+        <p><strong>Version:</strong> <span id="about-version"></span></p>
+        <p><strong>Created by:</strong> Claude / MCP Team</p>
+        
+        <h3>System Information</h3>
+        <div class="status-container">
+          <div>
+            <span class="status-dot" id="docker-status-dot"></span>
+            <span>Docker: <span id="docker-status">Checking...</span></span>
+          </div>
+          <div>
+            <span class="status-dot" id="nodejs-status-dot"></span>
+            <span>Node.js: <span id="nodejs-status">Checking...</span></span>
+          </div>
+        </div>
+        
+        <h3>Installation Links</h3>
+        <p>
+          <a href="#" id="docker-install-link">Install Docker</a> - Required for Docker-based MCP servers
+        </p>
+        <p>
+          <a href="#" id="nodejs-install-link">Install Node.js</a> - Required for NPX-based MCP servers
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button id="about-close-btn" class="btn btn-reveal">Close</button>
       </div>
     </div>
   </div>
