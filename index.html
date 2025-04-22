@@ -99,6 +99,9 @@
       width: 100%; padding: 0.5em; border-radius: 4px;
       border: 1px solid #ccc;
     }
+    .btn-success {
+  background: var(--success);
+}
     .row { display: flex; gap: 0.5em; margin-bottom: 0.5em; }
     .row input { flex: 1; }
     .row button { flex: 0 0 auto; }
@@ -116,9 +119,9 @@
 <body>
   <div class="container">
     <h1>MCP Server Configuration</h1>
-    <div style="margin-bottom:1em; color:#c00; font-weight:600;">
+    <!-- <div style="margin-bottom:1em; color:#c00; font-weight:600;">
       ⚠️ Never include actual API keys or tokens here—use placeholders like <code>[YOUR_API_KEY]</code>.
-    </div>
+    </div> -->
     <button id="add-server-btn" class="btn btn-add">+ Add Server</button>
     <button id="export-json-btn" class="btn btn-export">Export JSON</button>
     <button id="reveal-btn" class="btn btn-reveal">Open Config Folder</button>
