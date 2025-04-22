@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>MCP Server Editor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js"></script>
+  <style>
+    :root {
+      --primary: #4A56E2;
+      --danger: #E25C4A;
+      --success: #4CAF50;
+      --bg: #f5f5f5;
+      --card: #fff;
+      --text: #333;
+      --muted: #666;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      background: var(--card);
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--primary);
+      text-align: center;
+      font-size: 2rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.6em 1.2em;
+      margin: 0 5px 10px 0;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #fff;
+    }
+    .btn-add    { background: var(--success); }
+    .btn-export { background: var(--primary); }
+    .btn-reveal { background: #777; }
+    .btn-del    { background: var(--danger); }
+    .btn:hover  { opacity: 0.9; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th { background: #f0f0f0; }
+    tr:hover { background: #fafafa; }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .badge-enabled  { background: var(--success); }
+    .badge-disabled { background: var(--danger); }
+    /* modal */
+    .modal {
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.4);
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal.open { display: flex; }
+    .modal-content {
+      background: #fff; border-radius: 6px;
+      padding: 20px; width: 90%; max-width: 700px;
+      max-height: 90vh; overflow-y: auto;
+      position: relative;
+    }
+    .modal-content h2 { margin-top: 0; }
+    .close {
+      position: absolute; right: 16px; top:16px;
+      font-size: 1.5rem; cursor: pointer; color: #999;
+    }
+    .close:hover { color: #333; }
+    .form-group { margin-bottom: 1em; }
+    label { display: block; margin-bottom: 0.3em; font-weight: 600; }
+    input[type="text"] {
+      width: 100%; padding: 0.5em; border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .row { display: flex; gap: 0.5em; margin-bottom: 0.5em; }
+    .row input { flex: 1; }
+    .row button { flex: 0 0 auto; }
+    .modal-footer {
+      text-align: right;
+      margin-top: 1.5em;
+    }
+    .editor-container {
+      height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MCP Server Configuration</h1>
+    <div style="margin-bottom:1em; color:#c00; font-weight:600;">
+      ⚠️ Never include actual API keys or tokens here—use placeholders like <code>[YOUR_API_KEY]</code>.
+    </div>
+    <button id="add-server-btn" class="btn btn-add">+ Add Server</button>
+    <button id="export-json-btn" class="btn btn-export">Export JSON</button>
+    <button id="reveal-btn" class="btn btn-reveal">Open Config Folder</button>
+
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Command</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="server-list"></tbody>
+    </table>
+
+    <!-- Add/Edit Modal -->
+    <div id="server-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="modal-close">&times;</span>
+        <h2 id="modal-title">Add Server</h2>
+        <form id="server-form">
+          <div class="form-group">
+            <label for="server-name">Server Name</label>
+            <input id="server-name" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="server-cmd">Command</label>
+            <input id="server-cmd" type="text" required>
+          </div>
+          <div class="form-group">
+            <label>Arguments</label>
+            <div id="args-container"></div>
+            <button type="button" id="add-arg-btn" class="btn btn-add" style="margin-top:.5em;">+ Arg</button>
+          </div>
+          <div class="form-group">
+            <label>Environment Variables</label>
+            <div id="env-container"></div>
+            <button type="button" id="add-env-btn" class="btn btn-add" style="margin-top:.5em;">+ Env</button>
+          </div>
+          <div class="form-group">
+            <label><input id="server-disabled" type="checkbox"> Disabled</label>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="cancel-btn" class="btn btn-reveal">Cancel</button>
+            <button type="submit" class="btn btn-success">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- JSON Modal -->
+    <div id="json-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="json-close">&times;</span>
+        <h2>JSON Configuration</h2>
+        <div class="editor-container" id="json-editor"></div>
+        <div class="modal-footer">
+          <button id="json-cancel" class="btn btn-reveal">Close</button>
+          <button id="download-json" class="btn btn-success">Download & Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const {
+      readConfig,
+      writeConfig,
+      revealConfig
+    } = window.api;
+
+    // ace editor
+    const editor = ace.edit("json-editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.session.setMode("ace/mode/json");
+    editor.setShowPrintMargin(false);
+
+    let mcpConfig = { mcpServers: {} };
+    let currentServer = null;
+
+    // DOM refs
+    const serverList      = document.getElementById('server-list');
+    const addBtn          = document.getElementById('add-server-btn');
+    const exportBtn       = document.getElementById('export-json-btn');
+    const revealBtn       = document.getElementById('reveal-btn');
+    const serverModal     = document.getElementById('server-modal');
+    const jsonModal       = document.getElementById('json-modal');
+    const modalTitle      = document.getElementById('modal-title');
+    const form            = document.getElementById('server-form');
+    const nameInput       = document.getElementById('server-name');
+    const cmdInput        = document.getElementById('server-cmd');
+    const disabledInput   = document.getElementById('server-disabled');
+    const argsContainer   = document.getElementById('args-container');
+    const envContainer    = document.getElementById('env-container');
+    const addArgBtn       = document.getElementById('add-arg-btn');
+    const addEnvBtn       = document.getElementById('add-env-btn');
+    const cancelBtn       = document.getElementById('cancel-btn');
+    const downloadJsonBtn = document.getElementById('download-json');
+    const closeButtons    = document.querySelectorAll('.close');
+    const jsonCancel      = document.getElementById('json-cancel');
+
+    // wire events
+    addBtn.addEventListener('click', () => openServerModal());
+    exportBtn.addEventListener('click', showJsonModal);
+    revealBtn.addEventListener('click', () => revealConfig());
+    addArgBtn.addEventListener('click', () => addRow(argsContainer));
+    addEnvBtn.addEventListener('click', () => addEnvRow());
+    cancelBtn.addEventListener('click', () => serverModal.classList.remove('open'));
+    form.addEventListener('submit', saveServer);
+    downloadJsonBtn.addEventListener('click', () => {
+      const text = editor.getValue();
+      try {
+        JSON.parse(text);
+        writeConfig(text).then(() => {
+          mcpConfig = JSON.parse(text);
+          refreshTable();
+          jsonModal.classList.remove('open');
+        });
+      } catch(e) { alert('Invalid JSON: ' + e.message); }
+    });
+    jsonCancel.addEventListener('click', () => jsonModal.classList.remove('open'));
+    closeButtons.forEach(x => x.addEventListener('click', () => {
+      x.closest('.modal').classList.remove('open');
+    }));
+
+    // on load
+    readConfig().then(txt => {
+      mcpConfig = JSON.parse(txt);
+      refreshTable();
+    });
+
+    function refreshTable() {
+      serverList.innerHTML = '';
+      for (const [name, cfg] of Object.entries(mcpConfig.mcpServers)) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${name}</td>
+          <td>${cfg.command}</td>
+          <td>
+            <span class="badge ${
+              cfg.disabled ? 'badge-disabled' : 'badge-enabled'
+            }">
+              ${cfg.disabled ? 'Disabled' : 'Enabled'}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-export" data-edit="${name}">Edit</button>
+            <button class="btn btn-del"    data-del="${name}">Delete</button>
+          </td>`;
+        serverList.appendChild(tr);
+      }
+      // attach edit/delete
+      serverList.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.onclick = _ => openServerModal(btn.dataset.edit);
+      });
+      serverList.querySelectorAll('[data-del]').forEach(btn => {
+        btn.onclick = _ => {
+          if (confirm(`Delete "${btn.dataset.del}"?`)) {
+            delete mcpConfig.mcpServers[btn.dataset.del];
+            writeConfig(JSON.stringify(mcpConfig, null, 2))
+              .then(refreshTable);
+          }
+        };
+      });
+    }
+
+    function openServerModal(name) {
+      currentServer = name || null;
+      modalTitle.textContent = name ? 'Edit Server' : 'Add Server';
+      nameInput.value     = name || '';
+      cmdInput.value      = name ? mcpConfig.mcpServers[name].command : '';
+      disabledInput.checked = name && mcpConfig.mcpServers[name].disabled;
+      // clear rows
+      argsContainer.innerHTML = '';
+      envContainer.innerHTML  = '';
+      // populate
+      if (name) {
+        const cfg = mcpConfig.mcpServers[name];
+        (cfg.args || []).forEach(a => addRow(argsContainer, a));
+        if (!cfg.args) addRow(argsContainer);
+        if (cfg.env) {
+          Object.entries(cfg.env).forEach(([k,v]) => addEnvRow(k,v));
+        } else {
+          addEnvRow();
+        }
+      } else {
+        addRow(argsContainer);
+        addEnvRow();
+      }
+      serverModal.classList.add('open');
+    }
+
+    function addRow(container, value='') {
+      const div = document.createElement('div');
+      div.className = 'row';
+      div.innerHTML = `
+        <input type="text" value="${value.replace(/"/g,'&quot;')}">
+        <button type="button" class="btn btn-del">&times;</button>`;
+      div.querySelector('button').onclick = () => div.remove();
+      container.appendChild(div);
+    }
+
+    function addEnvRow(key='', val='') {
+      const div = document.createElement('div');
+      div.className = 'row';
+      div.innerHTML = `
+        <input class="env-key"   type="text" placeholder="KEY"   value="${key}">
+        <input class="env-val"   type="text" placeholder="VALUE" value="${val}">
+        <button type="button"    class="btn btn-del">&times;</button>`;
+      div.querySelector('button').onclick = () => div.remove();
+      envContainer.appendChild(div);
+    }
+
+    function saveServer(e) {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      if (!name) return alert('Name required');
+      const cmd = cmdInput.value.trim();
+      const args = Array.from(argsContainer.querySelectorAll('input'))
+        .map(i=>i.value.trim()).filter(Boolean);
+      const env  = {};
+      envContainer.querySelectorAll('.row').forEach(r=>{
+        const k = r.querySelector('.env-key').value.trim();
+        const v = r.querySelector('.env-val').value.trim();
+        if (k) env[k]=v;
+      });
+      const cfg = { command: cmd };
+      if (args.length) cfg.args = args;
+      if (Object.keys(env).length) cfg.env = env;
+      if (disabledInput.checked) cfg.disabled = true;
+      // rename if changed
+      if (currentServer && currentServer !== name) {
+        delete mcpConfig.mcpServers[currentServer];
+      }
+      mcpConfig.mcpServers[name] = cfg;
+      writeConfig(JSON.stringify(mcpConfig, null, 2))
+        .then(() => {
+          refreshTable();
+          serverModal.classList.remove('open');
+        });
+    }
+
+    function showJsonModal() {
+      editor.setValue(JSON.stringify(mcpConfig, null, 2), -1);
+      jsonModal.classList.add('open');
+    }
+  </script>
+</body>
+</html>
