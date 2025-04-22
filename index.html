@@ -1,113 +1,15 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MCP Server Editor</title>
+
+  <!-- your styles -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Ace for the JSON editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js"></script>
-  <style>
-    :root {
-      --primary: #4A56E2;
-      --danger:  #E25C4A;
-      --success: #4CAF50;
-      --bg:      #f5f5f5;
-      --card:    #fff;
-      --text:    #333;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg); color: var(--text);
-    }
-    .container {
-      max-width: 1200px; margin: auto;
-      background: var(--card); border-radius: 8px;
-      padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h1 { text-align: center; color: var(--primary); margin-top: 0; }
-    .warning { color: #c00; font-weight: 600; margin-bottom: 1em; }
-    .btn {
-      display: inline-block;
-      padding: 0.6em 1.2em;
-      margin: 0 5px 10px 0;
-      border: none;
-      border-radius: 4px;
-      font-size: 1rem;
-      cursor: pointer;
-      color: #fff;
-    }
-    .btn-add    { background: var(--success); }
-    .btn-export { background: var(--primary); }
-    .btn-reveal { background: #777; }
-    .btn-del    { background: var(--danger); }
-    .btn-success { background: var(--success); }
-    .btn:hover  { opacity: 0.9; }
-    table {
-      width: 100%; border-collapse: collapse; margin-top: 1em;
-    }
-    th, td {
-      padding: 12px; border-bottom: 1px solid #ddd; text-align: left;
-    }
-    th { background: #f0f0f0; }
-    tr:hover { background: #fafafa; }
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #fff;
-    }
-    .badge-enabled  { background: var(--success); }
-    .badge-disabled { background: var(--danger); }
-
-    .modal {
-      position: fixed; top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.4);
-      display: none;
-      align-items: center; justify-content: center;
-      z-index: 1000;
-    }
-    .modal.open { display: flex; }
-    .modal-content {
-      background: #fff; border-radius: 6px;
-      padding: 20px; width: 90%; max-width: 700px;
-      max-height: 90vh; overflow-y: auto;
-      position: relative;
-    }
-    .modal-content h2 { margin-top: 0; }
-    .close {
-      position: absolute; right:16px; top:16px;
-      font-size: 1.5rem; cursor: pointer; color: #999;
-    }
-    .close:hover { color: #333; }
-
-    .form-group { margin-bottom: 1em; }
-    label { display: block; margin-bottom: 0.3em; font-weight: 600; }
-    input[type="text"] {
-      width: 100%; padding: 0.5em;
-      border: 1px solid #ccc; border-radius: 4px;
-    }
-    .row { display: flex; gap: 0.5em; margin-bottom: 0.5em; }
-    .row input { flex: 1; }
-    .row button { flex: 0 0 auto; }
-
-    .modal-footer {
-      text-align: right; margin-top: 1.5em;
-    }
-
-    .type-switch { display: flex; gap: 1em; margin-bottom: 1em; }
-    .form-section { display: none; }
-    .form-section.active { display: block; }
-
-    .editor-container {
-      height: 300px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -116,9 +18,10 @@
       ⚠️ Never include actual API keys or tokens here—use placeholders like <code>[YOUR_API_KEY]</code>.
     </div>
 
-    <button id="add-server-btn" class="btn btn-add">+ Add Server</button>
+    <button id="add-server-btn"  class="btn btn-add">+ Add Server</button>
     <button id="export-json-btn" class="btn btn-export">Export JSON</button>
-    <button id="reveal-btn" class="btn btn-reveal">Open Config Folder</button>
+    <button id="reveal-btn"      class="btn btn-reveal">Open Config Folder</button>
+    <button id="paste-btn"       class="btn btn-paste">Paste Config</button>
 
     <table>
       <thead>
@@ -128,19 +31,41 @@
     </table>
   </div>
 
-  <!-- Add/Edit Modal -->
+  <!-- Paste JSON Modal -->
+  <div id="paste-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="paste-close">&times;</span>
+      <h2>Paste Server JSON</h2>
+      <p>Drop in a snippet containing exactly one server entry under <code>mcpServers</code>:</p>
+      <textarea id="paste-json" placeholder='{
+  "mcpServers": {
+    "github": {
+      "command":"npx",
+      "args":["-y","@modelcontextprotocol/server-github"],
+      "env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"<YOUR_TOKEN>"}
+    }
+  }
+}'></textarea>
+      <div class="modal-footer">
+        <button id="paste-cancel-btn" class="btn btn-reveal">Cancel</button>
+        <button id="paste-load-btn"   class="btn btn-success">Load</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Server Modal -->
   <div id="server-modal" class="modal">
     <div class="modal-content">
       <span class="close" id="modal-close">&times;</span>
       <h2 id="modal-title">Add Server</h2>
       <form id="server-form" novalidate>
-        <!-- Always‑visible Name field -->
+        <!-- Server Name (always visible) -->
         <div class="form-group">
           <label for="server-name">Server Name</label>
           <input id="server-name" type="text" required>
         </div>
 
-        <!-- Type chooser -->
+        <!-- Type selector -->
         <div class="form-group">
           <label>Server Type:</label>
           <div class="type-switch">
@@ -150,7 +75,7 @@
           </div>
         </div>
 
-        <!-- Generic section -->
+        <!-- Generic inputs -->
         <div id="section-generic" class="form-section active">
           <div class="form-group">
             <label for="server-cmd">Command</label>
@@ -171,7 +96,7 @@
           </div>
         </div>
 
-        <!-- NPX section -->
+        <!-- NPX inputs -->
         <div id="section-npx" class="form-section">
           <div class="form-group">
             <label for="npx-repo">Repository</label>
@@ -199,7 +124,7 @@
           </div>
         </div>
 
-        <!-- Docker section -->
+        <!-- Docker inputs -->
         <div id="section-docker" class="form-section">
           <div class="form-group">
             <label for="docker-image">Image Name</label>
@@ -233,354 +158,26 @@
 
         <div class="modal-footer">
           <button type="button" id="cancel-btn" class="btn btn-reveal">Cancel</button>
-          <button type="submit" id="save-btn" class="btn btn-success">Save</button>
+          <button type="submit" id="save-btn"   class="btn btn-success">Save</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- JSON Modal -->
+  <!-- JSON Editor Modal -->
   <div id="json-modal" class="modal">
     <div class="modal-content">
       <span class="close" id="json-close">&times;</span>
       <h2>JSON Configuration</h2>
       <div class="editor-container" id="json-editor"></div>
       <div class="modal-footer">
-        <button id="json-cancel" class="btn btn-reveal">Close</button>
+        <button id="json-cancel"   class="btn btn-reveal">Close</button>
         <button id="download-json" class="btn btn-success">Download & Save</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const { readConfig, writeConfig, revealConfig } = window.api;
-
-    // Ace JSON editor
-    const editor = ace.edit("json-editor");
-    editor.setTheme("ace/theme/monokai");
-    editor.session.setMode("ace/mode/json");
-    editor.setShowPrintMargin(false);
-
-    let mcpConfig = { mcpServers: {} }, currentServer = null;
-
-    // DOM refs
-    const serverList      = document.getElementById('server-list');
-    const addBtn          = document.getElementById('add-server-btn');
-    const exportBtn       = document.getElementById('export-json-btn');
-    const revealBtn       = document.getElementById('reveal-btn');
-    const serverModal     = document.getElementById('server-modal');
-    const jsonModal       = document.getElementById('json-modal');
-    const modalTitle      = document.getElementById('modal-title');
-    const form            = document.getElementById('server-form');
-    const cancelBtn       = document.getElementById('cancel-btn');
-    const downloadJsonBtn = document.getElementById('download-json');
-    const jsonCancelBtn   = document.getElementById('json-cancel');
-    const closeBtns       = document.querySelectorAll('.close');
-
-    // Always‑visible
-    const nameInput = document.getElementById('server-name');
-
-    // Generic
-    const cmdInput      = document.getElementById('server-cmd');
-    const genericArgs   = document.getElementById('args-container');
-    const genericEnv    = document.getElementById('env-container');
-    const addArgBtnG    = document.getElementById('add-arg-btn');
-    const addEnvBtnG    = document.getElementById('add-env-btn');
-    const genericDis    = document.getElementById('server-disabled');
-
-    // NPX
-    const npxRepo       = document.getElementById('npx-repo');
-    const npxFlags      = document.querySelectorAll('#section-npx input[data-flag]');
-    const npxArgs       = document.getElementById('npx-args-container');
-    const npxEnv        = document.getElementById('npx-env-container');
-    const addArgBtnN    = document.getElementById('add-npx-arg-btn');
-    const addEnvBtnN    = document.getElementById('add-npx-env-btn');
-    const npxDis        = document.getElementById('npx-disabled');
-
-    // Docker
-    const dockerImage   = document.getElementById('docker-image');
-    const dockerFlags   = document.querySelectorAll('#section-docker input[data-flag]');
-    const dockerPorts   = document.getElementById('docker-ports');
-    const dockerVolumes = document.getElementById('docker-volumes');
-    const dockerEnv     = document.getElementById('docker-env-container');
-    const addPortBtn    = document.getElementById('add-docker-port-btn');
-    const addVolBtn     = document.getElementById('add-docker-volume-btn');
-    const addEnvBtnD    = document.getElementById('add-docker-env-btn');
-    const dockerDis     = document.getElementById('docker-disabled');
-
-    // Type switch
-    const typeRadios    = document.querySelectorAll('input[name="type"]');
-
-    // Helpers
-    function makeRow(container, html) {
-      const div = document.createElement('div');
-      div.className = 'row';
-      div.innerHTML = html;
-      div.querySelector('button').onclick = () => div.remove();
-      container.appendChild(div);
-    }
-    function addGenericArg(val='') {
-      makeRow(genericArgs,
-        `<input type="text" value="${val.replace(/"/g,'&quot;')}">
-         <button type="button" class="btn btn-del">&times;</button>`);
-    }
-    function addGenericEnv(k='',v='') {
-      makeRow(genericEnv,
-        `<input class="env-key" type="text" placeholder="KEY" value="${k}">
-         <input class="env-val" type="text" placeholder="VALUE" value="${v}">
-         <button type="button" class="btn btn-del">&times;</button>`);
-    }
-    function addNpxArg(val='') {
-      makeRow(npxArgs,
-        `<input type="text" value="${val.replace(/"/g,'&quot;')}">
-         <button type="button" class="btn btn-del">&times;</button>`);
-    }
-    function addNpxEnv(k='',v='') {
-      makeRow(npxEnv,
-        `<input class="env-key" type="text" placeholder="KEY" value="${k}">
-         <input class="env-val" type="text" placeholder="VALUE" value="${v}">
-         <button type="button" class="btn btn-del">&times;</button>`);
-    }
-    function addDockerPort(val='') {
-      makeRow(dockerPorts,
-        `<input type="text" placeholder="host:container" value="${val}">
-         <button type="button" class="btn btn-del">&times;</button>`);
-    }
-    function addDockerVolume(val='') {
-      makeRow(dockerVolumes,
-        `<input type="text" placeholder="src:dst" value="${val}">
-         <button type="button" class="btn btn-del">&times;</button>`);
-    }
-    function addDockerEnv(k='',v='') {
-      makeRow(dockerEnv,
-        `<input class="env-key" type="text" placeholder="KEY" value="${k}">
-         <input class="env-val" type="text" placeholder="VALUE" value="${v}">
-         <button type="button" class="btn btn-del">&times;</button>`);
-    }
-
-    // Section toggle
-    typeRadios.forEach(r => r.addEventListener('change', () => {
-      document.querySelectorAll('.form-section').forEach(s=>s.classList.remove('active'));
-      document.getElementById(`section-${r.value}`).classList.add('active');
-    }));
-
-    // Open modal
-    function openServerModal(name) {
-      currentServer = name || null;
-      form.reset();
-      genericArgs.innerHTML = '';
-      genericEnv.innerHTML  = '';
-      npxArgs.innerHTML     = '';
-      npxEnv.innerHTML      = '';
-      dockerPorts.innerHTML = '';
-      dockerVolumes.innerHTML = '';
-      dockerEnv.innerHTML   = '';
-
-      addGenericArg(); addGenericEnv();
-      addNpxArg();     addNpxEnv();
-      addDockerPort(); addDockerVolume(); addDockerEnv();
-
-      if (name) {
-        modalTitle.textContent = 'Edit Server';
-        const cfg = mcpConfig.mcpServers[name];
-        // set type
-        let t = 'generic';
-        if (cfg.command === 'npx') t = 'npx';
-        else if (cfg.command === 'docker') t = 'docker';
-        document.querySelector(`input[name="type"][value="${t}"]`).checked = true;
-
-        nameInput.value = name;
-        if (t === 'generic') {
-          cmdInput.value = cfg.command;
-          genericDis.checked = !!cfg.disabled;
-          genericArgs.innerHTML = '';
-          (cfg.args||[]).forEach(a=>addGenericArg(a));
-          if (!(cfg.args||[]).length) addGenericArg();
-          genericEnv.innerHTML = '';
-          Object.entries(cfg.env||{}).forEach(([k,v])=>addGenericEnv(k,v));
-          if (!cfg.env) addGenericEnv();
-        }
-        if (t === 'npx') {
-          npxDis.checked = !!cfg.disabled;
-          npxArgs.innerHTML = '';
-          npxEnv.innerHTML = '';
-          const flags = (cfg.args||[]).filter(a=>a.startsWith('-'));
-          const rest = (cfg.args||[]).filter(a=>!a.startsWith('-'));
-          npxFlags.forEach(c=>c.checked = flags.includes(c.dataset.flag));
-          npxRepo.value = rest[0]||'';
-          rest.slice(1).forEach(a=>addNpxArg(a));
-          if (rest.length<=1) addNpxArg();
-          Object.entries(cfg.env||{}).forEach(([k,v])=>addNpxEnv(k,v));
-          if (!cfg.env) addNpxEnv();
-        }
-        if (t === 'docker') {
-          dockerDis.checked = !!cfg.disabled;
-          dockerPorts.innerHTML = '';
-          dockerVolumes.innerHTML = '';
-          dockerEnv.innerHTML = '';
-          const flags = (cfg.args||[]).filter(a=>a.startsWith('-'));
-          const rest = (cfg.args||[]).filter(a=>!a.startsWith('-'));
-          dockerFlags.forEach(c=>c.checked = flags.includes(c.dataset.flag));
-          dockerImage.value = rest[0]||'';
-          // ports/volumes cannot round‑trip perfectly here
-          Object.entries(cfg.env||{}).forEach(([k,v])=>addDockerEnv(k,v));
-          if (!cfg.env) addDockerEnv();
-        }
-      } else {
-        modalTitle.textContent = 'Add Server';
-      }
-
-      document.querySelectorAll('.form-section').forEach(s=>s.classList.remove('active'));
-      document.getElementById(`section-${document.querySelector('input[name="type"]:checked').value}`)
-              .classList.add('active');
-      serverModal.classList.add('open');
-    }
-
-    // Save
-    async function saveServer(e) {
-      e.preventDefault();
-      const t = document.querySelector('input[name="type"]:checked').value;
-      const name = nameInput.value.trim();
-      if (!name) return alert('Name is required');
-      let cfg = { command: '', args: [] };
-
-      if (t==='generic') {
-        cfg.command = cmdInput.value.trim();
-        cfg.args = Array.from(genericArgs.querySelectorAll('input'))
-                        .map(i=>i.value.trim()).filter(Boolean);
-        const env = {};
-        genericEnv.querySelectorAll('.row').forEach(r=>{
-          const k=r.querySelector('.env-key').value.trim();
-          const v=r.querySelector('.env-val').value.trim();
-          if(k) env[k]=v;
-        });
-        if(Object.keys(env).length) cfg.env=env;
-        if(genericDis.checked) cfg.disabled=true;
-      }
-      if (t==='npx') {
-        cfg.command = 'npx';
-        const flags = Array.from(npxFlags).filter(c=>c.checked).map(c=>c.dataset.flag);
-        const repo  = npxRepo.value.trim();
-        if(!repo) return alert('Repository is required');
-        const extra = Array.from(npxArgs.querySelectorAll('input'))
-                           .map(i=>i.value.trim()).filter(Boolean);
-        cfg.args = [...flags, repo, ...extra];
-        const env = {};
-        npxEnv.querySelectorAll('.row').forEach(r=>{
-          const k=r.querySelector('.env-key').value.trim();
-          const v=r.querySelector('.env-val').value.trim();
-          if(k) env[k]=v;
-        });
-        if(Object.keys(env).length) cfg.env=env;
-        if(npxDis.checked) cfg.disabled=true;
-      }
-      if (t==='docker') {
-        cfg.command = 'docker';
-        const flags = Array.from(dockerFlags).filter(c=>c.checked).map(c=>c.dataset.flag);
-        const image = dockerImage.value.trim();
-        if(!image) return alert('Image name is required');
-        const ports = Array.from(dockerPorts.querySelectorAll('input'))
-                           .map(i=>i.value.trim()).filter(Boolean);
-        const vols  = Array.from(dockerVolumes.querySelectorAll('input'))
-                           .map(i=>i.value.trim()).filter(Boolean);
-        const env   = {};
-        dockerEnv.querySelectorAll('.row').forEach(r=>{
-          const k=r.querySelector('.env-key').value.trim();
-          const v=r.querySelector('.env-val').value.trim();
-          if(k) env[k]=v;
-        });
-        let args = ['run', ...flags];
-        ports.forEach(p=>{ args.push('-p',p); });
-        vols .forEach(v=>{
-          const [s,d]=v.split(':');
-          args.push('--mount',`type=bind,src=${s},dst=${d}`);
-        });
-        args.push(image);
-        cfg.args = args;
-        if(Object.keys(env).length) cfg.env=env;
-        if(dockerDis.checked) cfg.disabled=true;
-      }
-
-      if(currentServer && currentServer!==name) {
-        delete mcpConfig.mcpServers[currentServer];
-      }
-      mcpConfig.mcpServers[name] = cfg;
-      await writeConfig(JSON.stringify(mcpConfig,null,2));
-      refreshTable();
-      serverModal.classList.remove('open');
-    }
-
-    // Refresh table
-    function refreshTable() {
-      serverList.innerHTML='';
-      for(const [name,cfg] of Object.entries(mcpConfig.mcpServers)) {
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${name}</td>
-          <td>${cfg.command}</td>
-          <td>
-            <span class="badge ${cfg.disabled?'badge-disabled':'badge-enabled'}">
-              ${cfg.disabled?'Disabled':'Enabled'}
-            </span>
-          </td>
-          <td>
-            <button class="btn btn-export" data-edit="${name}">Edit</button>
-            <button class="btn btn-del"    data-del ="${name}">Delete</button>
-          </td>`;
-        serverList.appendChild(tr);
-      }
-      serverList.querySelectorAll('[data-edit]').forEach(b=>
-        b.onclick=()=>openServerModal(b.dataset.edit)
-      );
-      serverList.querySelectorAll('[data-del]').forEach(b=>
-        b.onclick=async ()=>{
-          if(!confirm(`Delete "${b.dataset.del}"?`))return;
-          delete mcpConfig.mcpServers[b.dataset.del];
-          await writeConfig(JSON.stringify(mcpConfig,null,2));
-          refreshTable();
-        }
-      );
-    }
-
-    // JSON modal
-    function showJsonModal() {
-      editor.setValue(JSON.stringify(mcpConfig,null,2),-1);
-      jsonModal.classList.add('open');
-    }
-    async function downloadJson() {
-      const txt=editor.getValue();
-      try {
-        JSON.parse(txt);
-        await writeConfig(txt);
-        mcpConfig=JSON.parse(txt);
-        refreshTable();
-        jsonModal.classList.remove('open');
-      } catch(e){ alert('Invalid JSON: '+e.message); }
-    }
-
-    // Wire events
-    addBtn.onclick       = ()=>openServerModal();
-    exportBtn.onclick    = showJsonModal;
-    revealBtn.onclick    = ()=>revealConfig();
-    closeBtns.forEach(b=>b.onclick=()=>b.closest('.modal').classList.remove('open'));
-    cancelBtn.onclick    = ()=>serverModal.classList.remove('open');
-    form.addEventListener('submit',saveServer);
-    addArgBtnG.onclick   = ()=>addGenericArg();
-    addEnvBtnG.onclick   = ()=>addGenericEnv();
-    addArgBtnN.onclick   = ()=>addNpxArg();
-    addEnvBtnN.onclick   = ()=>addNpxEnv();
-    addPortBtn.onclick   = ()=>addDockerPort();
-    addVolBtn.onclick    = ()=>addDockerVolume();
-    addEnvBtnD.onclick   = ()=>addDockerEnv();
-    downloadJsonBtn.onclick = downloadJson;
-    jsonCancelBtn.onclick   = ()=>jsonModal.classList.remove('open');
-
-    // Load initial
-    readConfig().then(txt=>{
-      mcpConfig=JSON.parse(txt);
-      refreshTable();
-    });
-  </script>
+  <!-- your application logic -->
+  <script defer src="js/renderer.js"></script>
 </body>
 </html>
-```
