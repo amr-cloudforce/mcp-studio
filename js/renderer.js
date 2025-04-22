@@ -206,12 +206,21 @@ window.addEventListener('DOMContentLoaded', () => {
   
       if (t === 'npx') {
         cfg.command = 'npx';
-        const flags = Array.from(npxFlags).filter(c => c.checked).map(c => c.dataset.flag);
-        const repo  = npxRepo.value.trim();
+      
+        // Repository (required)
+        const repo = npxRepo.value.trim();
         if (!repo) return alert('Repository is required');
-        const extra = Array.from(npxArgs.querySelectorAll('input'))
-                           .map(i => i.value.trim()).filter(Boolean);
-        cfg.args = [...flags, repo, ...extra];
+      
+        // Extra arguments
+        const extra = Array
+          .from(npxArgs.querySelectorAll('input'))
+          .map(i => i.value.trim())
+          .filter(Boolean);
+      
+        // Always include -y
+        cfg.args = ['-y', repo, ...extra];
+      
+        // Environment variables
         const env = {};
         npxEnv.querySelectorAll('.row').forEach(r => {
           const k = r.querySelector('.env-key').value.trim();
@@ -219,6 +228,8 @@ window.addEventListener('DOMContentLoaded', () => {
           if (k) env[k] = v;
         });
         if (Object.keys(env).length) cfg.env = env;
+      
+        // Disabled flag
         if (npxDis.checked) cfg.disabled = true;
       }
   
