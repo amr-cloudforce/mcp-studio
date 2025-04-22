@@ -10,10 +10,27 @@
 
   <!-- Ace for the JSON editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js"></script>
+  <style>
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+      .app-header img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>MCP Studio</h1>
+   
+    <div class="app-header">
+      <!-- now the icon is forced to 48×48px -->
+      <img src="assets/icon.png" alt="MCP Studio" />
+      <h1>MCP Studio</h1>
+    </div>
     <!-- <div class="warning">
       ⚠️ Never include actual API keys or tokens here—use placeholders like <code>[YOUR_API_KEY]</code>.
     </div> -->
