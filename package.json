@@ -4,10 +4,34 @@
     "description": "Electron MCP Server Editor",
     "main": "main.js",
     "scripts": {
-      "start": "electron ."
+      "start": "electron .",
+      "dist": "electron-builder"
+    },
+    "build": {
+      "appId": "com.example.mcpservereditor",
+      "productName": "MCP Server Editor",
+      "directories": {
+        "output": "dist"
+      },
+      "files": [
+        "**/*"
+      ],
+      "mac": {
+        "target": [
+          "dmg",
+          "zip"
+        ]
+      },
+      "win": {
+        "target": [
+          "nsis",
+          "zip"
+        ]
+      }
     },
     "devDependencies": {
-      "electron": "^25.0.0"
+      "electron": "^25.0.0",
+      "electron-builder": "^26.0.12"
     }
   }
   
