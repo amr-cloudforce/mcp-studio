@@ -116,17 +116,27 @@ class Notifications {
    */
   async handleRestartClaude() {
     try {
+      // Temporarily change button state
       this.restartClaudeBtn.textContent = 'Restarting...';
       this.restartClaudeBtn.disabled = true;
       
-      await window.api.restartClaude();
-      
-      // Hide the warning after successful restart
+      // Hide the warning immediately
       this.hideRestartWarning();
+      
+      // Start the restart process but don't await it
+      // This way the function continues executing regardless of Claude restarting
+      window.api.restartClaude().catch(error => {
+        console.error('Error in background restart:', error);
+      });
+      
+      // Reset button state after a short delay
+      setTimeout(() => {
+        this.restartClaudeBtn.textContent = 'Restart Claude';
+        this.restartClaudeBtn.disabled = false;
+      }, 500);
     } catch (error) {
       console.error('Failed to restart Claude:', error);
       alert('Failed to restart Claude. Please restart it manually.');
-    } finally {
       this.restartClaudeBtn.textContent = 'Restart Claude';
       this.restartClaudeBtn.disabled = false;
     }
