@@ -1,15 +1,17 @@
 #!/bin/bash
 # build-and-release.sh - Script to build MCP Studio and update the release system
 
+# Get version from package.json
+VERSION=$(node -p "require('./package.json').version")
+
 # Parameters
-VERSION=$1
-PLATFORM=${2:-"all"}  # "all", "mac", "mac-arm64", "mac-x64", "windows"
-MAKE_LATEST=${3:-false}  # Optional third parameter, defaults to false
+PLATFORM=${1:-"all"}  # "all", "mac", "mac-arm64", "mac-x64", "windows"
+MAKE_LATEST=${2:-false}  # Optional second parameter, defaults to false
 
 # Validate inputs
-if [ -z "$VERSION" ]; then
-  echo "Usage: ./build-and-release.sh <version> [platform] [make_latest]"
-  echo "Example: ./build-and-release.sh 1.2.0 mac true"
+if [ -z "$PLATFORM" ]; then
+  echo "Usage: ./build-and-release.sh [platform] [make_latest]"
+  echo "Example: ./build-and-release.sh mac true"
   echo ""
   echo "Platforms (defaults to 'all'):"
   echo "  all        - Build for all platforms (mac and windows)"
@@ -19,6 +21,8 @@ if [ -z "$VERSION" ]; then
   echo "  windows    - Windows build"
   exit 1
 fi
+
+echo "Building version $VERSION from package.json"
 
 # Function to build and release for a specific platform
 build_and_release() {
@@ -34,31 +38,38 @@ build_and_release() {
   
   local build_output=""
   local release_platform=""
+  local target_filename=""
   
   if [ "$base_platform" == "mac" ]; then
     if [ "$platform" == "mac" ]; then
       # Universal build
       echo "Building universal macOS app (Intel + Apple Silicon)..."
-      npm run build:mac-universal -- --version=$VERSION
+      npm run build:mac-universal
       build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
       release_platform="mac" # For the releases.json
     elif [ "$arch" == "arm64" ]; then
       echo "Building Apple Silicon (M1/M2) macOS app..."
-      npm run build:mac-arm -- --version=$VERSION
-      build_output="./dist/mcp-studio-mac-arm64-v$VERSION.dmg"
+      npm run build:mac-arm
+      # Note: electron-builder doesn't include architecture in filename
+      build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
       release_platform="mac-arm64" # For the releases.json
+      # Create architecture-specific filename for landing page
+      target_filename="mcp-studio-mac-arm64-v$VERSION.dmg"
     elif [ "$arch" == "x64" ]; then
       echo "Building Intel macOS app..."
-      npm run build:mac-intel -- --version=$VERSION
-      build_output="./dist/mcp-studio-mac-x64-v$VERSION.dmg"
+      npm run build:mac-intel
+      # Note: electron-builder doesn't include architecture in filename
+      build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
       release_platform="mac-x64" # For the releases.json
+      # Create architecture-specific filename for landing page
+      target_filename="mcp-studio-mac-x64-v$VERSION.dmg"
     else
       echo "Error: For Mac, architecture must be not specified (universal), 'arm64', or 'x64'"
       return 1
     fi
   elif [ "$base_platform" == "windows" ]; then
     echo "Building Windows app..."
-    npm run build:windows -- --version=$VERSION
+    npm run build:windows
     build_output="./dist/mcp-studio-windows-v$VERSION.exe"
     release_platform="windows"
   else
@@ -69,13 +80,37 @@ build_and_release() {
   # Check if build was successful
   if [ ! -f "$build_output" ]; then
     echo "Error: Build failed or output file not found at $build_output"
-    return 1
+    echo "Checking for alternative filenames..."
+    
+    # Try alternative filenames
+    if [ "$base_platform" == "mac" ]; then
+      # Try without architecture in filename
+      alt_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      if [ -f "$alt_output" ]; then
+        echo "Found alternative file: $alt_output"
+        build_output="$alt_output"
+      else
+        echo "No alternative files found."
+        return 1
+      fi
+    else
+      return 1
+    fi
   fi
   
   # Copy the build to the landing page releases directory
   echo "Copying build to landing page releases directory..."
   mkdir -p landing-page/public/releases
-  cp "$build_output" "landing-page/public/releases/"
+  
+  # If we have a target filename (for architecture-specific builds), use it
+  if [ -n "$target_filename" ]; then
+    echo "Copying to architecture-specific filename: $target_filename"
+    cp "$build_output" "landing-page/public/releases/$target_filename"
+  else
+    # Otherwise just copy the file as is
+    echo "Copying to landing page: $build_output"
+    cp "$build_output" "landing-page/public/releases/"
+  fi
   
   # Update the releases.json file
   echo "Updating releases.json..."

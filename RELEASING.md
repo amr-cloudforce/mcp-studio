@@ -38,31 +38,43 @@ git commit -am "Bump version to 1.2.0"
 
 ### 2. Build and Release
 
-Use the `build-and-release.sh` script to automate the build and release process:
+First, update the version in package.json:
+
+```json
+{
+  "name": "mcp-studio",
+  "version": "1.2.0",  // Update this version number
+  ...
+}
+```
+
+Then use the `build-and-release.sh` script to automate the build and release process:
 
 ```bash
 # Build for all platforms (mac and windows) and set the macOS build as latest
-./build-and-release.sh 1.2.0 all true
+./build-and-release.sh all true
 
 # Or specify a single platform:
 
 # Build and release a universal macOS build and set as latest
-./build-and-release.sh 1.2.0 mac true
+./build-and-release.sh mac true
 
 # Build and release architecture-specific macOS builds (optional)
-./build-and-release.sh 1.2.0 mac-arm64 false
-./build-and-release.sh 1.2.0 mac-x64 false
+./build-and-release.sh mac-arm64 false
+./build-and-release.sh mac-x64 false
 
 # Build and release a Windows build
-./build-and-release.sh 1.2.0 windows false
+./build-and-release.sh windows false
 ```
 
 By default, if you don't specify a platform, it will build for all platforms:
 
 ```bash
-# Equivalent to './build-and-release.sh 1.2.0 all false'
-./build-and-release.sh 1.2.0
+# Equivalent to './build-and-release.sh all false'
+./build-and-release.sh
 ```
+
+The script will automatically use the version from package.json.
 
 This script will:
 - Build the application for the specified platform

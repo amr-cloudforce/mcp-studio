@@ -1,6 +1,6 @@
 {
     "name": "mcp-studio",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Electron MCP Studio",
     "main": "main.js",
   "scripts": {
