@@ -1,0 +1,89 @@
+diff --git a/js/renderer.js b/js/renderer.js
+index e3d2f4a..b6c7d9e 100644
+--- a/js/renderer.js
++++ b/js/renderer.js
+@@ -137,19 +137,65 @@ window.addEventListener('DOMContentLoaded', () => {
+     pasteBtn.onclick    = () => setActiveModal(pasteModal);
+     pasteCancel.onclick = closeActiveModal;
+     pasteClose.onclick  = closeActiveModal;
+-    pasteLoad.onclick   = () => {
+-      let txt = pasteTextarea.value;
+-      let obj;
+-      try {
+-        obj = JSON.parse(txt);
+-      } catch(e) {
+-        return alert('Invalid JSON: ' + e.message);
+-      }
+-      if (!obj.mcpServers) return alert('Missing "mcpServers"');
+-      const entries = Object.entries(obj.mcpServers);
+-      if (entries.length !== 1) return alert('Paste exactly one server entry');
+-      const [name, cfg] = entries[0];
+-      closeActiveModal();
+-      fillModal(name, cfg, false);
+-    };
++    pasteLoad.onclick   = () => {
++      const txt = pasteTextarea.value;
++      let obj;
++      try {
++        obj = JSON.parse(txt);
++      } catch (e) {
++        return alert('Invalid JSON: ' + e.message);
++      }
++
++      // support either {"mcpServers": {...}} or a single top-level entry
++      let entries;
++      if (obj.mcpServers && typeof obj.mcpServers === 'object') {
++        entries = Object.entries(obj.mcpServers);
++      } else {
++        entries = Object.entries(obj);
++      }
++
++      if (entries.length !== 1) {
++        return alert(
++          'Please paste exactly one server entry:\n' +
++          '  • Wrapped in "mcpServers": { ... }\n' +
++          '  • Or as { "your-server": { ... } }'
++        );
++      }
++
++      const [name, cfg] = entries[0];
++
++      // basic shape check
++      if (typeof cfg.command !== 'string' || !Array.isArray(cfg.args)) {
++        return alert('Invalid server entry: missing "command" or "args"');
++      }
++
++      // NPX + GitHub URL hint
++      if (cfg.command === 'npx') {
++        const repoArg = cfg.args.find(a => !a.startsWith('-') && a !== '-y');
++        if (
++          repoArg &&
++          /^https?:\/\/(?:www\.)?github\.com\/[^\/]+\/[^\/]+(?:\.git)?$/.test(repoArg)
++        ) {
++          alert(
++            'Detected GitHub URL in NPX args:\n' +
++            `  ${repoArg}\n\n` +
++            'You can also use the NPM package name, e.g. "@org/name".'
++          );
++        }
++      }
++
++      closeActiveModal();
++      fillModal(name, cfg, false);
++    };
+diff --git a/index.html b/index.html
+index 9f8b2c1..4a7d3e0 100644
+--- a/index.html
++++ b/index.html
+@@ -288,6 +288,12 @@
+       }'></textarea>
++      <small style="display:block; margin-top:4px; color:#666;">
++        Or paste a single server without <code>mcpServers</code>, e.g.
++        <code>{ "my-server": { ... } }</code><br>
++        For NPX repos use either the package name
++        <code>@org/name</code> or a GitHub URL
++        <code>https://github.com/org/name.git</code>.
++      </small>
+       <div class="modal-footer">
+         <button id="paste-cancel-btn" class="btn btn-reveal">Cancel</button>
+         <button id="paste-load-btn"   class="btn btn-success">Load</button>

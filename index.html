@@ -43,11 +43,19 @@
         <span>Node.js is required for NPX-based MCP servers.</span>
       </div>
     </div>
+    
+    <div id="restart-warning" class="warning" style="display: none;">
+      ⚠️ <span>Changes pending. Claude needs to be restarted to apply changes.</span>
+      <div style="margin-top: 5px;">
+        <button id="restart-claude-btn" class="btn btn-success">Restart Claude</button>
+      </div>
+    </div>
     <!-- <div class="warning">
       ⚠️ Never include actual API keys or tokens here—use placeholders like <code>[YOUR_API_KEY]</code>.
     </div> -->
 
     <button id="add-server-btn"  class="btn btn-add">+ Add Server</button>
+    <button id="quick-add-btn"   class="btn btn-add">+ Quick Add</button>
     <button id="export-json-btn" class="btn btn-export">Export JSON</button>
     <button id="reveal-btn"      class="btn btn-reveal">Open Config Folder</button>
     <button id="paste-btn"       class="btn btn-paste">Paste Config</button>
@@ -213,6 +221,53 @@
     </div>
   </div>
   
+  <!-- Quick Add Modal -->
+  <div id="quick-add-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close" id="quick-add-close">&times;</span>
+        <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+        <h2>Quick Add MCP Server</h2>
+      </div>
+      <div class="quick-add-content">
+        <!-- Template selection -->
+        <div id="template-selection">
+          <p>Select a template to quickly add a pre-configured MCP server:</p>
+          <div id="template-list" class="template-grid"></div>
+        </div>
+        
+        <!-- Template configuration (initially hidden) -->
+        <div id="template-config" style="display: none;">
+          <div class="template-header">
+            <button id="back-to-templates" class="btn btn-reveal">&larr; Back</button>
+            <h3 id="selected-template-name">Template Name</h3>
+            <p id="selected-template-desc">Template description goes here.</p>
+          </div>
+          
+          <form id="quick-add-form" novalidate>
+            <div class="form-group">
+              <label for="quick-add-name">Server Name</label>
+              <input id="quick-add-name" type="text" required>
+            </div>
+            
+            <div id="quick-add-inputs"></div>
+            
+            <div class="form-group advanced-toggle">
+              <label><input type="checkbox" id="show-advanced"> Show Advanced Options</label>
+            </div>
+            
+            <div id="advanced-options" style="display: none;"></div>
+            
+            <div class="modal-footer">
+              <button type="button" id="quick-add-cancel" class="btn btn-reveal">Cancel</button>
+              <button type="submit" id="quick-add-save" class="btn btn-success">Add Server</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- About Modal -->
   <div id="about-modal" class="modal">
     <div class="modal-content">
@@ -251,7 +306,7 @@
     </div>
   </div>
 
-  <!-- your application logic -->
-  <script defer src="js/renderer.js"></script>
+  <!-- Application logic -->
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

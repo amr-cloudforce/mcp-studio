@@ -5,7 +5,8 @@ contextBridge.exposeInMainWorld('api', {
   writeConfig: cfg => ipcRenderer.invoke('write-config', cfg),
   revealConfig: () => ipcRenderer.invoke('reveal-config'),
   openUrl: url => ipcRenderer.invoke('open-url', url),
-  checkPrerequisites: () => ipcRenderer.invoke('check-prerequisites')
+  checkPrerequisites: () => ipcRenderer.invoke('check-prerequisites'),
+  restartClaude: () => ipcRenderer.invoke('restart-claude')
 });
 
 // Listen for prerequisites status

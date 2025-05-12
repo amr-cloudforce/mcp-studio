@@ -123,6 +123,44 @@ ipcMain.handle('check-prerequisites', async () => {
   };
 });
 
+// Restart Claude
+ipcMain.handle('restart-claude', async () => {
+  return new Promise((resolve, reject) => {
+    // Path to Claude executable
+    const claudePath = process.platform === 'darwin' 
+      ? '/Applications/Claude.app/Contents/MacOS/Claude'
+      : (process.platform === 'win32' 
+          ? path.join(process.env.LOCALAPPDATA, 'Claude', 'Claude.exe')
+          : '/usr/bin/claude'); // Linux (placeholder)
+    
+    // Check if Claude exists
+    fs.access(claudePath).then(() => {
+      // Kill existing Claude process
+      const killCmd = process.platform === 'darwin' 
+        ? "pkill -f 'Claude'" 
+        : (process.platform === 'win32' 
+            ? 'taskkill /F /IM Claude.exe' 
+            : "pkill -f 'Claude'");
+      
+      exec(killCmd, (error) => {
+        // Start Claude again
+        exec(claudePath, (error, stdout, stderr) => {
+          if (error) {
+            console.error('Error restarting Claude:', error);
+            reject(error);
+          } else {
+            console.log('Claude restarted successfully');
+            resolve(true);
+          }
+        });
+      });
+    }).catch(err => {
+      console.error('Claude executable not found:', claudePath);
+      reject(new Error('Claude executable not found'));
+    });
+  });
+});
+
 // App lifecycle
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => {

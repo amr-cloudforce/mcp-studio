@@ -9,7 +9,7 @@ window.addEventListener('DOMContentLoaded', () => {
     editor.setShowPrintMargin(false);
   
     // —— Application state —— 
-    let mcpConfig = { mcpServers: {} };
+    let mcpConfig = { mcpServers: {}, inactive: {} };
     let currentServer = null;
     
     // —— Helper: Track active modal for Escape key handling ——
@@ -47,7 +47,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const missingNodejs   = document.getElementById('missing-nodejs');
     const installDockerBtn= document.getElementById('install-docker-btn');
     const installNodejsBtn= document.getElementById('install-nodejs-btn');
+    const restartWarning  = document.getElementById('restart-warning');
+    const restartClaudeBtn= document.getElementById('restart-claude-btn');
     const addBtn          = document.getElementById('add-server-btn');
+    const quickAddBtn     = document.getElementById('quick-add-btn');
     const exportBtn       = document.getElementById('export-json-btn');
     const revealBtn       = document.getElementById('reveal-btn');
     const pasteBtn        = document.getElementById('paste-btn');
@@ -62,6 +65,23 @@ window.addEventListener('DOMContentLoaded', () => {
     const nodejsStatusDot = document.getElementById('nodejs-status-dot');
     const dockerInstLink  = document.getElementById('docker-install-link');
     const nodejsInstLink  = document.getElementById('nodejs-install-link');
+    
+    // Quick Add modal elements
+    const quickAddModal   = document.getElementById('quick-add-modal');
+    const quickAddClose   = document.getElementById('quick-add-close');
+    const templateList    = document.getElementById('template-list');
+    const templateSelection = document.getElementById('template-selection');
+    const templateConfig  = document.getElementById('template-config');
+    const backToTemplates = document.getElementById('back-to-templates');
+    const selectedTemplateName = document.getElementById('selected-template-name');
+    const selectedTemplateDesc = document.getElementById('selected-template-desc');
+    const quickAddForm    = document.getElementById('quick-add-form');
+    const quickAddName    = document.getElementById('quick-add-name');
+    const quickAddInputs  = document.getElementById('quick-add-inputs');
+    const showAdvanced    = document.getElementById('show-advanced');
+    const advancedOptions = document.getElementById('advanced-options');
+    const quickAddCancel  = document.getElementById('quick-add-cancel');
+    const quickAddSave    = document.getElementById('quick-add-save');
     const pasteModal      = document.getElementById('paste-modal');
     const pasteClose      = document.getElementById('paste-close');
     const pasteCancel     = document.getElementById('paste-cancel-btn');
@@ -199,8 +219,19 @@ window.addEventListener('DOMContentLoaded', () => {
   
     function openServerModal(name) {
       if (name) {
-        fillModal(name, mcpConfig.mcpServers[name], true);
+        // Check if the server is in the active or inactive section
+        if (mcpConfig.mcpServers && mcpConfig.mcpServers[name]) {
+          fillModal(name, mcpConfig.mcpServers[name], true);
+        } else if (mcpConfig.inactive && mcpConfig.inactive[name]) {
+          // For inactive servers, set the disabled flag to true
+          const cfg = { ...mcpConfig.inactive[name], disabled: true };
+          fillModal(name, cfg, true);
+        } else {
+          console.error(`Server "${name}" not found in either active or inactive sections`);
+          return;
+        }
       } else {
+        // Creating a new server
         fillModal('', { command:'', args:[], env:{} }, false);
       }
       setActiveModal(serverModal);
@@ -305,10 +336,45 @@ window.addEventListener('DOMContentLoaded', () => {
         if (dockerDis.checked) cfg.disabled = true;
       }
   
+      // Determine if we're editing an inactive server
+      const isEditingInactive = currentServer && mcpConfig.inactive && mcpConfig.inactive[currentServer];
+      
+      // Remove the server from its original location if it's being renamed
       if (currentServer && currentServer !== name) {
-        delete mcpConfig.mcpServers[currentServer];
+        if (isEditingInactive) {
+          delete mcpConfig.inactive[currentServer];
+        } else {
+          delete mcpConfig.mcpServers[currentServer];
+        }
       }
-      mcpConfig.mcpServers[name] = cfg;
+      
+      // Determine where to save the server based on the disabled flag
+      if (cfg.disabled) {
+        // Save to inactive section
+        if (!mcpConfig.inactive) {
+          mcpConfig.inactive = {};
+        }
+        
+        // Remove disabled flag as it's implied by being in the inactive section
+        delete cfg.disabled;
+        
+        // Save to inactive section
+        mcpConfig.inactive[name] = cfg;
+        
+        // Remove from active section if it exists there
+        if (mcpConfig.mcpServers && mcpConfig.mcpServers[name]) {
+          delete mcpConfig.mcpServers[name];
+        }
+      } else {
+        // Save to active section
+        mcpConfig.mcpServers[name] = cfg;
+        
+        // Remove from inactive section if it exists there
+        if (mcpConfig.inactive && mcpConfig.inactive[name]) {
+          delete mcpConfig.inactive[name];
+        }
+      }
+      
       await writeConfig(JSON.stringify(mcpConfig, null, 2));
       refreshTable();
       closeActiveModal();
@@ -317,29 +383,104 @@ window.addEventListener('DOMContentLoaded', () => {
     // —— Refresh table view —— 
     function refreshTable() {
       serverList.innerHTML = '';
-      Object.entries(mcpConfig.mcpServers).forEach(([n, c]) => {
+      
+      // Add active servers
+      Object.entries(mcpConfig.mcpServers || {}).forEach(([n, c]) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${n}</td>
           <td>${c.command}</td>
           <td>
-            <span class="badge ${c.disabled?'badge-disabled':'badge-enabled'}">
-              ${c.disabled?'Disabled':'Enabled'}
-            </span>
+            <span class="badge badge-enabled">Active</span>
           </td>
           <td>
             <button class="btn btn-export" data-edit="${n}">Edit</button>
-            <button class="btn btn-del"    data-del ="${n}">Delete</button>
+            <button class="btn btn-del" data-del="${n}">Delete</button>
+            <button class="btn btn-reveal" data-deactivate="${n}">Deactivate</button>
           </td>`;
         serverList.appendChild(tr);
       });
+      
+      // Add inactive servers
+      Object.entries(mcpConfig.inactive || {}).forEach(([n, c]) => {
+        const tr = document.createElement('tr');
+        tr.className = 'inactive-row';
+        tr.innerHTML = `
+          <td>${n}</td>
+          <td>${c.command}</td>
+          <td>
+            <span class="badge badge-disabled">Inactive</span>
+          </td>
+          <td>
+            <button class="btn btn-export" data-edit-inactive="${n}">Edit</button>
+            <button class="btn btn-del" data-del-inactive="${n}">Delete</button>
+            <button class="btn btn-add" data-activate="${n}">Activate</button>
+          </td>`;
+        serverList.appendChild(tr);
+      });
+      
+      // Wire up event handlers for active servers
       serverList.querySelectorAll('[data-edit]').forEach(b => 
         b.onclick = () => openServerModal(b.dataset.edit)
       );
+      
       serverList.querySelectorAll('[data-del]').forEach(b =>
         b.onclick = async () => {
           if (!confirm(`Delete "${b.dataset.del}"?`)) return;
           delete mcpConfig.mcpServers[b.dataset.del];
+          await writeConfig(JSON.stringify(mcpConfig, null, 2));
+          refreshTable();
+        }
+      );
+      
+      serverList.querySelectorAll('[data-deactivate]').forEach(b =>
+        b.onclick = async () => {
+          const name = b.dataset.deactivate;
+          const server = mcpConfig.mcpServers[name];
+          
+          // Ensure inactive object exists
+          if (!mcpConfig.inactive) {
+            mcpConfig.inactive = {};
+          }
+          
+          // Move server to inactive
+          mcpConfig.inactive[name] = server;
+          delete mcpConfig.mcpServers[name];
+          
+          await writeConfig(JSON.stringify(mcpConfig, null, 2));
+          refreshTable();
+        }
+      );
+      
+      // Wire up event handlers for inactive servers
+      serverList.querySelectorAll('[data-edit-inactive]').forEach(b => 
+        b.onclick = () => {
+          const name = b.dataset.editInactive;
+          fillModal(name, mcpConfig.inactive[name], true);
+          currentServer = name;
+          setActiveModal(serverModal);
+        }
+      );
+      
+      serverList.querySelectorAll('[data-del-inactive]').forEach(b =>
+        b.onclick = async () => {
+          const name = b.dataset.delInactive;
+          if (!confirm(`Delete inactive server "${name}"?`)) return;
+          delete mcpConfig.inactive[name];
+          await writeConfig(JSON.stringify(mcpConfig, null, 2));
+          refreshTable();
+        }
+      );
+      
+      serverList.querySelectorAll('[data-activate]').forEach(b =>
+        b.onclick = async () => {
+          const name = b.dataset.activate;
+          const server = mcpConfig.inactive[name];
+          
+          // Move server to active
+          mcpConfig.mcpServers[name] = server;
+          delete mcpConfig.inactive[name];
+          
           await writeConfig(JSON.stringify(mcpConfig, null, 2));
           refreshTable();
         }
@@ -364,8 +505,32 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
   
+    // —— Quick Add functionality —— 
+    // Save callback for Quick Add
+    async function saveQuickAddServer(name, cfg, initialState) {
+      if (initialState === 'active') {
+        // Add to mcpServers
+        mcpConfig.mcpServers[name] = cfg;
+      } else {
+        // Add to inactive
+        if (!mcpConfig.inactive) {
+          mcpConfig.inactive = {};
+        }
+        mcpConfig.inactive[name] = cfg;
+      }
+      
+      // Save the configuration
+      await writeConfig(JSON.stringify(mcpConfig, null, 2));
+      refreshTable();
+    }
+    
+    // Initialize Quick Add
+    const quickAdd = new QuickAdd(mcpConfig, saveQuickAddServer);
+    
     // —— Wire up event listeners —— 
     addBtn.onclick         = () => openServerModal();
+    quickAddBtn.onclick    = () => quickAdd.openModal();
+    quickAddClose.onclick  = () => quickAdd.closeModal();
     exportBtn.onclick      = showJsonModal;
     revealBtn.onclick      = () => revealConfig();
     pasteBtn.onclick       = () => setActiveModal(pasteModal);
@@ -505,24 +670,32 @@ window.addEventListener('DOMContentLoaded', () => {
         console.log("Loaded MCP config:", txt);
         try {
           mcpConfig = JSON.parse(txt);
+          
+          // Ensure mcpServers and inactive properties exist
+          if (!mcpConfig.mcpServers) {
+            mcpConfig.mcpServers = {};
+          }
+          
+          if (!mcpConfig.inactive) {
+            mcpConfig.inactive = {};
+          }
         } catch (err) {
           console.error("Invalid JSON in config file:", err);
-          mcpConfig = { mcpServers: {} };
+          mcpConfig = { mcpServers: {}, inactive: {} };
         }
         refreshTable();
         
         // If no servers are configured, show the paste dialog automatically
-        if (Object.keys(mcpConfig.mcpServers).length === 0) {
+        if (Object.keys(mcpConfig.mcpServers).length === 0 && Object.keys(mcpConfig.inactive).length === 0) {
           setTimeout(() => setActiveModal(pasteModal), 500);
         }
       })
       .catch(err => {
         console.error("Failed to read config file:", err);
-        mcpConfig = { mcpServers: {} };
+        mcpConfig = { mcpServers: {}, inactive: {} };
         refreshTable();
         
         // Show the paste dialog on error as well
         setTimeout(() => setActiveModal(pasteModal), 500);
       });
   });
-  
