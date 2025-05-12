@@ -1,8 +1,10 @@
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const { exec } = require('child_process');
 const os = require('os');
+const readline = require('readline');
 
 function getConfigPath() {
   if (process.platform === 'darwin') {
@@ -159,6 +161,127 @@ ipcMain.handle('restart-claude', async () => {
       reject(new Error('Claude executable not found'));
     });
   });
+});
+
+// Get logs directory path
+function getLogsPath() {
+  if (process.platform === 'darwin') {
+    return path.join(app.getPath('home'), 'Library', 'Logs', 'Claude');
+  } else if (process.platform === 'win32') {
+    return path.join(app.getPath('appData'), 'Claude', 'logs');
+  } else {
+    // Linux
+    return path.join(app.getPath('home'), '.config', 'Claude', 'logs');
+  }
+}
+
+// Parse a log line into a structured object
+function parseLogLine(line) {
+  try {
+    // Example log format: 2025-05-12T16:17:33.029Z [tavily-mcp] [info] Initializing server...
+    const regex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z) \[([^\]]+)\] \[([^\]]+)\] (.+)$/;
+    const match = line.match(regex);
+    
+    if (!match) {
+      return null;
+    }
+    
+    const [, timestamp, server, level, message] = match;
+    
+    // Check if the message contains JSON
+    let details = null;
+    const jsonMatch = message.match(/(\{.+\})$/);
+    
+    if (jsonMatch) {
+      try {
+        details = JSON.parse(jsonMatch[1]);
+      } catch (e) {
+        // Not valid JSON, ignore
+      }
+    }
+    
+    return {
+      timestamp,
+      server,
+      level,
+      message: details ? message.replace(jsonMatch[1], '') : message,
+      details
+    };
+  } catch (error) {
+    console.error('Failed to parse log line:', error);
+    return null;
+  }
+}
+
+// Read log file and parse lines
+async function readLogFile(filePath) {
+  return new Promise((resolve, reject) => {
+    const logs = [];
+    
+    try {
+      const fileStream = fsSync.createReadStream(filePath);
+      const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+      });
+      
+      rl.on('line', (line) => {
+        const parsedLine = parseLogLine(line);
+        if (parsedLine) {
+          logs.push(parsedLine);
+        }
+      });
+      
+      rl.on('close', () => {
+        resolve(logs);
+      });
+      
+      rl.on('error', (err) => {
+        reject(err);
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+// IPC handler for getting logs
+ipcMain.handle('get-logs', async () => {
+  try {
+    const logsDir = getLogsPath();
+    
+    // Check if logs directory exists
+    try {
+      await fs.access(logsDir);
+    } catch (error) {
+      console.error('Logs directory not found:', logsDir);
+      return {};
+    }
+    
+    // Get all log files
+    const files = await fs.readdir(logsDir);
+    const logFiles = files.filter(file => file.endsWith('.log'));
+    
+    // Read and parse each log file
+    const logs = {};
+    
+    for (const file of logFiles) {
+      const filePath = path.join(logsDir, file);
+      const serverName = file.replace(/^mcp-server-/, '').replace(/\.log$/, '');
+      
+      try {
+        logs[serverName] = await readLogFile(filePath);
+      } catch (error) {
+        console.error(`Failed to read log file ${file}:`, error);
+        logs[serverName] = [];
+      }
+    }
+    
+    return logs;
+  } catch (error) {
+    console.error('Failed to get logs:', error);
+    return {};
+  }
 });
 
 // App lifecycle

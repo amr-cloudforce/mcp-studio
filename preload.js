@@ -6,7 +6,8 @@ contextBridge.exposeInMainWorld('api', {
   revealConfig: () => ipcRenderer.invoke('reveal-config'),
   openUrl: url => ipcRenderer.invoke('open-url', url),
   checkPrerequisites: () => ipcRenderer.invoke('check-prerequisites'),
-  restartClaude: () => ipcRenderer.invoke('restart-claude')
+  restartClaude: () => ipcRenderer.invoke('restart-claude'),
+  getLogs: () => ipcRenderer.invoke('get-logs')
 });
 
 // Listen for prerequisites status
