@@ -6,6 +6,9 @@ const { exec } = require('child_process');
 const os = require('os');
 const readline = require('readline');
 
+// Pull in the full login-shell PATH for GUI apps
+require('fix-path')();
+
 function getConfigPath() {
   if (process.platform === 'darwin') {
     return path.join(app.getPath('home'), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');

@@ -3,51 +3,54 @@
     "version": "1.2.0",
     "description": "Electron MCP Studio",
     "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder",
-    "build:mac-universal": "electron-builder --mac --universal",
-    "build:mac-arm": "electron-builder --mac --arm64",
-    "build:mac-intel": "electron-builder --mac --x64",
-    "build:windows": "electron-builder --win",
-    "release": "./build-and-release.sh"
-  },
+    "scripts": {
+        "start": "electron .",
+        "dist": "electron-builder",
+        "build:mac-universal": "electron-builder --mac --universal",
+        "build:mac-arm": "electron-builder --mac --arm64",
+        "build:mac-intel": "electron-builder --mac --x64",
+        "build:windows": "electron-builder --win",
+        "release": "./build-and-release.sh"
+    },
     "build": {
-      "appId": "com.yourdomain.mcpstudio",
-      "productName": "MCP Studio",
-      "icon": "icon",
-      "files": [
-        "**/*"
-      ],
-      "directories": {
-        "output": "dist"
-      },
-    "mac": {
-      "icon": "icon.icns",
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "artifactName": "mcp-studio-mac-v${version}.${ext}"
-    },
-    "win": {
-      "icon": "icon.ico",
-      "target": [
-        "nsis",
-        "zip"
-      ],
-      "artifactName": "mcp-studio-windows-v${version}.${ext}"
-    },
-      "linux": {
+        "appId": "com.yourdomain.mcpstudio",
+        "productName": "MCP Studio",
         "icon": "icon",
-        "target": [
-          "AppImage",
-          "deb"
-        ]
-      }
+        "files": [
+            "**/*"
+        ],
+        "directories": {
+            "output": "dist"
+        },
+        "mac": {
+            "icon": "icon.icns",
+            "target": [
+                "dmg",
+                "zip"
+            ],
+            "artifactName": "mcp-studio-mac-v${version}.${ext}"
+        },
+        "win": {
+            "icon": "icon.ico",
+            "target": [
+                "nsis",
+                "zip"
+            ],
+            "artifactName": "mcp-studio-windows-v${version}.${ext}"
+        },
+        "linux": {
+            "icon": "icon",
+            "target": [
+                "AppImage",
+                "deb"
+            ]
+        }
     },
     "devDependencies": {
-      "electron": "^25.0.0",
-      "electron-builder": "^26.0.12"
+        "electron": "^25.0.0",
+        "electron-builder": "^26.0.12"
+    },
+    "dependencies": {
+        "fix-path": "^3.0.0"
     }
-  }
+}
