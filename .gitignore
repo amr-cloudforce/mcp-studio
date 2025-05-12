@@ -1,3 +1,6 @@
 node_modules/
 dist/
 .DS_Store
+repomix-output.xml
+build-script-log.txt
+dist-command-log.txt
