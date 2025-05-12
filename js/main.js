@@ -22,15 +22,7 @@ const exportBtn = document.getElementById('export-json-btn');
 const revealBtn = document.getElementById('reveal-btn');
 const pasteBtn = document.getElementById('paste-btn');
 const aboutBtn = document.getElementById('about-btn');
-
-// Create logs button
-const buttonContainer = document.querySelector('.container');
-const logsBtn = document.createElement('button');
-logsBtn.id = 'logs-btn';
-logsBtn.className = 'btn btn-export';
-logsBtn.textContent = 'View Logs';
-logsBtn.style.marginLeft = 'auto';
-buttonContainer.insertBefore(logsBtn, document.querySelector('table'));
+const logsBtn = document.getElementById('logs-btn');
 
 // Initialize application
 async function initializeApp() {

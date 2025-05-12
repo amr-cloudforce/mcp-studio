@@ -10,63 +10,112 @@
 
   <!-- Ace for the JSON editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js"></script>
-  <style>
-    .app-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-    }
-      .app-header img {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-  }
-  </style>
 </head>
 <body>
-  <div class="container">
-   
-    <div class="app-header">
-      <!-- now the icon is forced to 48×48px -->
-      <img src="assets/icon.png" alt="MCP Studio" />
-      <h1>MCP Studio <span id="version-tag" class="version-tag"></span></h1>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/icon.png" alt="MCP Studio" />
+        <div class="sidebar-title">
+          <h1>MCP Studio</h1>
+          <span id="version-tag" class="version-tag"></span>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Main Actions</h3>
+        <ul class="sidebar-menu">
+          <li>
+            <button id="add-server-btn" class="sidebar-btn">
+              <span class="sidebar-icon">+</span>
+              <span>Add Server</span>
+            </button>
+          </li>
+          <li>
+            <button id="quick-add-btn" class="sidebar-btn">
+              <span class="sidebar-icon">⚡</span>
+              <span>Quick Add</span>
+            </button>
+          </li>
+          <li>
+            <button id="paste-btn" class="sidebar-btn">
+              <span class="sidebar-icon">📋</span>
+              <span>Paste Config</span>
+            </button>
+          </li>
+          <li>
+            <button id="logs-btn" class="sidebar-btn">
+              <span class="sidebar-icon">📊</span>
+              <span>View Logs</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Tools</h3>
+        <ul class="sidebar-menu">
+          <li>
+            <button id="export-json-btn" class="sidebar-btn">
+              <span class="sidebar-icon">📤</span>
+              <span>Export JSON</span>
+            </button>
+          </li>
+          <li>
+            <button id="reveal-btn" class="sidebar-btn">
+              <span class="sidebar-icon">📁</span>
+              <span>Open Config Folder</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Help</h3>
+        <ul class="sidebar-menu">
+          <li>
+            <button id="about-btn" class="sidebar-btn">
+              <span class="sidebar-icon">ℹ️</span>
+              <span>About</span>
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
     
-    <div id="prerequisites-warning" class="warning" style="display: none;">
-      ⚠️ <span id="prereq-message">Some prerequisites are missing.</span>
-      <div id="missing-docker" style="display: none; margin-top: 5px;">
-        <button id="install-docker-btn" class="btn btn-reveal">Install Docker</button>
-        <span>Docker is required for Docker-based MCP servers.</span>
+    <!-- Main Content -->
+    <div class="main-content">
+      <div id="prerequisites-warning" class="warning" style="display: none;">
+        ⚠️ <span id="prereq-message">Some prerequisites are missing.</span>
+        <div id="missing-docker" style="display: none; margin-top: 5px;">
+          <button id="install-docker-btn" class="btn btn-reveal">Install Docker</button>
+          <span>Docker is required for Docker-based MCP servers.</span>
+        </div>
+        <div id="missing-nodejs" style="display: none; margin-top: 5px;">
+          <button id="install-nodejs-btn" class="btn btn-reveal">Install Node.js</button>
+          <span>Node.js is required for NPX-based MCP servers.</span>
+        </div>
       </div>
-      <div id="missing-nodejs" style="display: none; margin-top: 5px;">
-        <button id="install-nodejs-btn" class="btn btn-reveal">Install Node.js</button>
-        <span>Node.js is required for NPX-based MCP servers.</span>
+      
+      <div id="restart-warning" class="warning" style="display: none;">
+        ⚠️ <span>Changes pending. Claude needs to be restarted to apply changes.</span>
+        <div style="margin-top: 5px;">
+          <button id="restart-claude-btn" class="btn btn-success">Restart Claude</button>
+        </div>
       </div>
-    </div>
-    
-    <div id="restart-warning" class="warning" style="display: none;">
-      ⚠️ <span>Changes pending. Claude needs to be restarted to apply changes.</span>
-      <div style="margin-top: 5px;">
-        <button id="restart-claude-btn" class="btn btn-success">Restart Claude</button>
-      </div>
-    </div>
-    <!-- <div class="warning">
-      ⚠️ Never include actual API keys or tokens here—use placeholders like <code>[YOUR_API_KEY]</code>.
-    </div> -->
 
-    <button id="add-server-btn"  class="btn btn-add">+ Add Server</button>
-    <button id="quick-add-btn"   class="btn btn-add">+ Quick Add</button>
-    <button id="export-json-btn" class="btn btn-export">Export JSON</button>
-    <button id="reveal-btn"      class="btn btn-reveal">Open Config Folder</button>
-    <button id="paste-btn"       class="btn btn-paste">Paste Config</button>
-    <button id="about-btn"       class="btn btn-reveal">About</button>
+      <div class="content-header">
+        <h2>MCP Servers</h2>
+      </div>
 
-    <table>
-      <thead>
-        <tr><th>Name</th><th>Command</th><th>Status</th><th>Actions</th></tr>
-      </thead>
-      <tbody id="server-list"></tbody>
-    </table>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Command</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="server-list"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Paste JSON Modal -->
