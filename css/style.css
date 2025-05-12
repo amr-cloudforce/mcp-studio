@@ -9,6 +9,8 @@
   --success: #4CAF50;
   --success-light: #6CCF70;
   --success-dark: #3C8F40;
+  --quick-add: #FF8C00;
+  --quick-add-light: #FFA500;
   --bg: #f8f9fc;
   --card: #fff;
   --text: #333;
@@ -173,6 +175,45 @@ a:hover {
   font-size: 0.85rem;
 }
 
+/* Quick Add button - more prominent */
+#quick-add-btn {
+  background: linear-gradient(135deg, var(--quick-add), var(--quick-add-light));
+  font-size: 0.95rem;
+  padding: 0.8em 1.6em;
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: pulse 2s infinite;
+}
+
+#quick-add-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4);
+  animation: none;
+}
+
+#quick-add-btn:after {
+  content: "★";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 140, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0);
+  }
+}
+
 .btn-add {
   background: linear-gradient(135deg, var(--success), var(--success-light));
 }
@@ -317,6 +358,25 @@ tr.inactive-row:hover {
 .modal-content h2 {
   margin-top: 0;
   color: var(--primary);
+}
+
+/* Quick Add modal header styling */
+#quick-add-modal .modal-header h2 {
+  color: var(--quick-add);
+  font-size: 1.8rem;
+  position: relative;
+  display: inline-block;
+}
+
+#quick-add-modal .modal-header h2:after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--quick-add), var(--primary-light));
+  border-radius: 3px;
 }
 
 .close {
@@ -468,12 +528,33 @@ input[type="checkbox"] {
   box-shadow: var(--shadow-sm);
 }
 
-/* Quick Add styles */
+/* Quick Add styles - enhanced */
+.quick-add-content {
+  padding: 10px 0;
+}
+
+#template-selection p {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 20px;
+  position: relative;
+  padding-left: 25px;
+}
+
+#template-selection p:before {
+  content: "✨";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--quick-add);
+}
+
 .template-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
   margin-top: 25px;
+  animation: fadeIn 0.5s ease;
 }
 
 .template-card {
@@ -487,12 +568,24 @@ input[type="checkbox"] {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.template-card:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, var(--quick-add), var(--primary-light));
 }
 
 .template-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-md);
-  border-color: var(--primary-light);
+  border-color: var(--quick-add);
   background: #fff;
 }
 
@@ -510,13 +603,14 @@ input[type="checkbox"] {
 
 .template-card .category {
   display: inline-block;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  background: linear-gradient(135deg, var(--quick-add), var(--primary));
   color: white;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.75rem;
   margin-bottom: 12px;
   font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .template-header {
@@ -524,10 +618,26 @@ input[type="checkbox"] {
   position: relative;
 }
 
+#back-to-templates {
+  background: linear-gradient(135deg, var(--quick-add), var(--primary));
+  padding: 0.5em 1em;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+#back-to-templates:hover {
+  transform: translateX(-3px);
+  box-shadow: var(--shadow-md);
+}
+
 .template-header h3 {
   margin-top: 15px;
   margin-bottom: 8px;
-  color: var(--primary);
+  color: var(--quick-add);
+  font-size: 1.3rem;
 }
 
 .template-header p {
@@ -541,13 +651,90 @@ input[type="checkbox"] {
   border-top: 1px solid var(--border);
 }
 
+/* Quick Add form styling */
+#quick-add-inputs .form-group,
+#advanced-options .form-group {
+  background: #f9faff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  margin-bottom: 20px;
+}
+
+#quick-add-inputs .form-group:hover,
+#advanced-options .form-group:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--quick-add);
+}
+
+#quick-add-inputs label,
+#advanced-options label {
+  color: var(--quick-add);
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+#quick-add-inputs input[type="text"],
+#quick-add-inputs input[type="password"],
+#advanced-options input[type="text"],
+#advanced-options input[type="password"] {
+  border-color: #e0e4f1;
+}
+
+#quick-add-inputs input[type="text"]:focus,
+#quick-add-inputs input[type="password"]:focus,
+#advanced-options input[type="text"]:focus,
+#advanced-options input[type="password"]:focus {
+  border-color: var(--quick-add);
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+}
+
 #advanced-options {
   margin-top: 20px;
   padding: 20px;
   background: #f9faff;
   border-radius: 8px;
-  border-left: 4px solid var(--primary-light);
+  border-left: 4px solid var(--quick-add);
   animation: fadeIn 0.3s ease;
+}
+
+.advanced-toggle label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.advanced-toggle input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: var(--quick-add);
+}
+
+/* Quick Add modal footer buttons */
+#quick-add-modal .modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#quick-add-modal .modal-footer:before {
+  content: "✨";
+  font-size: 1.2rem;
+  color: var(--quick-add);
+  margin-right: 10px;
+}
+
+#quick-add-save {
+  background: linear-gradient(135deg, var(--quick-add), var(--quick-add-light));
+  padding: 0.8em 1.6em;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.2);
+}
+
+#quick-add-save:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(255, 140, 0, 0.3);
 }
 
 /* Code styling */
