@@ -42,6 +42,20 @@ export function generateFormFields(baseModule, template) {
   inputsContainer.innerHTML = '';
   advancedOptions.innerHTML = '';
   
+  // Add documentation link if available
+  if (template.documentationUrl) {
+    const docContainer = document.createElement('div');
+    docContainer.className = 'form-group';
+    docContainer.style.marginBottom = '20px';
+    docContainer.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin: 0;">${template.name}</h3>
+        <a href="${template.documentationUrl}" target="_blank" class="external-link">Documentation</a>
+      </div>
+    `;
+    inputsContainer.appendChild(docContainer);
+  }
+  
   // Generate form fields for required inputs
   template.userInputs.forEach(input => {
     if (!input.advancedOnly) {

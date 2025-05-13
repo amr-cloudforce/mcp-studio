@@ -12,9 +12,17 @@ export function generateForm(config) {
   // Extract API key from env
   const apiKey = config.env && config.env.APIFY_TOKEN ? config.env.APIFY_TOKEN : '';
   
+  // Get documentation URL from templates
+  const templates = window.quickAddTemplates || {};
+  const docUrl = templates['apify-web-adapter']?.documentationUrl || 'https://apify.com/apify/actors-mcp-server';
+  
   // Create form HTML
   return `
     <div class="form-group">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin: 0;">Apify Web Adapter</h3>
+        <a href="${docUrl}" target="_blank" class="external-link">Documentation</a>
+      </div>
       <label for="apify-api-key">Apify API Token</label>
       <input type="password" id="apify-api-key" value="${apiKey}">
       <small>Your Apify API token from apify.com</small>

@@ -12,9 +12,17 @@ export function generateForm(config) {
   // Extract directories from args (skip the first two args which are -y and the package name)
   const directories = config.args.slice(2) || [];
   
+  // Get documentation URL from templates
+  const templates = window.quickAddTemplates || {};
+  const docUrl = templates['filesystem-server']?.documentationUrl || 'https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem';
+  
   // Create form HTML
   return `
     <div class="form-group">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin: 0;">Filesystem Server</h3>
+        <a href="${docUrl}" target="_blank" class="external-link">Documentation</a>
+      </div>
       <label>Directories</label>
       <div id="quick-directory-container" class="directory-list-container">
         <!-- Directory rows will be added here -->

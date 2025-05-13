@@ -80,6 +80,8 @@ class QuickAddBase {
     this.templateName.textContent = template.name;
     this.templateDesc.textContent = template.description;
     
+    // Documentation links are now handled by the template handlers
+    
     // Generate a default name based on the template ID
     this.nameInput.value = templateId;
     

@@ -12,9 +12,17 @@ export function generateForm(config) {
   // Extract API key from env
   const apiKey = config.env && config.env.TAVILY_API_KEY ? config.env.TAVILY_API_KEY : '';
   
+  // Get documentation URL from templates
+  const templates = window.quickAddTemplates || {};
+  const docUrl = templates['tavily-mcp']?.documentationUrl || 'https://docs.tavily.com/documentation/mcp';
+  
   // Create form HTML
   return `
     <div class="form-group">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin: 0;">Tavily Search</h3>
+        <a href="${docUrl}" target="_blank" class="external-link">Documentation</a>
+      </div>
       <label for="tavily-api-key">Tavily API Key</label>
       <input type="password" id="tavily-api-key" value="${apiKey}">
       <small>Your Tavily API key</small>

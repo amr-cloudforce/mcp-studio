@@ -14,6 +14,10 @@ import aboutModal from './ui/about-modal.js';
 import notifications from './ui/notifications.js';
 import quickAdd from './quick-add.js';
 import logViewer from './features/log-viewer.js';
+import quickAddTemplates from './quick-add-templates.js';
+
+// Make templates available globally for template handlers
+window.quickAddTemplates = quickAddTemplates;
 
 // DOM elements
 const addBtn = document.getElementById('add-server-btn');
