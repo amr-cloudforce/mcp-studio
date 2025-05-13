@@ -120,6 +120,33 @@ class QuickAdd {
     const div = document.createElement('div');
     div.className = 'form-group';
     
+    if (input.type === 'directory-list') {
+      // Create a directory list input
+      div.innerHTML = `
+        <label>${input.displayName}</label>
+        <div id="directory-list-container" class="directory-list-container">
+          <!-- Directory rows will be added here -->
+        </div>
+        <button type="button" id="add-directory-btn" class="btn btn-add">+ Add Directory</button>
+      `;
+      
+      if (input.description) {
+        div.innerHTML += `<small>${input.description}</small>`;
+      }
+      
+      container.appendChild(div);
+      
+      // Add the first directory row
+      this.addDirectoryRow();
+      
+      // Set up event listener for the add directory button
+      document.getElementById('add-directory-btn').addEventListener('click', () => {
+        this.addDirectoryRow();
+      });
+      
+      return;
+    }
+    
     let inputHtml = '';
     
     if (input.type === 'select') {
@@ -151,6 +178,44 @@ class QuickAdd {
     container.appendChild(div);
   }
   
+  // Add a directory input row
+  addDirectoryRow() {
+    const container = document.getElementById('directory-list-container');
+    const rowIndex = container.children.length;
+    
+    const row = document.createElement('div');
+    row.className = 'directory-row';
+    row.innerHTML = `
+      <div class="row">
+        <input type="text" 
+               class="directory-input"
+               id="directory-${rowIndex}" 
+               placeholder="Select a directory" 
+               readonly>
+        <button type="button" class="btn btn-reveal browse-btn">Browse</button>
+        <button type="button" class="btn btn-del remove-btn">&times;</button>
+      </div>
+    `;
+    
+    container.appendChild(row);
+    
+    // Set up event listeners for the browse and remove buttons
+    const browseBtn = row.querySelector('.browse-btn');
+    const removeBtn = row.querySelector('.remove-btn');
+    const input = row.querySelector('.directory-input');
+    
+    browseBtn.addEventListener('click', async () => {
+      const directory = await window.api.selectDirectory();
+      if (directory) {
+        input.value = directory;
+      }
+    });
+    
+    removeBtn.addEventListener('click', () => {
+      row.remove();
+    });
+  }
+  
   // Handle form submission
   async handleSubmit(e) {
     e.preventDefault();
@@ -175,7 +240,21 @@ class QuickAdd {
     
     // Check if any required fields are missing
     const missingRequired = template.userInputs
-      .filter(input => input.required && !inputValues[input.name])
+      .filter(input => {
+        // Special case for directory-list type
+        if (input.type === 'directory-list') {
+          // Get all directory inputs
+          const directoryInputs = document.querySelectorAll('.directory-input');
+          const directories = Array.from(directoryInputs)
+            .map(input => input.value.trim())
+            .filter(dir => dir !== '');
+          
+          // Check if at least one directory is selected
+          return directories.length === 0;
+        }
+        
+        return input.required && !inputValues[input.name];
+      })
       .map(input => input.displayName);
     
     if (missingRequired.length > 0) {
@@ -185,17 +264,34 @@ class QuickAdd {
     // Create the server configuration
     const cfg = JSON.parse(JSON.stringify(template.config));
     
-    // Replace template variables in args
-    if (cfg.args) {
-      cfg.args = cfg.args.map(arg => {
-        if (typeof arg === 'string' && arg.includes('{')) {
-          // Replace all {variable} with actual values
-          return arg.replace(/{([^}]+)}/g, (match, varName) => {
-            return inputValues[varName] || match;
-          });
-        }
-        return arg;
-      });
+    // Special case for filesystem-server: collect directories
+    if (this.currentTemplate === 'filesystem-server') {
+      // Get all directory inputs
+      const directoryInputs = document.querySelectorAll('.directory-input');
+      const directories = Array.from(directoryInputs)
+        .map(input => input.value.trim())
+        .filter(dir => dir !== '');
+      
+      // Check if at least one directory is selected
+      if (directories.length === 0) {
+        return alert('Please select at least one directory');
+      }
+      
+      // Add directories to args
+      cfg.args = [...cfg.args, ...directories];
+    } else {
+      // Replace template variables in args
+      if (cfg.args) {
+        cfg.args = cfg.args.map(arg => {
+          if (typeof arg === 'string' && arg.includes('{')) {
+            // Replace all {variable} with actual values
+            return arg.replace(/{([^}]+)}/g, (match, varName) => {
+              return inputValues[varName] || match;
+            });
+          }
+          return arg;
+        });
+      }
     }
     
     // Replace template variables in env

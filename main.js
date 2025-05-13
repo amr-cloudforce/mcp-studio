@@ -248,6 +248,17 @@ async function readLogFile(filePath) {
   });
 }
 
+// IPC handler for selecting a directory
+ipcMain.handle('select-directory', async (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(window, {
+    properties: ['openDirectory', 'createDirectory'],
+    title: 'Select Directory'
+  });
+  
+  return result.canceled ? null : result.filePaths[0];
+});
+
 // IPC handler for getting logs
 ipcMain.handle('get-logs', async () => {
   try {

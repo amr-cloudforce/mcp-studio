@@ -1113,6 +1113,41 @@ small {
   font-style: italic;
 }
 
+/* Directory list styles */
+.directory-list-container {
+  margin-bottom: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.directory-row {
+  margin-bottom: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.directory-row:last-child {
+  margin-bottom: 0;
+}
+
+.directory-input {
+  background: #f5f7ff;
+  cursor: default;
+}
+
+.browse-btn {
+  padding: 0.6em 1em;
+  font-size: 0.8rem;
+}
+
+.remove-btn {
+  padding: 0.6em;
+  font-size: 0.8rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .container {

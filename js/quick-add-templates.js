@@ -4,6 +4,37 @@
  */
 
 const quickAddTemplates = {
+  "filesystem-server": {
+    "name": "Filesystem Server",
+    "description": "Access files from specified directories",
+    "category": "File Access",
+    "userInputs": [
+      {
+        "name": "directories",
+        "displayName": "Directories",
+        "description": "Select directories to allow access to",
+        "type": "directory-list",
+        "required": true
+      },
+      {
+        "name": "initialState",
+        "displayName": "Initial State",
+        "description": "Whether the server should be active or inactive when added",
+        "type": "select",
+        "options": ["active", "inactive"],
+        "default": "active",
+        "advancedOnly": true
+      }
+    ],
+    "config": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem"
+        // Directories will be added dynamically
+      ]
+    }
+  },
   "apify-web-adapter": {
     "name": "Apify Web Scraper",
     "description": "Scrape websites using Apify's actors",
