@@ -7,6 +7,7 @@ import modalManager from './modal-manager.js';
 import serverForm from './server-form/index.js';
 import quickAdd from '../quick-add.js';
 import pasteModal from './paste-modal.js';
+import { parseUrlResponse } from '../utils/url-parser.js';
 
 class AddServerModal {
   constructor() {
@@ -92,7 +93,7 @@ class AddServerModal {
                   <input type="text" id="url-import-input" placeholder="https://github.com/user/repo/..." style="flex: 1;">
                   <button type="submit" id="url-import-btn" class="btn btn-success">Import</button>
                 </div>
-                <small>Supports GitHub repositories, Gists, or direct JSON URLs</small>
+                <small>Supports NPX configurations from any URL (GitHub, Gists, docs, etc.)</small>
               </div>
             </form>
           </div>
@@ -268,11 +269,11 @@ class AddServerModal {
       // Fetch the URL
       const response = await window.api.fetchUrl(url);
       
-      // Parse the response
-      const config = this.parseUrlResponse(url, response);
+      // Parse the response using the imported function
+      const config = parseUrlResponse(url, response);
       
       if (!config) {
-        alert('Could not parse configuration from URL');
+        alert('Could not find a valid NPX configuration in the URL content');
         return;
       }
       
@@ -287,73 +288,6 @@ class AddServerModal {
       // Reset loading state
       this.urlImportBtn.textContent = 'Import';
       this.urlImportBtn.disabled = false;
-    }
-  }
-  
-  /**
-   * Parse URL response
-   * @param {string} url - The URL
-   * @param {string} response - The response text
-   * @returns {object|null} - The parsed configuration or null
-   */
-  parseUrlResponse(url, response) {
-    // Try to parse as JSON
-    try {
-      const json = JSON.parse(response);
-      
-      // Check if it's a valid MCP server configuration
-      if (json.mcpServers) {
-        // Get the first server
-        const serverName = Object.keys(json.mcpServers)[0];
-        if (serverName) {
-          return {
-            name: serverName,
-            config: json.mcpServers[serverName]
-          };
-        }
-      }
-      
-      // Check if it's a direct server configuration
-      if (json.command && json.args) {
-        return {
-          name: this.generateNameFromUrl(url),
-          config: json
-        };
-      }
-    } catch (e) {
-      console.error('Error parsing JSON:', e);
-    }
-    
-    // TODO: Add more parsing logic for GitHub repos, Gists, etc.
-    
-    return null;
-  }
-  
-  /**
-   * Generate a name from a URL
-   * @param {string} url - The URL
-   * @returns {string} - The generated name
-   */
-  generateNameFromUrl(url) {
-    try {
-      const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/').filter(Boolean);
-      
-      // GitHub repo
-      if (urlObj.hostname === 'github.com' && pathParts.length >= 2) {
-        return `${pathParts[0]}-${pathParts[1]}`;
-      }
-      
-      // Gist
-      if (urlObj.hostname === 'gist.github.com' && pathParts.length >= 1) {
-        return `gist-${pathParts[0]}`;
-      }
-      
-      // Default: use hostname
-      return urlObj.hostname.replace(/\./g, '-');
-    } catch (e) {
-      // Fallback
-      return 'imported-server';
     }
   }
 }
