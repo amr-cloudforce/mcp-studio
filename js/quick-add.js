@@ -74,8 +74,14 @@ class QuickAdd {
       card.className = 'template-card';
       card.dataset.templateId = id;
       
+      // Check if template has an icon
+      const iconHtml = template.icon 
+        ? `<div class="template-icon"><img src="${template.icon}" alt="${template.name} icon" /></div>` 
+        : '';
+      
       card.innerHTML = `
         <span class="category">${template.category}</span>
+        ${iconHtml}
         <h3>${template.name}</h3>
         <p>${template.description}</p>
       `;

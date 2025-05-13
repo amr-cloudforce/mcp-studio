@@ -714,6 +714,26 @@ input[type="checkbox"] {
   background: #fff;
 }
 
+.template-icon {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 15px;
+}
+
+.template-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.template-card:hover .template-icon img {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
 .template-card h3 {
   margin-top: 0;
   color: var(--primary);
