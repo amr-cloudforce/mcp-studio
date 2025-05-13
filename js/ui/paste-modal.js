@@ -5,7 +5,7 @@
 
 import configManager from '../config/config-manager.js';
 import modalManager from './modal-manager.js';
-import serverForm from './server-form.js';
+import serverForm from './server-form/index.js';
 import notifications from './notifications.js';
 
 class PasteModal {
