@@ -873,7 +873,9 @@ mark {
 
 /* Quick Add form styling */
 #quick-add-inputs .form-group,
-#advanced-options .form-group {
+#advanced-options .form-group,
+#quick-inputs .form-group,
+#quick-advanced-options .form-group {
   background: #f9faff;
   padding: 15px;
   border-radius: 8px;

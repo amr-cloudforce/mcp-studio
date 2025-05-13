@@ -158,8 +158,30 @@
           <input id="server-name" type="text" required>
         </div>
 
+        <!-- View toggle (initially hidden, shown for Quick Add servers) -->
+        <div id="view-toggle-container" class="form-group" style="display: none;">
+          <label>View Mode:</label>
+          <div class="type-switch">
+            <label><input type="radio" name="view-mode" value="quick" checked> Quick View</label>
+            <label><input type="radio" name="view-mode" value="advanced"> Advanced View</label>
+          </div>
+        </div>
+        
+        <!-- Quick view section (initially hidden) -->
+        <div id="section-quick" class="form-section">
+          <div class="template-header">
+            <h3 id="quick-template-name">Template Name</h3>
+            <p id="quick-template-desc">Template description goes here.</p>
+          </div>
+          <div id="quick-inputs"></div>
+          <div id="quick-advanced-toggle" class="form-group advanced-toggle">
+            <label><input type="checkbox" id="quick-show-advanced"> Show Advanced Options</label>
+          </div>
+          <div id="quick-advanced-options" style="display: none;"></div>
+        </div>
+        
         <!-- Type selector -->
-        <div class="form-group">
+        <div class="form-group type-selector">
           <label>Server Type:</label>
           <div class="type-switch">
             <label><input type="radio" name="type" value="generic" checked> Generic</label>

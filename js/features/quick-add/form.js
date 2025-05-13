@@ -166,6 +166,12 @@ export async function handleSubmit(e, baseModule) {
   // Create the server configuration
   const cfg = JSON.parse(JSON.stringify(template.config));
   
+  // Add metadata to track that this server was created with Quick Add
+  cfg.metadata = {
+    quickAddTemplate: baseModule.currentTemplate,
+    templateName: template.name
+  };
+  
   // Special case for filesystem-server: collect directories
   if (baseModule.currentTemplate === 'filesystem-server') {
     // Get all directory inputs
