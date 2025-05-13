@@ -15,16 +15,15 @@ import notifications from './ui/notifications.js';
 import quickAdd from './quick-add.js';
 import logViewer from './features/log-viewer.js';
 import quickAddTemplates from './quick-add-templates.js';
+import addServerModal from './ui/add-server-modal.js';
 
 // Make templates available globally for template handlers
 window.quickAddTemplates = quickAddTemplates;
 
 // DOM elements
-const addBtn = document.getElementById('add-server-btn');
-const quickAddBtn = document.getElementById('quick-add-btn');
+const addServerBtn = document.getElementById('add-server-btn');
 const exportBtn = document.getElementById('export-json-btn');
 const revealBtn = document.getElementById('reveal-btn');
-const pasteBtn = document.getElementById('paste-btn');
 const aboutBtn = document.getElementById('about-btn');
 const logsBtn = document.getElementById('logs-btn');
 
@@ -47,11 +46,9 @@ async function initializeApp() {
     });
     
     // Set up event listeners
-    addBtn.addEventListener('click', () => serverForm.openModal());
-    quickAddBtn.addEventListener('click', () => quickAdd.openModal());
+    addServerBtn.addEventListener('click', () => addServerModal.openModal());
     exportBtn.addEventListener('click', () => jsonEditor.openModal());
     revealBtn.addEventListener('click', () => window.api.revealConfig());
-    pasteBtn.addEventListener('click', () => pasteModal.openModal());
     aboutBtn.addEventListener('click', () => aboutModal.openModal());
     logsBtn.addEventListener('click', () => logViewer.openModal());
     
@@ -61,9 +58,9 @@ async function initializeApp() {
     // Refresh server list
     serverList.refreshList();
     
-    // Show paste dialog if no servers are configured
+    // Show add server dialog if no servers are configured
     if (!configManager.hasServers()) {
-      setTimeout(() => pasteModal.openModal(), 500);
+      setTimeout(() => addServerModal.openModal(), 500);
     }
     
     console.log('MCP Studio initialized successfully');

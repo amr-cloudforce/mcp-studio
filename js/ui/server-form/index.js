@@ -122,6 +122,22 @@ class ServerForm {
     
     modalManager.showModal(this.modal);
   }
+  
+  /**
+   * Open the server form modal with a pre-configured server
+   * @param {object} config - Server configuration object
+   * @param {string} config.name - Server name
+   * @param {object} config.config - Server configuration
+   */
+  openModalWithConfig(config) {
+    if (!config || !config.config) {
+      console.error('Invalid configuration object');
+      return;
+    }
+    
+    this.fillForm(config.name || '', config.config, false);
+    modalManager.showModal(this.modal);
+  }
 
   /**
    * Fill the form with server data

@@ -8,7 +8,8 @@ contextBridge.exposeInMainWorld('api', {
   checkPrerequisites: () => ipcRenderer.invoke('check-prerequisites'),
   restartClaude: () => ipcRenderer.invoke('restart-claude'),
   getLogs: () => ipcRenderer.invoke('get-logs'),
-  selectDirectory: () => ipcRenderer.invoke('select-directory')
+  selectDirectory: () => ipcRenderer.invoke('select-directory'),
+  fetchUrl: url => ipcRenderer.invoke('fetch-url', url)
 });
 
 // Listen for prerequisites status

@@ -5,6 +5,8 @@ const fsSync = require('fs');
 const { exec } = require('child_process');
 const os = require('os');
 const readline = require('readline');
+const https = require('https');
+const http = require('http');
 
 // Pull in the full login-shell PATH for GUI apps
 require('fix-path')();
@@ -296,6 +298,54 @@ ipcMain.handle('get-logs', async () => {
     console.error('Failed to get logs:', error);
     return {};
   }
+});
+
+// IPC handler for fetching a URL
+ipcMain.handle('fetch-url', async (_, url) => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Determine if we should use http or https
+      const client = url.startsWith('https:') ? https : http;
+      
+      const request = client.get(url, (response) => {
+        // Handle redirects
+        if (response.statusCode === 301 || response.statusCode === 302) {
+          // Make a new request to the redirect location
+          const redirectUrl = new URL(response.headers.location, url).toString();
+          return ipcMain.handle('fetch-url', null, redirectUrl)
+            .then(resolve)
+            .catch(reject);
+        }
+        
+        // Check for successful response
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          return reject(new Error(`Failed to fetch URL: ${response.statusCode}`));
+        }
+        
+        // Collect response data
+        let data = '';
+        response.on('data', (chunk) => {
+          data += chunk;
+        });
+        
+        response.on('end', () => {
+          resolve(data);
+        });
+      });
+      
+      request.on('error', (error) => {
+        reject(error);
+      });
+      
+      // Set a timeout
+      request.setTimeout(10000, () => {
+        request.abort();
+        reject(new Error('Request timed out'));
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
 });
 
 // App lifecycle
