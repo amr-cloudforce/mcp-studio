@@ -658,6 +658,81 @@ input[type="checkbox"] {
   padding: 10px 0;
 }
 
+/* Search styles */
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#quick-add-search-input {
+  width: 100%;
+  padding: 12px 40px 12px 15px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #f9faff;
+  transition: var(--transition);
+}
+
+#quick-add-search-input:focus {
+  outline: none;
+  border-color: var(--quick-add);
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+  background: #fff;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.search-clear-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--danger);
+}
+
+/* No results message */
+.no-results {
+  text-align: center;
+  padding: 30px;
+  background: #f9faff;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  margin: 20px 0;
+}
+
+.no-results p {
+  margin-bottom: 15px;
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+/* Highlight search matches */
+mark {
+  background-color: rgba(255, 140, 0, 0.2);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
 #template-selection p {
   font-size: 1.1rem;
   color: var(--text);

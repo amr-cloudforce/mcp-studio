@@ -1,0 +1,216 @@
+/**
+ * Quick Add Form Module
+ * Handles form generation, validation, and submission
+ */
+
+import * as directory from './directory.js';
+
+let base;
+let inputsContainer;
+let advancedOptions;
+let showAdvanced;
+
+/**
+ * Initialize the form module
+ * @param {Object} baseModule - The base module instance
+ */
+export function init(baseModule) {
+  base = baseModule;
+  inputsContainer = document.getElementById('quick-add-inputs');
+  advancedOptions = document.getElementById('advanced-options');
+  showAdvanced = document.getElementById('show-advanced');
+  
+  // Initialize event listeners
+  showAdvanced.addEventListener('change', toggleAdvancedOptions);
+}
+
+/**
+ * Toggle advanced options
+ */
+function toggleAdvancedOptions() {
+  advancedOptions.style.display = showAdvanced.checked ? 'block' : 'none';
+}
+
+/**
+ * Generate form fields for a template
+ * @param {Object} baseModule - The base module instance
+ * @param {Object} template - The template object
+ */
+export function generateFormFields(baseModule, template) {
+  // Clear previous inputs
+  inputsContainer.innerHTML = '';
+  advancedOptions.innerHTML = '';
+  
+  // Generate form fields for required inputs
+  template.userInputs.forEach(input => {
+    if (!input.advancedOnly) {
+      addTemplateInput(input, inputsContainer);
+    } else {
+      addTemplateInput(input, advancedOptions);
+    }
+  });
+}
+
+/**
+ * Add a template input field
+ * @param {Object} input - The input configuration
+ * @param {HTMLElement} container - The container to add the input to
+ */
+function addTemplateInput(input, container) {
+  const div = document.createElement('div');
+  div.className = 'form-group';
+  
+  if (input.type === 'directory-list') {
+    // Create a directory list input
+    div.innerHTML = `
+      <label>${input.displayName}</label>
+      <div id="directory-list-container" class="directory-list-container">
+        <!-- Directory rows will be added here -->
+      </div>
+      <button type="button" id="add-directory-btn" class="btn btn-add">+ Add Directory</button>
+    `;
+    
+    if (input.description) {
+      div.innerHTML += `<small>${input.description}</small>`;
+    }
+    
+    container.appendChild(div);
+    
+    // Initialize directory functionality
+    directory.init();
+    
+    return;
+  }
+  
+  let inputHtml = '';
+  
+  if (input.type === 'select') {
+    // Create a select dropdown
+    inputHtml = `
+      <label for="input-${input.name}">${input.displayName}</label>
+      <select id="input-${input.name}" name="${input.name}" ${input.required ? 'required' : ''}>
+        ${input.options.map(opt => `<option value="${opt}" ${opt === input.default ? 'selected' : ''}>${opt}</option>`).join('')}
+      </select>
+    `;
+  } else {
+    // Create a text input
+    inputHtml = `
+      <label for="input-${input.name}">${input.displayName}</label>
+      <input type="${input.secret ? 'password' : 'text'}" 
+             id="input-${input.name}" 
+             name="${input.name}" 
+             placeholder="${input.placeholder || ''}" 
+             value="${input.default || ''}" 
+             ${input.required ? 'required' : ''}>
+    `;
+  }
+  
+  if (input.description) {
+    inputHtml += `<small>${input.description}</small>`;
+  }
+  
+  div.innerHTML = inputHtml;
+  container.appendChild(div);
+}
+
+/**
+ * Handle form submission
+ * @param {Event} e - The submit event
+ * @param {Object} baseModule - The base module instance
+ */
+export async function handleSubmit(e, baseModule) {
+  e.preventDefault();
+  
+  const templates = baseModule.getTemplates();
+  const template = templates[baseModule.currentTemplate];
+  const name = baseModule.nameInput.value.trim();
+  
+  if (!name) {
+    return alert('Server name is required');
+  }
+  
+  // Get all input values
+  const inputValues = {};
+  template.userInputs.forEach(input => {
+    const element = document.getElementById(`input-${input.name}`);
+    if (element) {
+      inputValues[input.name] = element.value;
+    } else if (input.default) {
+      inputValues[input.name] = input.default;
+    }
+  });
+  
+  // Check if any required fields are missing
+  const missingRequired = template.userInputs
+    .filter(input => {
+      // Special case for directory-list type
+      if (input.type === 'directory-list') {
+        // Get all directory inputs
+        const directoryInputs = document.querySelectorAll('.directory-input');
+        const directories = Array.from(directoryInputs)
+          .map(input => input.value.trim())
+          .filter(dir => dir !== '');
+        
+        // Check if at least one directory is selected
+        return directories.length === 0;
+      }
+      
+      return input.required && !inputValues[input.name];
+    })
+    .map(input => input.displayName);
+  
+  if (missingRequired.length > 0) {
+    return alert(`Missing required fields: ${missingRequired.join(', ')}`);
+  }
+  
+  // Create the server configuration
+  const cfg = JSON.parse(JSON.stringify(template.config));
+  
+  // Special case for filesystem-server: collect directories
+  if (baseModule.currentTemplate === 'filesystem-server') {
+    // Get all directory inputs
+    const directoryInputs = document.querySelectorAll('.directory-input');
+    const directories = Array.from(directoryInputs)
+      .map(input => input.value.trim())
+      .filter(dir => dir !== '');
+    
+    // Check if at least one directory is selected
+    if (directories.length === 0) {
+      return alert('Please select at least one directory');
+    }
+    
+    // Add directories to args
+    cfg.args = [...cfg.args, ...directories];
+  } else {
+    // Replace template variables in args
+    if (cfg.args) {
+      cfg.args = cfg.args.map(arg => {
+        if (typeof arg === 'string' && arg.includes('{')) {
+          // Replace all {variable} with actual values
+          return arg.replace(/{([^}]+)}/g, (match, varName) => {
+            return inputValues[varName] || match;
+          });
+        }
+        return arg;
+      });
+    }
+  }
+  
+  // Replace template variables in env
+  if (cfg.env) {
+    Object.keys(cfg.env).forEach(key => {
+      const value = cfg.env[key];
+      if (typeof value === 'string' && value.includes('{')) {
+        cfg.env[key] = value.replace(/{([^}]+)}/g, (match, varName) => {
+          return inputValues[varName] || match;
+        });
+      }
+    });
+  }
+  
+  // Check if server should be active or inactive
+  const initialState = inputValues.initialState || 'active';
+  
+  // Add server to configuration
+  baseModule.addServer(name, cfg, initialState);
+}
