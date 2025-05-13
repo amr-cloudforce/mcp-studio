@@ -51,13 +51,11 @@ const quickAddTemplates = {
         "secret": true
       },
       {
-        "name": "actorId",
-        "displayName": "Actor ID (optional)",
-        "description": "Apify actor to use (default: filip_cicvarek/meetup-scraper)",
-        "type": "string",
-        "required": false,
-        "default": "filip_cicvarek/meetup-scraper",
-        "advancedOnly": true
+        "name": "actorIds",
+        "displayName": "Actor IDs",
+        "description": "Add one or more Apify actors to use",
+        "type": "actor-list",
+        "required": true
       },
       {
         "name": "initialState",
@@ -75,7 +73,7 @@ const quickAddTemplates = {
         "-y",
         "@apify/actors-mcp-server",
         "--actors",
-        "{actorId}"
+        "{actorIds}"
       ],
       "env": {
         "APIFY_TOKEN": "{APIFY_TOKEN}"

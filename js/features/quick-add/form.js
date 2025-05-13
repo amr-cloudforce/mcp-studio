@@ -4,6 +4,7 @@
  */
 
 import * as directory from './directory.js';
+import * as actor from './actor.js';
 
 let base;
 let inputsContainer;
@@ -82,6 +83,28 @@ function addTemplateInput(input, container) {
     return;
   }
   
+  if (input.type === 'actor-list') {
+    // Create an actor list input
+    div.innerHTML = `
+      <label>${input.displayName} <a href="https://apify.com/store" target="_blank" class="external-link" title="Browse Apify actors">Browse Actors</a></label>
+      <div id="actor-list-container" class="directory-list-container">
+        <!-- Actor rows will be added here -->
+      </div>
+      <button type="button" id="add-actor-btn" class="btn btn-add">+ Add Actor</button>
+    `;
+    
+    if (input.description) {
+      div.innerHTML += `<small>${input.description}</small>`;
+    }
+    
+    container.appendChild(div);
+    
+    // Initialize actor functionality
+    actor.init();
+    
+    return;
+  }
+  
   let inputHtml = '';
   
   if (input.type === 'select') {
@@ -155,6 +178,18 @@ export async function handleSubmit(e, baseModule) {
         return directories.length === 0;
       }
       
+      // Special case for actor-list type
+      if (input.type === 'actor-list') {
+        // Get all actor inputs
+        const actorInputs = document.querySelectorAll('.actor-input');
+        const actors = Array.from(actorInputs)
+          .map(input => input.value.trim())
+          .filter(actor => actor !== '');
+        
+        // Check if at least one actor is selected
+        return actors.length === 0;
+      }
+      
       return input.required && !inputValues[input.name];
     })
     .map(input => input.displayName);
@@ -187,6 +222,36 @@ export async function handleSubmit(e, baseModule) {
     
     // Add directories to args
     cfg.args = [...cfg.args, ...directories];
+  } 
+  // Special case for apify-web-adapter: collect actors
+  else if (baseModule.currentTemplate === 'apify-web-adapter') {
+    // Get all actor inputs
+    const actorInputs = document.querySelectorAll('.actor-input');
+    const actors = Array.from(actorInputs)
+      .map(input => input.value.trim())
+      .filter(actor => actor !== '');
+    
+    // Check if at least one actor is selected
+    if (actors.length === 0) {
+      return alert('Please add at least one Apify actor');
+    }
+    
+    // Join actors with commas and replace the {actorIds} placeholder
+    const actorsString = actors.join(',');
+    inputValues.actorIds = actorsString;
+    
+    // Replace template variables in args
+    if (cfg.args) {
+      cfg.args = cfg.args.map(arg => {
+        if (typeof arg === 'string' && arg.includes('{')) {
+          // Replace all {variable} with actual values
+          return arg.replace(/{([^}]+)}/g, (match, varName) => {
+            return inputValues[varName] || match;
+          });
+        }
+        return arg;
+      });
+    }
   } else {
     // Replace template variables in args
     if (cfg.args) {

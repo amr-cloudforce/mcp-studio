@@ -345,6 +345,21 @@ class ServerForm {
         break;
       case 'apify-web-adapter':
         this.quickInputs.innerHTML = apifyHandler.generateForm(config);
+        // Parse existing actors from config
+        const actorsString = config.args && config.args.length > 3 ? config.args[3] : '';
+        const actors = actorsString ? actorsString.split(',') : [];
+        console.log('Initializing Apify actors:', actors);
+        // Initialize actor rows with a slight delay to ensure DOM is ready
+        setTimeout(() => {
+          apifyHandler.initActorRows(actors);
+          // Make sure the add button is visible
+          const addBtn = document.getElementById('apify-add-actor-btn');
+          if (addBtn) {
+            addBtn.style.display = 'block';
+            addBtn.style.marginTop = '10px';
+            addBtn.style.marginBottom = '10px';
+          }
+        }, 100);
         break;
       default:
         // For unknown templates, just show a message
