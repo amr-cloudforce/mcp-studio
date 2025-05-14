@@ -195,7 +195,9 @@ function createCategoryElement(category, items) {
   
   // Get color for category
   const color = getCategoryColor(category);
-  categoryElement.style.background = color;
+  
+  // Set the color bar at the top
+  categoryElement.style.setProperty('--category-color', color);
   
   // Create category content
   categoryElement.innerHTML = `
@@ -205,6 +207,9 @@ function createCategoryElement(category, items) {
       <span class="item-count">${availableCount} available items</span>
     </div>
   `;
+  
+  // Set the icon color after the HTML is created
+  categoryElement.querySelector('.category-icon').style.color = color;
   
   // Add click event
   categoryElement.addEventListener('click', () => {
@@ -231,15 +236,14 @@ function showItemsForCategory(category) {
   // Apply category color to title
   const categoryColor = getCategoryColor(category);
   const categoryTitleContainer = document.querySelector('.marketplace-category-title');
-  categoryTitleContainer.style.background = categoryColor;
-  categoryTitleContainer.style.color = 'white';
-  categoryTitleContainer.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
+  categoryTitleContainer.style.borderBottom = `3px solid ${categoryColor}`;
+  categoryTitleContainer.style.color = 'var(--text)';
   
   // Get category icon
   const icon = getCategoryIcon(category);
   
   // Add icon to title
-  categoryTitle.innerHTML = `${icon.replace('width="48" height="48"', 'width="24" height="24"')} ${category}`;
+  categoryTitle.innerHTML = `${icon} ${category}`;
   
   // Clear items container
   itemsContainer.innerHTML = '';
@@ -261,9 +265,14 @@ function showItemsForCategory(category) {
 /**
  * Create an item element
  * @param {Object} item - Marketplace item
- * @returns {HTMLElement} - Item element
+ * @returns {HTMLElement} - Item element wrapper
  */
 function createItemElement(item) {
+  // Create wrapper for consistent sizing
+  const wrapper = document.createElement('div');
+  wrapper.className = 'marketplace-item-wrapper';
+  
+  // Create the actual item element
   const itemElement = document.createElement('div');
   itemElement.className = `marketplace-item ${!item.available ? 'unavailable' : ''}`;
   itemElement.dataset.repoName = item.repo_name;
@@ -290,7 +299,10 @@ function createItemElement(item) {
     });
   }
   
-  return itemElement;
+  // Add the item to the wrapper
+  wrapper.appendChild(itemElement);
+  
+  return wrapper;
 }
 
 /**
@@ -450,9 +462,8 @@ function showCategoriesView() {
   
   // Reset category title container style
   const categoryTitleContainer = document.querySelector('.marketplace-category-title');
-  categoryTitleContainer.style.background = '';
+  categoryTitleContainer.style.borderBottom = '';
   categoryTitleContainer.style.color = '';
-  categoryTitleContainer.style.textShadow = '';
   
   currentCategory = null;
 }
