@@ -212,28 +212,27 @@
   padding: 15px;
   overflow-y: auto;
   height: calc(100% - 70px);
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   width: 100%;
-  align-content: flex-start;
 }
 
 /* Item wrapper to ensure consistent sizing */
 .marketplace-item-wrapper {
-  flex: 0 0 calc(33.333% - 14px);
+  width: 100%;
   margin-bottom: 5px;
 }
 
 @media (max-width: 1200px) {
-  .marketplace-item-wrapper {
-    flex: 0 0 calc(50% - 10px);
+  .marketplace-items-container {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .marketplace-item-wrapper {
-    flex: 0 0 100%;
+  .marketplace-items-container {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -244,11 +244,22 @@ function showSearchResults(items, query) {
   // Clear items container
   itemsContainer.innerHTML = '';
   
+  // Filter for available items only
+  const availableItems = items.filter(item => item.available);
+  
   // Create items with category labels
-  items.forEach(item => {
-    const itemElement = createItemElement(item, true);
-    itemsContainer.appendChild(itemElement);
-  });
+  if (availableItems.length > 0) {
+    availableItems.forEach(item => {
+      const itemElement = createItemElement(item, true);
+      itemsContainer.appendChild(itemElement);
+    });
+  } else {
+    // Show no results message
+    const noResults = document.createElement('div');
+    noResults.className = 'no-items';
+    noResults.textContent = `No available items matching "${query}"`;
+    itemsContainer.appendChild(noResults);
+  }
   
   // Update back button text
   backToCategoriesButton.textContent = '← Back to categories';
@@ -266,45 +277,44 @@ function showSearchResults(items, query) {
  * @param {string} query - Search query
  */
 function filterItems(query) {
-  const items = itemsContainer.querySelectorAll('.marketplace-item');
+  // Get the current category items
+  let categoryItems = [];
+  if (currentCategory) {
+    categoryItems = allItems.filter(item => (item.category || 'Uncategorized') === currentCategory);
+  } else {
+    // If we're in search results view, use all items
+    categoryItems = allItems;
+  }
   
-  items.forEach(item => {
-    const name = item.querySelector('h3').textContent.toLowerCase();
-    const description = item.querySelector('p').textContent.toLowerCase();
-    const serverType = item.querySelector('.server-type').textContent.toLowerCase();
+  // Filter items based on query
+  const filteredItems = categoryItems.filter(item => {
+    const itemName = item.repo_name.toLowerCase();
+    const itemDesc = (item.summary_200_words || '').toLowerCase();
+    const itemType = (item.server_type || '').toLowerCase();
+    const itemCategory = (item.category || 'Uncategorized').toLowerCase();
     
-    // Also search in category if it exists
-    const categoryElement = item.querySelector('.item-category');
-    const category = categoryElement ? categoryElement.textContent.toLowerCase() : '';
-    
-    if (name.includes(query) || 
-        description.includes(query) || 
-        serverType.includes(query) ||
-        category.includes(query)) {
-      item.style.display = 'flex'; // Use flex to maintain the flex layout
-    } else {
-      item.style.display = 'none';
-    }
+    return itemName.includes(query.toLowerCase()) || 
+           itemDesc.includes(query.toLowerCase()) || 
+           itemType.includes(query.toLowerCase()) ||
+           itemCategory.includes(query.toLowerCase());
   });
   
-  // Check if we have any visible items
-  const visibleItems = Array.from(items).filter(item => item.style.display !== 'none');
+  // Clear the container
+  itemsContainer.innerHTML = '';
   
-  // Show a message if no items match the search
-  const noResultsElement = document.getElementById('no-search-results-items');
-  if (visibleItems.length === 0) {
-    if (!noResultsElement) {
-      const noResults = document.createElement('div');
-      noResults.id = 'no-search-results-items';
-      noResults.className = 'no-items';
-      noResults.textContent = `No results found for "${query}"`;
-      itemsContainer.appendChild(noResults);
-    } else {
-      noResultsElement.textContent = `No results found for "${query}"`;
-      noResultsElement.style.display = 'block';
-    }
-  } else if (noResultsElement) {
-    noResultsElement.style.display = 'none';
+  // Add filtered items to the container
+  if (filteredItems.length > 0) {
+    filteredItems.forEach(item => {
+      const itemElement = createItemElement(item, !currentCategory);
+      itemsContainer.appendChild(itemElement);
+    });
+  } else {
+    // Show no results message
+    const noResults = document.createElement('div');
+    noResults.id = 'no-search-results-items';
+    noResults.className = 'no-items';
+    noResults.textContent = `No results found for "${query}"`;
+    itemsContainer.appendChild(noResults);
   }
 }
 
@@ -418,11 +428,22 @@ function showItemsForCategory(category) {
   // Clear items container
   itemsContainer.innerHTML = '';
   
+  // Filter for available items only
+  const availableItems = categoryItems.filter(item => item.available);
+  
   // Create items
-  categoryItems.forEach(item => {
-    const itemElement = createItemElement(item);
-    itemsContainer.appendChild(itemElement);
-  });
+  if (availableItems.length > 0) {
+    availableItems.forEach(item => {
+      const itemElement = createItemElement(item);
+      itemsContainer.appendChild(itemElement);
+    });
+  } else {
+    // Show no items message
+    const noItems = document.createElement('div');
+    noItems.className = 'no-items';
+    noItems.textContent = `No available items in ${category}`;
+    itemsContainer.appendChild(noItems);
+  }
   
   // Show items view
   document.getElementById('marketplace-categories-view').style.display = 'none';
