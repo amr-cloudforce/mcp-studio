@@ -92,6 +92,9 @@ function setupEventListeners() {
   
   // Back to categories button
   backToCategoriesButton.addEventListener('click', () => {
+    // Reset search input when going back to categories
+    const searchInput = document.getElementById('marketplace-search-input');
+    searchInput.value = '';
     showCategoriesView();
   });
   
@@ -110,6 +113,17 @@ function setupEventListeners() {
       filterItems(query);
     }
   });
+  
+  // Add a blur event to ensure search is properly applied when focus is lost
+  searchInput.addEventListener('blur', () => {
+    // Re-apply the current search to ensure consistent state
+    const query = searchInput.value.toLowerCase();
+    if (document.getElementById('marketplace-categories-view').style.display !== 'none') {
+      filterCategories(query);
+    } else {
+      filterItems(query);
+    }
+  });
 }
 
 /**
@@ -117,9 +131,12 @@ function setupEventListeners() {
  * @param {string} query - Search query
  */
 function filterCategories(query) {
-  // If query is empty, show all categories
-  if (!query.trim()) {
-    // Show categories view
+  // Normalize query
+  query = query.trim().toLowerCase();
+  
+  // If query is empty, reset and show all categories
+  if (!query) {
+    // Reset to categories view
     document.getElementById('marketplace-categories-view').style.display = 'block';
     document.getElementById('marketplace-items-view').style.display = 'none';
     
@@ -137,7 +154,7 @@ function filterCategories(query) {
     return;
   }
   
-  // Search across all items
+  // Search across all items for the current query only
   const matchingItems = allItems.filter(item => {
     const itemName = item.repo_name.toLowerCase();
     const itemDesc = (item.summary_200_words || '').toLowerCase();
@@ -151,12 +168,12 @@ function filterCategories(query) {
   });
   
   // For short queries (1-2 characters), just filter categories
-  if (query.trim().length < 3) {
-    // Show categories view
+  if (query.length < 3) {
+    // Reset to categories view
     document.getElementById('marketplace-categories-view').style.display = 'block';
     document.getElementById('marketplace-items-view').style.display = 'none';
     
-    // Get unique categories from matching items
+    // Get unique categories from matching items for this query only
     const matchingCategories = [...new Set(matchingItems.map(item => item.category || 'Uncategorized'))];
     
     // Show/hide categories based on whether they contain matching items
@@ -203,7 +220,7 @@ function filterCategories(query) {
   if (matchingItems.length > 0) {
     showSearchResults(matchingItems, query);
   } else {
-    // No matching items, show filtered categories
+    // No matching items, reset to categories view with no results
     document.getElementById('marketplace-categories-view').style.display = 'block';
     document.getElementById('marketplace-items-view').style.display = 'none';
     
@@ -277,6 +294,9 @@ function showSearchResults(items, query) {
  * @param {string} query - Search query
  */
 function filterItems(query) {
+  // Normalize query
+  query = query.trim().toLowerCase();
+  
   // Get the current category items
   let categoryItems = [];
   if (currentCategory) {
@@ -286,6 +306,35 @@ function filterItems(query) {
     categoryItems = allItems;
   }
   
+  // If query is empty, show all items for the current category or search
+  if (!query) {
+    // Clear the container
+    itemsContainer.innerHTML = '';
+    
+    // Show all items for the current category or search
+    if (categoryItems.length > 0) {
+      // Filter for available items only
+      const availableItems = categoryItems.filter(item => item.available);
+      
+      if (availableItems.length > 0) {
+        availableItems.forEach(item => {
+          const itemElement = createItemElement(item, !currentCategory);
+          itemsContainer.appendChild(itemElement);
+        });
+      } else {
+        // Show no items message
+        const noItems = document.createElement('div');
+        noItems.className = 'no-items';
+        noItems.textContent = currentCategory ? 
+          `No available items in ${currentCategory}` : 
+          'No available items';
+        itemsContainer.appendChild(noItems);
+      }
+    }
+    
+    return;
+  }
+  
   // Filter items based on query
   const filteredItems = categoryItems.filter(item => {
     const itemName = item.repo_name.toLowerCase();
@@ -293,10 +342,10 @@ function filterItems(query) {
     const itemType = (item.server_type || '').toLowerCase();
     const itemCategory = (item.category || 'Uncategorized').toLowerCase();
     
-    return itemName.includes(query.toLowerCase()) || 
-           itemDesc.includes(query.toLowerCase()) || 
-           itemType.includes(query.toLowerCase()) ||
-           itemCategory.includes(query.toLowerCase());
+    return itemName.includes(query) || 
+           itemDesc.includes(query) || 
+           itemType.includes(query) ||
+           itemCategory.includes(query);
   });
   
   // Clear the container
@@ -304,10 +353,22 @@ function filterItems(query) {
   
   // Add filtered items to the container
   if (filteredItems.length > 0) {
-    filteredItems.forEach(item => {
-      const itemElement = createItemElement(item, !currentCategory);
-      itemsContainer.appendChild(itemElement);
-    });
+    // Filter for available items only
+    const availableItems = filteredItems.filter(item => item.available);
+    
+    if (availableItems.length > 0) {
+      availableItems.forEach(item => {
+        const itemElement = createItemElement(item, !currentCategory);
+        itemsContainer.appendChild(itemElement);
+      });
+    } else {
+      // Show no results message
+      const noResults = document.createElement('div');
+      noResults.id = 'no-search-results-items';
+      noResults.className = 'no-items';
+      noResults.textContent = `No available items matching "${query}"`;
+      itemsContainer.appendChild(noResults);
+    }
   } else {
     // Show no results message
     const noResults = document.createElement('div');
@@ -677,13 +738,26 @@ function showCategoriesView() {
   document.getElementById('marketplace-items-view').style.display = 'none';
   document.getElementById('marketplace-details-view').style.display = 'none';
   
-  // Reset search placeholder
-  document.getElementById('marketplace-search-input').placeholder = 'Search all tools...';
+  // Reset search input and placeholder
+  const searchInput = document.getElementById('marketplace-search-input');
+  searchInput.value = '';
+  searchInput.placeholder = 'Search all tools...';
   
   // Reset category title container style
   const categoryTitleContainer = document.querySelector('.marketplace-category-title');
   categoryTitleContainer.style.borderBottom = '';
   categoryTitleContainer.style.color = '';
+  
+  // Show all category cards
+  categoriesContainer.querySelectorAll('.marketplace-category-card').forEach(category => {
+    category.style.display = 'flex';
+  });
+  
+  // Hide any "no results" message
+  const noResults = document.getElementById('no-search-results');
+  if (noResults) {
+    noResults.style.display = 'none';
+  }
   
   currentCategory = null;
 }
