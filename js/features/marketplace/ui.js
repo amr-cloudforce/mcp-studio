@@ -45,7 +45,7 @@ function createModal() {
           <div class="marketplace-container">
             <div id="marketplace-categories-view">
               <div class="marketplace-search">
-                <input type="text" id="marketplace-search-input" placeholder="Search categories...">
+                <input type="text" id="marketplace-search-input" placeholder="Search all tools...">
               </div>
               <div id="marketplace-categories-container" class="marketplace-categories-container"></div>
             </div>
@@ -117,12 +117,38 @@ function setupEventListeners() {
  * @param {string} query - Search query
  */
 function filterCategories(query) {
-  const categories = categoriesContainer.querySelectorAll('.marketplace-category-card');
+  // If query is empty, show all categories
+  if (!query.trim()) {
+    categoriesContainer.querySelectorAll('.marketplace-category-card').forEach(category => {
+      category.style.display = 'flex';
+    });
+    return;
+  }
   
-  categories.forEach(category => {
-    const name = category.querySelector('h3').textContent.toLowerCase();
+  // Search across all items first
+  const matchingItems = allItems.filter(item => {
+    const itemName = item.repo_name.toLowerCase();
+    const itemDesc = (item.summary_200_words || '').toLowerCase();
+    const itemType = (item.server_type || '').toLowerCase();
+    const itemCategory = (item.category || 'Uncategorized').toLowerCase();
     
-    if (name.includes(query)) {
+    return itemName.includes(query) || 
+           itemDesc.includes(query) || 
+           itemType.includes(query) ||
+           itemCategory.includes(query);
+  });
+  
+  // Get unique categories from matching items
+  const matchingCategories = [...new Set(matchingItems.map(item => item.category || 'Uncategorized'))];
+  
+  // Show/hide categories based on whether they contain matching items
+  const categories = categoriesContainer.querySelectorAll('.marketplace-category-card');
+  categories.forEach(category => {
+    const categoryName = category.dataset.category;
+    const categoryNameLower = categoryName.toLowerCase();
+    
+    // Show if category name matches OR if category contains matching items
+    if (categoryNameLower.includes(query) || matchingCategories.includes(categoryName)) {
       category.style.display = 'flex';
     } else {
       category.style.display = 'none';
@@ -490,7 +516,7 @@ function showCategoriesView() {
   document.getElementById('marketplace-details-view').style.display = 'none';
   
   // Reset search placeholder
-  document.getElementById('marketplace-search-input').placeholder = 'Search categories...';
+  document.getElementById('marketplace-search-input').placeholder = 'Search all tools...';
   
   // Reset category title container style
   const categoryTitleContainer = document.querySelector('.marketplace-category-title');
