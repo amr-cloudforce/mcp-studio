@@ -590,7 +590,7 @@ function showItemDetails(item) {
       <p>${item.summary_200_words || 'No description available'}</p>
     </div>
     <div class="details-links">
-      ${item.repo ? `<a href="${item.repo}" target="_blank" class="external-link">View on GitHub</a>` : ''}
+      ${item.repo ? `<button class="btn btn-link external-link" onclick="window.api.openUrl('${item.repo}')">View on GitHub</button>` : ''}
     </div>
     <div class="details-readme">
       <h3>README</h3>
@@ -639,7 +639,7 @@ async function loadReadme(url) {
       // Italic
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       // Links
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a onclick="window.api.openUrl(\'$2\')" class="external-link" style="cursor:pointer">$1</a>')
       // Lists
       .replace(/^\s*\*\s(.*$)/gm, '<li>$1</li>')
       .replace(/^\s*-\s(.*$)/gm, '<li>$1</li>')

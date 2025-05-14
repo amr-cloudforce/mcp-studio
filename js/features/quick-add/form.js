@@ -50,7 +50,7 @@ export function generateFormFields(baseModule, template) {
     docContainer.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="margin: 0;">${template.name}</h3>
-        <a href="${template.documentationUrl}" target="_blank" class="external-link">Documentation</a>
+        <button class="btn btn-link external-link" onclick="window.api.openUrl('${template.documentationUrl}')">Documentation</button>
       </div>
     `;
     inputsContainer.appendChild(docContainer);
@@ -100,7 +100,7 @@ function addTemplateInput(input, container) {
   if (input.type === 'actor-list') {
     // Create an actor list input
     div.innerHTML = `
-      <label>${input.displayName} <a href="https://apify.com/store" target="_blank" class="external-link" title="Browse Apify actors">Browse Actors</a></label>
+      <label>${input.displayName} <button class="btn btn-link external-link" onclick="window.api.openUrl('https://apify.com/store')" title="Browse Apify actors">Browse Actors</button></label>
       <div id="actor-list-container" class="directory-list-container">
         <!-- Actor rows will be added here -->
       </div>
