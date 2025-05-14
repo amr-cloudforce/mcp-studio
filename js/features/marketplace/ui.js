@@ -327,7 +327,10 @@ function showItemDetails(item) {
   // Populate details
   detailsContainer.innerHTML = `
     <div class="details-header">
-      <h2>${item.repo_name}</h2>
+      <div class="details-header-top">
+        <h2>${item.repo_name}</h2>
+        <button id="import-server-btn" class="btn btn-success">Import Server</button>
+      </div>
       <div class="details-meta">
         <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
         <span class="stars">⭐ ${item.stars || 0}</span>
@@ -345,9 +348,6 @@ function showItemDetails(item) {
       <div id="readme-content" class="readme-content">
         <div class="loading">Loading README...</div>
       </div>
-    </div>
-    <div class="details-actions">
-      <button id="import-server-btn" class="btn btn-success">Import Server</button>
     </div>
   `;
   
