@@ -7,11 +7,12 @@ VERSION=$(node -p "require('./package.json').version")
 # Parameters
 PLATFORM=${1:-"all"}  # "all", "mac", "mac-arm64", "mac-x64", "windows"
 MAKE_LATEST=${2:-false}  # Optional second parameter, defaults to false
+OBFUSCATE=${3:-false}  # Optional third parameter, defaults to false
 
 # Validate inputs
 if [ -z "$PLATFORM" ]; then
-  echo "Usage: ./build-and-release.sh [platform] [make_latest]"
-  echo "Example: ./build-and-release.sh mac true"
+  echo "Usage: ./build-and-release.sh [platform] [make_latest] [obfuscate]"
+  echo "Example: ./build-and-release.sh mac true true"
   echo ""
   echo "Platforms (defaults to 'all'):"
   echo "  all        - Build for all platforms (mac and windows)"
@@ -19,6 +20,10 @@ if [ -z "$PLATFORM" ]; then
   echo "  mac-arm64  - Apple Silicon (M1/M2) only build"
   echo "  mac-x64    - Intel Mac only build"
   echo "  windows    - Windows build"
+  echo ""
+  echo "Obfuscate (defaults to 'false'):"
+  echo "  true       - Obfuscate code before building"
+  echo "  false      - Build without obfuscation"
   exit 1
 fi
 
@@ -28,6 +33,7 @@ echo "Building version $VERSION from package.json"
 build_and_release() {
   local platform=$1
   local is_latest=$2
+  local obfuscate=$3
   
   # Extract the base platform and architecture
   local base_platform=$(echo $platform | cut -d'-' -f1)
@@ -35,6 +41,13 @@ build_and_release() {
   
   # Build the app
   echo "Building MCP Studio v$VERSION for $platform..."
+  
+  # Obfuscate code if requested
+  if [ "$obfuscate" == "true" ]; then
+    echo "Obfuscating code before building..."
+    npm run obfuscate
+    cd dist-obfuscated || exit 1
+  fi
   
   local build_output=""
   local release_platform=""
@@ -44,22 +57,35 @@ build_and_release() {
     if [ "$platform" == "mac" ]; then
       # Universal build
       echo "Building universal macOS app (Intel + Apple Silicon)..."
-      npm run build:mac-universal
-      build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      if [ "$obfuscate" == "true" ]; then
+        npm run build:mac-universal
+        build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      else
+        npm run build:mac-universal
+        build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      fi
       release_platform="mac" # For the releases.json
     elif [ "$arch" == "arm64" ]; then
       echo "Building Apple Silicon (M1/M2) macOS app..."
-      npm run build:mac-arm
-      # Note: electron-builder doesn't include architecture in filename
-      build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      if [ "$obfuscate" == "true" ]; then
+        npm run build:mac-arm
+        build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      else
+        npm run build:mac-arm
+        build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      fi
       release_platform="mac-arm64" # For the releases.json
       # Create architecture-specific filename for landing page
       target_filename="mcp-studio-mac-arm64-v$VERSION.dmg"
     elif [ "$arch" == "x64" ]; then
       echo "Building Intel macOS app..."
-      npm run build:mac-intel
-      # Note: electron-builder doesn't include architecture in filename
-      build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      if [ "$obfuscate" == "true" ]; then
+        npm run build:mac-intel
+        build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      else
+        npm run build:mac-intel
+        build_output="./dist/mcp-studio-mac-v$VERSION.dmg"
+      fi
       release_platform="mac-x64" # For the releases.json
       # Create architecture-specific filename for landing page
       target_filename="mcp-studio-mac-x64-v$VERSION.dmg"
@@ -69,12 +95,22 @@ build_and_release() {
     fi
   elif [ "$base_platform" == "windows" ]; then
     echo "Building Windows app..."
-    npm run build:windows
-    build_output="./dist/mcp-studio-windows-v$VERSION.exe"
+    if [ "$obfuscate" == "true" ]; then
+      npm run build:windows
+      build_output="./dist/mcp-studio-windows-v$VERSION.exe"
+    else
+      npm run build:windows
+      build_output="./dist/mcp-studio-windows-v$VERSION.exe"
+    fi
     release_platform="windows"
   else
     echo "Error: Platform must start with 'mac' or be 'windows'"
     return 1
+  fi
+  
+  # Return to root directory if we changed to dist-obfuscated
+  if [ "$obfuscate" == "true" ]; then
+    cd ..
   fi
   
   # Check if build was successful
@@ -101,6 +137,11 @@ build_and_release() {
   # Copy the build to the landing page releases directory
   echo "Copying build to landing page releases directory..."
   mkdir -p landing-page/public/releases
+  
+  # Adjust build_output path if we used obfuscation
+  if [ "$obfuscate" == "true" ]; then
+    build_output="./dist-obfuscated$build_output"
+  fi
   
   # If we have a target filename (for architecture-specific builds), use it
   if [ -n "$target_filename" ]; then
@@ -136,11 +177,11 @@ if [ "$PLATFORM" == "all" ]; then
   echo "Building for all platforms..."
   
   # Build for Mac first (and set as latest if requested)
-  build_and_release "mac" $MAKE_LATEST
+  build_and_release "mac" $MAKE_LATEST $OBFUSCATE
   MAC_SUCCESS=$?
   
   # Build for Windows (never set as latest when building all)
-  build_and_release "windows" "false"
+  build_and_release "windows" "false" $OBFUSCATE
   WINDOWS_SUCCESS=$?
   
   if [ $MAC_SUCCESS -eq 0 ] && [ $WINDOWS_SUCCESS -eq 0 ]; then
@@ -150,7 +191,7 @@ if [ "$PLATFORM" == "all" ]; then
   fi
 else
   # Build for a specific platform
-  build_and_release $PLATFORM $MAKE_LATEST
+  build_and_release $PLATFORM $MAKE_LATEST $OBFUSCATE
 fi
 
 echo ""
@@ -158,3 +199,10 @@ echo "Next steps:"
 echo "1. Test the builds locally"
 echo "2. Deploy the landing page to Netlify: cd landing-page && npm run netlify-build"
 echo "3. If everything looks good, commit and push your changes"
+
+# Add note about obfuscation if it was used
+if [ "$OBFUSCATE" == "true" ]; then
+  echo ""
+  echo "Note: This build was created with code obfuscation enabled."
+  echo "The obfuscated code is in the dist-obfuscated directory."
+fi

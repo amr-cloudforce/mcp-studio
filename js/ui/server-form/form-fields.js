@@ -51,16 +51,58 @@ export function setupGenericForm(config, cmdInput, genericArgs, genericEnv, gene
 export function setupNpxForm(config, npxRepo, npxFlags, npxArgs, npxEnv, npxDis) {
   npxDis.checked = !!config.disabled;
   
-  const flags = (config.args || []).filter(a => a.startsWith('-'));
-  const rest = (config.args || []).filter(a => !a.startsWith('-'));
+  // Get all arguments except -y (which is always included)
+  const allArgs = (config.args || []).filter(a => a !== '-y');
   
-  npxFlags.forEach(c => c.checked = flags.includes(c.dataset.flag));
-  npxRepo.value = rest[0] || '';
+  // Find the repository (first non-flag argument)
+  const repoIndex = allArgs.findIndex(a => !a.startsWith('-'));
+  const repo = repoIndex >= 0 ? allArgs[repoIndex] : '';
   
+  // Set repository value
+  npxRepo.value = repo;
+  
+  // Handle standard flags (single dash flags like -y)
+  const standardFlags = allArgs.filter(a => a.startsWith('-') && !a.startsWith('--'));
+  npxFlags.forEach(c => c.checked = standardFlags.includes(c.dataset.flag));
+  
+  // Process remaining arguments, preserving flag-style arguments and their values
   npxArgs.innerHTML = '';
-  rest.slice(1).forEach(a => utils.addNpxArg(npxArgs, a));
-  if (rest.length <= 1) utils.addNpxArg(npxArgs, '');
   
+  if (allArgs.length > 0) {
+    // Skip the repository in the arguments list
+    const remainingArgs = [...allArgs];
+    if (repoIndex >= 0) {
+      remainingArgs.splice(repoIndex, 1);
+    }
+    
+    // Process remaining arguments, preserving flag-style arguments and their values
+    let i = 0;
+    while (i < remainingArgs.length) {
+      const arg = remainingArgs[i];
+      
+      // Skip standard flags that are handled by checkboxes
+      if (standardFlags.includes(arg)) {
+        i++;
+        continue;
+      }
+      
+      // Handle flag-style arguments (--flag value)
+      if (arg.startsWith('--') && i + 1 < remainingArgs.length && !remainingArgs[i + 1].startsWith('-')) {
+        utils.addNpxArg(npxArgs, `${arg} ${remainingArgs[i + 1]}`);
+        i += 2; // Skip both the flag and its value
+      } else {
+        utils.addNpxArg(npxArgs, arg);
+        i++;
+      }
+    }
+  }
+  
+  // Add an empty row if no arguments were added
+  if (npxArgs.children.length === 0) {
+    utils.addNpxArg(npxArgs, '');
+  }
+  
+  // Set up environment variables
   npxEnv.innerHTML = '';
   Object.entries(config.env || {}).forEach(([k, v]) => utils.addNpxEnv(npxEnv, k, v));
   if (!config.env) utils.addNpxEnv(npxEnv, '', '');
@@ -137,11 +179,24 @@ export function handleAdvancedSubmit(
       return null;
     }
     
-    // Extra arguments
-    const extra = utils.extractArgs(npxArgs);
+    // Extract arguments and process them
+    const rawArgs = utils.extractArgs(npxArgs);
+    const processedArgs = [];
+    
+    // Process each argument, splitting flag-style arguments and their values
+    rawArgs.forEach(arg => {
+      // Check if this is a flag-style argument with its value (e.g., "--access-token value")
+      const flagMatch = arg.match(/^(--\S+)\s+(.+)$/);
+      if (flagMatch) {
+        // Split into flag and value
+        processedArgs.push(flagMatch[1], flagMatch[2]);
+      } else {
+        processedArgs.push(arg);
+      }
+    });
     
     // Always include -y
-    config.args = ['-y', repo, ...extra];
+    config.args = ['-y', repo, ...processedArgs];
     
     // Environment variables
     const env = utils.extractEnvVars(npxEnv);

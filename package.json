@@ -10,7 +10,11 @@
         "build:mac-arm": "electron-builder --mac --arm64",
         "build:mac-intel": "electron-builder --mac --x64",
         "build:windows": "electron-builder --win",
-        "release": "./build-and-release.sh"
+        "release": "./build-and-release.sh",
+        "obfuscate": "node obfuscate.js",
+        "build:obfuscated:mac": "npm run obfuscate && cd dist-obfuscated && npm run build:mac-universal",
+        "build:obfuscated:windows": "npm run obfuscate && cd dist-obfuscated && npm run build:windows",
+        "build:obfuscated:all": "npm run obfuscate && cd dist-obfuscated && npm run dist"
     },
     "build": {
         "appId": "com.yourdomain.mcpstudio",
@@ -48,7 +52,8 @@
     },
     "devDependencies": {
         "electron": "^25.0.0",
-        "electron-builder": "^26.0.12"
+        "electron-builder": "^26.0.12",
+        "javascript-obfuscator": "^4.1.1"
     },
     "dependencies": {
         "fix-path": "^3.0.0"

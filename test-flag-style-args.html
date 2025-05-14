@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Flag-Style Arguments</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    h1, h2 {
+      color: #4A56E2;
+    }
+    .instructions {
+      background-color: #f0f4ff;
+      padding: 15px;
+      border-left: 4px solid #4A56E2;
+      margin-bottom: 20px;
+    }
+    .example {
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Flag-Style Arguments in MCP Studio</h1>
+  
+  <div class="instructions">
+    <h2>Instructions</h2>
+    <p>This page contains test configurations for verifying that MCP Studio correctly handles flag-style arguments (like <code>--flag value</code>) in NPX commands. Follow these steps:</p>
+    <ol>
+      <li>Copy one of the JSON configurations below</li>
+      <li>Open MCP Studio</li>
+      <li>Click "Add Server" and select "Import" → "Paste JSON"</li>
+      <li>Paste the configuration and click "Load"</li>
+      <li>Verify that the flag-style arguments are correctly displayed in the form</li>
+    </ol>
+  </div>
+  
+  <div class="example">
+    <h2>Example 1: Supabase MCP Server</h2>
+    <pre><code>{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "your-personal-access-token"
+      ]
+    }
+  }
+}</code></pre>
+
+    <h3>Expected Result</h3>
+    <p>After importing, the form should show:</p>
+    <ul>
+      <li>Server Name: "supabase"</li>
+      <li>Server Type: "NPX"</li>
+      <li>Repository: "@supabase/mcp-server-supabase@latest"</li>
+      <li>Extra Arguments: "--access-token your-personal-access-token"</li>
+    </ul>
+  </div>
+
+  <div class="example">
+    <h2>Example 2: Generic MCP Server with Multiple Flags</h2>
+    <pre><code>{
+  "mcpServers": {
+    "generic-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "some-package@latest",
+        "--api-key",
+        "your-api-key",
+        "--config-path",
+        "/path/to/config.json",
+        "--debug"
+      ]
+    }
+  }
+}</code></pre>
+
+    <h3>Expected Result</h3>
+    <p>After importing, the form should show:</p>
+    <ul>
+      <li>Server Name: "generic-server"</li>
+      <li>Server Type: "NPX"</li>
+      <li>Repository: "some-package@latest"</li>
+      <li>Extra Arguments:</li>
+      <ul>
+        <li>"--api-key your-api-key"</li>
+        <li>"--config-path /path/to/config.json"</li>
+        <li>"--debug"</li>
+      </ul>
+    </ul>
+  </div>
+
+  <div class="example">
+    <h2>Example 3: MCP Server with Environment Variables</h2>
+    <pre><code>{
+  "mcpServers": {
+    "env-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "env-package",
+        "--output-format",
+        "json"
+      ],
+      "env": {
+        "API_KEY": "your-api-key",
+        "DEBUG": "true"
+      }
+    }
+  }
+}</code></pre>
+
+    <h3>Expected Result</h3>
+    <p>After importing, the form should show:</p>
+    <ul>
+      <li>Server Name: "env-server"</li>
+      <li>Server Type: "NPX"</li>
+      <li>Repository: "env-package"</li>
+      <li>Extra Arguments: "--output-format json"</li>
+      <li>Environment Variables:</li>
+      <ul>
+        <li>API_KEY: "your-api-key"</li>
+        <li>DEBUG: "true"</li>
+      </ul>
+    </ul>
+  </div>
+</body>
+</html>
