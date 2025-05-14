@@ -42,20 +42,20 @@ function createModal() {
             <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
             <h2>MCP Server Marketplace</h2>
           </div>
-          <div class="marketplace-container">
-            <div id="marketplace-categories-view">
-              <div class="marketplace-search">
-                <input type="text" id="marketplace-search-input" placeholder="Search all tools...">
-              </div>
-              <div id="marketplace-categories-container" class="marketplace-categories-container"></div>
-            </div>
-            <div id="marketplace-items-view" style="display: none;">
-              <button id="back-to-categories" class="btn btn-reveal">&larr; Back to categories</button>
-              <div class="marketplace-category-title">
-                <h3 id="category-title"></h3>
-              </div>
-              <div id="marketplace-items-container" class="marketplace-items-container"></div>
-            </div>
+      <div class="marketplace-container">
+        <div class="marketplace-search">
+          <input type="text" id="marketplace-search-input" placeholder="Search all tools...">
+        </div>
+        <div id="marketplace-categories-view">
+          <div id="marketplace-categories-container" class="marketplace-categories-container"></div>
+        </div>
+        <div id="marketplace-items-view" style="display: none;">
+          <button id="back-to-categories" class="btn btn-reveal">&larr; Back to categories</button>
+          <div class="marketplace-category-title">
+            <h3 id="category-title"></h3>
+          </div>
+          <div id="marketplace-items-container" class="marketplace-items-container"></div>
+        </div>
             <div id="marketplace-details-view" style="display: none;">
               <button id="back-to-marketplace" class="btn btn-reveal">&larr; Back to list</button>
               <div id="marketplace-details-container" class="marketplace-details-container"></div>
@@ -119,13 +119,25 @@ function setupEventListeners() {
 function filterCategories(query) {
   // If query is empty, show all categories
   if (!query.trim()) {
+    // Show categories view
+    document.getElementById('marketplace-categories-view').style.display = 'block';
+    document.getElementById('marketplace-items-view').style.display = 'none';
+    
+    // Show all category cards
     categoriesContainer.querySelectorAll('.marketplace-category-card').forEach(category => {
       category.style.display = 'flex';
     });
+    
+    // Hide any "no results" message
+    const noResults = document.getElementById('no-search-results');
+    if (noResults) {
+      noResults.style.display = 'none';
+    }
+    
     return;
   }
   
-  // Search across all items first
+  // Search across all items
   const matchingItems = allItems.filter(item => {
     const itemName = item.repo_name.toLowerCase();
     const itemDesc = (item.summary_200_words || '').toLowerCase();
@@ -138,22 +150,115 @@ function filterCategories(query) {
            itemCategory.includes(query);
   });
   
-  // Get unique categories from matching items
-  const matchingCategories = [...new Set(matchingItems.map(item => item.category || 'Uncategorized'))];
-  
-  // Show/hide categories based on whether they contain matching items
-  const categories = categoriesContainer.querySelectorAll('.marketplace-category-card');
-  categories.forEach(category => {
-    const categoryName = category.dataset.category;
-    const categoryNameLower = categoryName.toLowerCase();
+  // For short queries (1-2 characters), just filter categories
+  if (query.trim().length < 3) {
+    // Show categories view
+    document.getElementById('marketplace-categories-view').style.display = 'block';
+    document.getElementById('marketplace-items-view').style.display = 'none';
     
-    // Show if category name matches OR if category contains matching items
-    if (categoryNameLower.includes(query) || matchingCategories.includes(categoryName)) {
-      category.style.display = 'flex';
+    // Get unique categories from matching items
+    const matchingCategories = [...new Set(matchingItems.map(item => item.category || 'Uncategorized'))];
+    
+    // Show/hide categories based on whether they contain matching items
+    const categories = categoriesContainer.querySelectorAll('.marketplace-category-card');
+    let hasVisibleCategories = false;
+    
+    categories.forEach(category => {
+      const categoryName = category.dataset.category;
+      const categoryNameLower = categoryName.toLowerCase();
+      
+      // Show if category name matches OR if category contains matching items
+      if (categoryNameLower.includes(query) || matchingCategories.includes(categoryName)) {
+        category.style.display = 'flex';
+        hasVisibleCategories = true;
+      } else {
+        category.style.display = 'none';
+      }
+    });
+    
+    // Show "no results" message if no categories match
+    if (!hasVisibleCategories) {
+      if (!document.getElementById('no-search-results')) {
+        const noResults = document.createElement('div');
+        noResults.id = 'no-search-results';
+        noResults.className = 'no-items';
+        noResults.textContent = `No results found for "${query}"`;
+        categoriesContainer.appendChild(noResults);
+      } else {
+        document.getElementById('no-search-results').textContent = `No results found for "${query}"`;
+        document.getElementById('no-search-results').style.display = 'block';
+      }
     } else {
-      category.style.display = 'none';
+      // Hide any "no results" message
+      const noResults = document.getElementById('no-search-results');
+      if (noResults) {
+        noResults.style.display = 'none';
+      }
     }
+    
+    return;
+  }
+  
+  // For longer queries (3+ characters), show matching items directly
+  if (matchingItems.length > 0) {
+    showSearchResults(matchingItems, query);
+  } else {
+    // No matching items, show filtered categories
+    document.getElementById('marketplace-categories-view').style.display = 'block';
+    document.getElementById('marketplace-items-view').style.display = 'none';
+    
+    // Hide all categories since no items match
+    categoriesContainer.querySelectorAll('.marketplace-category-card').forEach(category => {
+      category.style.display = 'none';
+    });
+    
+    // Show "no results" message
+    if (!document.getElementById('no-search-results')) {
+      const noResults = document.createElement('div');
+      noResults.id = 'no-search-results';
+      noResults.className = 'no-items';
+      noResults.textContent = `No results found for "${query}"`;
+      categoriesContainer.appendChild(noResults);
+    } else {
+      document.getElementById('no-search-results').textContent = `No results found for "${query}"`;
+      document.getElementById('no-search-results').style.display = 'block';
+    }
+  }
+}
+
+/**
+ * Show search results as a list of items
+ * @param {Array} items - Matching items
+ * @param {string} query - Search query
+ */
+function showSearchResults(items, query) {
+  // Update category title
+  const categoryTitle = document.getElementById('category-title');
+  categoryTitle.textContent = `Search Results: "${query}"`;
+  
+  // Apply styling to title
+  const categoryTitleContainer = document.querySelector('.marketplace-category-title');
+  categoryTitleContainer.style.borderBottom = `3px solid var(--primary)`;
+  categoryTitleContainer.style.color = 'var(--text)';
+  
+  // Clear items container
+  itemsContainer.innerHTML = '';
+  
+  // Create items with category labels
+  items.forEach(item => {
+    const itemElement = createItemElement(item, true);
+    itemsContainer.appendChild(itemElement);
   });
+  
+  // Update back button text
+  backToCategoriesButton.textContent = '← Back to categories';
+  
+  // Show items view (which now contains search results)
+  document.getElementById('marketplace-categories-view').style.display = 'none';
+  document.getElementById('marketplace-items-view').style.display = 'block';
+  
+  // Update search placeholder
+  document.getElementById('marketplace-search-input').placeholder = `Refine search...`;
 }
 
 /**
@@ -168,12 +273,39 @@ function filterItems(query) {
     const description = item.querySelector('p').textContent.toLowerCase();
     const serverType = item.querySelector('.server-type').textContent.toLowerCase();
     
-    if (name.includes(query) || description.includes(query) || serverType.includes(query)) {
+    // Also search in category if it exists
+    const categoryElement = item.querySelector('.item-category');
+    const category = categoryElement ? categoryElement.textContent.toLowerCase() : '';
+    
+    if (name.includes(query) || 
+        description.includes(query) || 
+        serverType.includes(query) ||
+        category.includes(query)) {
       item.style.display = 'flex'; // Use flex to maintain the flex layout
     } else {
       item.style.display = 'none';
     }
   });
+  
+  // Check if we have any visible items
+  const visibleItems = Array.from(items).filter(item => item.style.display !== 'none');
+  
+  // Show a message if no items match the search
+  const noResultsElement = document.getElementById('no-search-results-items');
+  if (visibleItems.length === 0) {
+    if (!noResultsElement) {
+      const noResults = document.createElement('div');
+      noResults.id = 'no-search-results-items';
+      noResults.className = 'no-items';
+      noResults.textContent = `No results found for "${query}"`;
+      itemsContainer.appendChild(noResults);
+    } else {
+      noResultsElement.textContent = `No results found for "${query}"`;
+      noResultsElement.style.display = 'block';
+    }
+  } else if (noResultsElement) {
+    noResultsElement.style.display = 'none';
+  }
 }
 
 /**
@@ -303,9 +435,10 @@ function showItemsForCategory(category) {
 /**
  * Create an item element
  * @param {Object} item - Marketplace item
+ * @param {boolean} showCategory - Whether to show the category label
  * @returns {HTMLElement} - Item element wrapper
  */
-function createItemElement(item) {
+function createItemElement(item, showCategory = false) {
   // Create wrapper for consistent sizing
   const wrapper = document.createElement('div');
   wrapper.className = 'marketplace-item-wrapper';
@@ -315,10 +448,14 @@ function createItemElement(item) {
   itemElement.className = `marketplace-item ${!item.available ? 'unavailable' : ''}`;
   itemElement.dataset.repoName = item.repo_name;
   
+  // Get category color for the label
+  const categoryColor = getCategoryColor(item.category || 'Uncategorized');
+  
   // Create item content
   itemElement.innerHTML = `
     <div class="item-header">
       <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
+      ${showCategory ? `<span class="item-category" style="background: ${categoryColor}">${item.category || 'Uncategorized'}</span>` : ''}
     </div>
     <h3>${item.repo_name}</h3>
     <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
