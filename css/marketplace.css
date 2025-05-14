@@ -56,12 +56,18 @@
   overflow-y: auto;
   height: calc(100% - 70px);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
   width: 100%;
 }
 
 @media (max-width: 1200px) {
+  .marketplace-categories-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
   .marketplace-categories-container {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -77,8 +83,8 @@
 .marketplace-category-card {
   --category-color: var(--primary);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 8px;
+  padding: 15px;
   cursor: pointer;
   transition: var(--transition);
   background: #f9faff;
@@ -87,7 +93,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  min-height: 180px;
+  min-height: 140px;
   align-items: center;
   text-align: center;
   color: var(--text);
@@ -108,21 +114,21 @@
 
 /* Category icon */
 .category-icon {
-  margin-bottom: 15px;
-  color: var(--primary);
+  margin-bottom: 10px;
+  color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(74, 86, 226, 0.1);
-  width: 80px;
-  height: 80px;
+  background: var(--category-color);
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  margin-top: 10px;
+  margin-top: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.category-icon svg {
-  width: 48px;
-  height: 48px;
+.category-icon i {
+  font-size: 1.2rem;
 }
 
 .marketplace-category-card:hover {
@@ -138,9 +144,9 @@
 
 .marketplace-category-card h3 {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   color: var(--primary-dark);
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
@@ -152,11 +158,11 @@
 
 .item-count {
   display: inline-block;
-  background: rgba(74, 86, 226, 0.1);
+  background: rgba(0, 0, 0, 0.08);
   padding: 3px 8px;
   border-radius: 12px;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--category-color);
 }
 
 /* Category title */

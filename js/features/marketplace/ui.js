@@ -239,6 +239,14 @@ function showItemsForCategory(category) {
   categoryTitleContainer.style.borderBottom = `3px solid ${categoryColor}`;
   categoryTitleContainer.style.color = 'var(--text)';
   
+  // Set the icon color to match the category
+  setTimeout(() => {
+    const titleIcon = categoryTitleContainer.querySelector('i');
+    if (titleIcon) {
+      titleIcon.style.color = categoryColor;
+    }
+  }, 0);
+  
   // Get category icon
   const icon = getCategoryIcon(category);
   
