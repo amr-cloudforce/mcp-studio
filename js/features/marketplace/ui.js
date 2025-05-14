@@ -374,10 +374,34 @@ async function loadReadme(url) {
   try {
     const response = await window.api.fetchUrl(url);
     
-    // Simple markdown to HTML conversion (just for code blocks)
+    // More comprehensive markdown to HTML conversion
     let html = response
+      // Code blocks
       .replace(/```(\w*)([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Inline code
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      // Headers
+      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+      .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Links
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+      // Lists
+      .replace(/^\s*\*\s(.*$)/gm, '<li>$1</li>')
+      .replace(/^\s*-\s(.*$)/gm, '<li>$1</li>')
+      .replace(/^\s*\d+\.\s(.*$)/gm, '<li>$1</li>')
+      // Paragraphs
+      .replace(/^(?!<[a-z])/gm, '<p>')
+      .replace(/^(?!<\/[a-z])/gm, '</p>');
+    
+    // Wrap lists
+    html = html.replace(/<li>(.*?)<\/li>\s*<li>/g, '<li>$1</li><li>');
+    html = html.replace(/<li>(.*?)<\/li>\s*(?!<li>)/g, '<ul><li>$1</li></ul>');
     
     readmeContent.innerHTML = `<div class="readme-html">${html}</div>`;
   } catch (error) {
