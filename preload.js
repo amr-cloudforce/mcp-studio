@@ -9,7 +9,8 @@ contextBridge.exposeInMainWorld('api', {
   restartClaude: () => ipcRenderer.invoke('restart-claude'),
   getLogs: () => ipcRenderer.invoke('get-logs'),
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
-  fetchUrl: url => ipcRenderer.invoke('fetch-url', url)
+  fetchUrl: url => ipcRenderer.invoke('fetch-url', url),
+  readMarketplaceData: () => ipcRenderer.invoke('read-marketplace-data')
 });
 
 // Listen for prerequisites status

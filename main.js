@@ -100,10 +100,25 @@ async function createWindow() {
   });
 }
 
+// Get marketplace data path
+function getMarketplaceDataPath() {
+  return path.join(__dirname, 'marketplace.json');
+}
+
 // IPC handlers
 ipcMain.handle('read-config', async () => {
   const file = await ensureConfigFile();
   return fs.readFile(file, 'utf-8');
+});
+
+ipcMain.handle('read-marketplace-data', async () => {
+  try {
+    const file = getMarketplaceDataPath();
+    return fs.readFile(file, 'utf-8');
+  } catch (error) {
+    console.error('Failed to read marketplace data:', error);
+    throw new Error('Failed to read marketplace data');
+  }
 });
 
 ipcMain.handle('write-config', async (_e, content) => {
