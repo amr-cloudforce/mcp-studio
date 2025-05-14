@@ -120,15 +120,21 @@
   justify-content: center;
   align-items: center;
   background: var(--category-color);
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   margin-top: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .category-icon i {
-  font-size: 1.2rem;
+  font-size: 1rem;
+  width: 1em;
+  height: 1em;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
 }
 
 .marketplace-category-card:hover {
@@ -185,6 +191,11 @@
 
 .marketplace-category-title i {
   color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
 }
 
 /* Items container */
