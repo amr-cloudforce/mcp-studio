@@ -533,13 +533,16 @@ function createItemElement(item, showCategory = false) {
   // Get category color for the label
   const categoryColor = getCategoryColor(item.category || 'Uncategorized');
   
+  // Format the repository name
+  const formattedName = formatRepoName(item.repo_name);
+  
   // Create item content
   itemElement.innerHTML = `
     <div class="item-header">
       <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
       ${showCategory ? `<span class="item-category" style="background: ${categoryColor}">${item.category || 'Uncategorized'}</span>` : ''}
     </div>
-    <h3>${item.repo_name}</h3>
+    <h3>${formattedName}</h3>
     <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
@@ -573,11 +576,14 @@ function showItemDetails(item) {
   document.getElementById('marketplace-items-view').style.display = 'none';
   document.getElementById('marketplace-details-view').style.display = 'block';
   
+  // Format the repository name
+  const formattedName = formatRepoName(item.repo_name);
+  
   // Populate details
   detailsContainer.innerHTML = `
     <div class="details-header">
       <div class="details-header-top">
-        <h2>${item.repo_name}</h2>
+        <h2>${formattedName}</h2>
         <button id="import-server-btn" class="btn btn-success">Import Server</button>
       </div>
       <div class="details-meta">
@@ -707,13 +713,34 @@ async function importServer(item) {
 }
 
 /**
+ * Format a repository name to be more human-readable
+ * @param {string} repoName - The repository name
+ * @returns {string} - The formatted name
+ */
+function formatRepoName(repoName) {
+  // Replace hyphens and underscores with spaces
+  let formatted = repoName.replace(/[-_]/g, ' ');
+  
+  // Capitalize each word
+  formatted = formatted.replace(/\b\w/g, c => c.toUpperCase());
+  
+  // Handle special cases like "MCP" that should be all caps
+  formatted = formatted.replace(/\bMcp\b/g, 'MCP');
+  
+  return formatted;
+}
+
+/**
  * Add a marketplace item to Quick Add templates
  * @param {Object} item - Marketplace item
  * @param {Object} config - Server configuration
  */
 function addToQuickAddTemplates(item, config) {
-  // Create a template ID
-  const templateId = `marketplace-${item.repo_name}`;
+  // Use repo_name directly as the template ID without the "marketplace-" prefix
+  const templateId = item.repo_name;
+  
+  // Format the name to be more human-readable
+  const formattedName = formatRepoName(item.repo_name);
   
   // Truncate description to ~150 characters
   let description = item.summary_200_words || 'No description available';
@@ -730,7 +757,7 @@ function addToQuickAddTemplates(item, config) {
   
   // Create a template object
   const template = {
-    name: item.repo_name,
+    name: formattedName,
     description: description,
     category: item.category || 'Marketplace',
     documentationUrl: item.repo,
