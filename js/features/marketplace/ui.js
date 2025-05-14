@@ -225,17 +225,18 @@ function createCategoryElement(category, items) {
   // Set the color bar at the top
   categoryElement.style.setProperty('--category-color', color);
   
-  // Create category content
+  // Create category content without the icon first
   categoryElement.innerHTML = `
-    <div class="category-icon">${icon}</div>
+    <div class="category-icon"></div>
     <h3>${category}</h3>
     <div class="category-meta">
       <span class="item-count">${availableCount} available items</span>
     </div>
   `;
   
-  // Set the icon color after the HTML is created
-  categoryElement.querySelector('.category-icon').style.color = color;
+  // Insert the icon using innerHTML to ensure proper rendering
+  const iconContainer = categoryElement.querySelector('.category-icon');
+  iconContainer.innerHTML = icon;
   
   // Add click event
   categoryElement.addEventListener('click', () => {
@@ -276,8 +277,11 @@ function showItemsForCategory(category) {
   // Get category icon
   const icon = getCategoryIcon(category);
   
-  // Add icon to title
-  categoryTitle.innerHTML = `${icon} ${category}`;
+  // Set the title text first
+  categoryTitle.textContent = category;
+  
+  // Then prepend the icon to ensure proper rendering
+  categoryTitle.innerHTML = icon + ' ' + categoryTitle.textContent;
   
   // Clear items container
   itemsContainer.innerHTML = '';
