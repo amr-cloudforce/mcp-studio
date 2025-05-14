@@ -5,13 +5,20 @@
 
 import { parseUrlResponse } from '../../utils/url-parser.js';
 import quickAdd from '../../quick-add.js';
+import { groupByCategory } from './data.js';
+import { getCategoryIcon } from './icons.js';
+import { getCategoryColor } from './colors.js';
 
 let marketplaceModal;
 let marketplaceContent;
 let itemsContainer;
+let categoriesContainer;
 let detailsContainer;
 let backButton;
+let backToCategoriesButton;
 let currentItem = null;
+let allItems = [];
+let currentCategory = null;
 
 /**
  * Initialize the marketplace UI
@@ -36,9 +43,16 @@ function createModal() {
             <h2>MCP Server Marketplace</h2>
           </div>
           <div class="marketplace-container">
-            <div id="marketplace-items-view">
+            <div id="marketplace-categories-view">
               <div class="marketplace-search">
-                <input type="text" id="marketplace-search-input" placeholder="Search servers...">
+                <input type="text" id="marketplace-search-input" placeholder="Search categories...">
+              </div>
+              <div id="marketplace-categories-container" class="marketplace-categories-container"></div>
+            </div>
+            <div id="marketplace-items-view" style="display: none;">
+              <button id="back-to-categories" class="btn btn-reveal">&larr; Back to categories</button>
+              <div class="marketplace-category-title">
+                <h3 id="category-title"></h3>
               </div>
               <div id="marketplace-items-container" class="marketplace-items-container"></div>
             </div>
@@ -59,9 +73,11 @@ function createModal() {
     // Cache DOM elements
     marketplaceModal = document.getElementById('marketplace-modal');
     marketplaceContent = document.querySelector('.marketplace-container');
+    categoriesContainer = document.getElementById('marketplace-categories-container');
     itemsContainer = document.getElementById('marketplace-items-container');
     detailsContainer = document.getElementById('marketplace-details-container');
     backButton = document.getElementById('back-to-marketplace');
+    backToCategoriesButton = document.getElementById('back-to-categories');
   }
 }
 
@@ -74,7 +90,12 @@ function setupEventListeners() {
     window.modalManager.closeActiveModal();
   });
   
-  // Back button
+  // Back to categories button
+  backToCategoriesButton.addEventListener('click', () => {
+    showCategoriesView();
+  });
+  
+  // Back to items button
   backButton.addEventListener('click', () => {
     showItemsView();
   });
@@ -83,7 +104,29 @@ function setupEventListeners() {
   const searchInput = document.getElementById('marketplace-search-input');
   searchInput.addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase();
-    filterItems(query);
+    if (document.getElementById('marketplace-categories-view').style.display !== 'none') {
+      filterCategories(query);
+    } else {
+      filterItems(query);
+    }
+  });
+}
+
+/**
+ * Filter categories based on search query
+ * @param {string} query - Search query
+ */
+function filterCategories(query) {
+  const categories = categoriesContainer.querySelectorAll('.marketplace-category-card');
+  
+  categories.forEach(category => {
+    const name = category.querySelector('h3').textContent.toLowerCase();
+    
+    if (name.includes(query)) {
+      category.style.display = 'flex';
+    } else {
+      category.style.display = 'none';
+    }
   });
 }
 
@@ -97,10 +140,10 @@ function filterItems(query) {
   items.forEach(item => {
     const name = item.querySelector('h3').textContent.toLowerCase();
     const description = item.querySelector('p').textContent.toLowerCase();
-    const category = item.querySelector('.category').textContent.toLowerCase();
+    const serverType = item.querySelector('.server-type').textContent.toLowerCase();
     
-    if (name.includes(query) || description.includes(query) || category.includes(query)) {
-      item.style.display = 'block';
+    if (name.includes(query) || description.includes(query) || serverType.includes(query)) {
+      item.style.display = 'flex'; // Use flex to maintain the flex layout
     } else {
       item.style.display = 'none';
     }
@@ -108,41 +151,111 @@ function filterItems(query) {
 }
 
 /**
- * Populate the marketplace with items
+ * Populate the marketplace with categories
  * @param {Array} items - Marketplace items
  */
 export function populateMarketplace(items) {
-  itemsContainer.innerHTML = '';
+  // Store all items for later use
+  allItems = items;
   
-  if (items.length === 0) {
-    itemsContainer.innerHTML = '<div class="no-items">No marketplace items available</div>';
+  // Group items by category
+  const categories = groupByCategory(items);
+  
+  categoriesContainer.innerHTML = '';
+  
+  if (Object.keys(categories).length === 0) {
+    categoriesContainer.innerHTML = '<div class="no-items">No marketplace categories available</div>';
     return;
   }
   
-  // Group items by category
-  const categories = {};
-  items.forEach(item => {
-    const category = item.category || 'Uncategorized';
-    if (!categories[category]) {
-      categories[category] = [];
-    }
-    categories[category].push(item);
+  // Create category cards
+  Object.entries(categories).forEach(([category, categoryItems]) => {
+    const categoryElement = createCategoryElement(category, categoryItems);
+    categoriesContainer.appendChild(categoryElement);
+  });
+}
+
+
+/**
+ * Create a category element
+ * @param {string} category - Category name
+ * @param {Array} items - Items in the category
+ * @returns {HTMLElement} - Category element
+ */
+function createCategoryElement(category, items) {
+  const categoryElement = document.createElement('div');
+  categoryElement.className = 'marketplace-category-card';
+  categoryElement.dataset.category = category;
+  
+  // Count available items
+  const availableCount = items.filter(item => item.available).length;
+  
+  // Get icon for category
+  const icon = getCategoryIcon(category);
+  
+  // Get color for category
+  const color = getCategoryColor(category);
+  categoryElement.style.background = color;
+  
+  // Create category content
+  categoryElement.innerHTML = `
+    <div class="category-icon">${icon}</div>
+    <h3>${category}</h3>
+    <div class="category-meta">
+      <span class="item-count">${availableCount} available items</span>
+    </div>
+  `;
+  
+  // Add click event
+  categoryElement.addEventListener('click', () => {
+    showItemsForCategory(category);
   });
   
-  // Create category sections
-  Object.entries(categories).forEach(([category, categoryItems]) => {
-    const categorySection = document.createElement('div');
-    categorySection.className = 'marketplace-category';
-    categorySection.innerHTML = `<h3>${category}</h3>`;
-    
-    // Create items
-    categoryItems.forEach(item => {
-      const itemElement = createItemElement(item);
-      categorySection.appendChild(itemElement);
-    });
-    
-    itemsContainer.appendChild(categorySection);
+  return categoryElement;
+}
+
+/**
+ * Show items for a specific category
+ * @param {string} category - Category name
+ */
+function showItemsForCategory(category) {
+  currentCategory = category;
+  
+  // Filter items by category
+  const categoryItems = allItems.filter(item => (item.category || 'Uncategorized') === category);
+  
+  // Update category title
+  const categoryTitle = document.getElementById('category-title');
+  categoryTitle.textContent = category;
+  
+  // Apply category color to title
+  const categoryColor = getCategoryColor(category);
+  const categoryTitleContainer = document.querySelector('.marketplace-category-title');
+  categoryTitleContainer.style.background = categoryColor;
+  categoryTitleContainer.style.color = 'white';
+  categoryTitleContainer.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
+  
+  // Get category icon
+  const icon = getCategoryIcon(category);
+  
+  // Add icon to title
+  categoryTitle.innerHTML = `${icon.replace('width="48" height="48"', 'width="24" height="24"')} ${category}`;
+  
+  // Clear items container
+  itemsContainer.innerHTML = '';
+  
+  // Create items
+  categoryItems.forEach(item => {
+    const itemElement = createItemElement(item);
+    itemsContainer.appendChild(itemElement);
   });
+  
+  // Show items view
+  document.getElementById('marketplace-categories-view').style.display = 'none';
+  document.getElementById('marketplace-items-view').style.display = 'block';
+  
+  // Update search placeholder
+  document.getElementById('marketplace-search-input').placeholder = `Search in ${category}...`;
 }
 
 /**
@@ -157,12 +270,13 @@ function createItemElement(item) {
   
   // Create item content
   itemElement.innerHTML = `
-    <span class="category">${item.category || 'Uncategorized'}</span>
+    <div class="item-header">
+      <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
+    </div>
     <h3>${item.repo_name}</h3>
     <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
-      <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
     </div>
     ${!item.available ? `<div class="unavailable-overlay">
       <span class="unavailable-reason">${item.unavailableReason}</span>
@@ -218,7 +332,11 @@ function showItemDetails(item) {
   `;
   
   // Load README
-  loadReadme(item.readme_url);
+  if (item.readme_url) {
+    loadReadme(item.readme_url);
+  } else {
+    document.getElementById('readme-content').innerHTML = `<div class="error">No README URL available</div>`;
+  }
   
   // Add import button event listener
   document.getElementById('import-server-btn').addEventListener('click', () => {
@@ -258,11 +376,19 @@ async function importServer(item) {
     importBtn.textContent = 'Importing...';
     importBtn.disabled = true;
     
+    // Check if README URL is available
+    if (!item.readme_url) {
+      alert('No README URL available for this server');
+      importBtn.textContent = 'Import Server';
+      importBtn.disabled = false;
+      return;
+    }
+    
     // Fetch the README
     const readmeContent = await window.api.fetchUrl(item.readme_url);
     
     // Parse the README to extract server configuration
-    const config = parseUrlResponse(item.repo, readmeContent);
+    const config = parseUrlResponse(item.repo || '', readmeContent);
     
     if (!config) {
       alert('Could not find a valid server configuration in the README');
@@ -312,9 +438,30 @@ function addToQuickAddTemplates(item, config) {
 }
 
 /**
+ * Show the categories view
+ */
+function showCategoriesView() {
+  document.getElementById('marketplace-categories-view').style.display = 'block';
+  document.getElementById('marketplace-items-view').style.display = 'none';
+  document.getElementById('marketplace-details-view').style.display = 'none';
+  
+  // Reset search placeholder
+  document.getElementById('marketplace-search-input').placeholder = 'Search categories...';
+  
+  // Reset category title container style
+  const categoryTitleContainer = document.querySelector('.marketplace-category-title');
+  categoryTitleContainer.style.background = '';
+  categoryTitleContainer.style.color = '';
+  categoryTitleContainer.style.textShadow = '';
+  
+  currentCategory = null;
+}
+
+/**
  * Show the items view
  */
 function showItemsView() {
+  document.getElementById('marketplace-categories-view').style.display = 'none';
   document.getElementById('marketplace-items-view').style.display = 'block';
   document.getElementById('marketplace-details-view').style.display = 'none';
   currentItem = null;
@@ -325,11 +472,11 @@ function showItemsView() {
  * @param {Array} items - Marketplace items
  */
 export function openModal(items) {
-  // Populate marketplace
+  // Populate marketplace with categories
   populateMarketplace(items);
   
-  // Show items view
-  showItemsView();
+  // Show categories view
+  showCategoriesView();
   
   // Show modal
   window.modalManager.showModal(marketplaceModal);
