@@ -1,26 +1,26 @@
 :root {
-  /* Enhanced color palette */
-  --primary: #4A56E2;
-  --primary-light: #6A76FF;
-  --primary-dark: #3A46C2;
-  --danger: #E25C4A;
-  --danger-light: #FF7C6A;
-  --danger-dark: #C24C3A;
-  --success: #4CAF50;
-  --success-light: #6CCF70;
-  --success-dark: #3C8F40;
-  --quick-add: #FF8C00;
-  --quick-add-light: #FFA500;
-  --bg: #f8f9fc;
-  --card: #fff;
-  --text: #333;
-  --text-light: #666;
-  --border: #e0e4f1;
-  --hover: #f0f4ff;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 8px rgba(74, 86, 226, 0.1);
-  --shadow-lg: 0 8px 16px rgba(74, 86, 226, 0.15);
-  --transition: all 0.2s ease;
+  /* Enhanced color palette - Revised */
+  --primary: #007bff;
+  --primary-light: #3395ff;
+  --primary-dark: #0056b3;
+  --danger: #dc3545;
+  --danger-light: #e3606d;
+  --danger-dark: #a71d2a;
+  --success: #28a745;
+  --success-light: #47b861;
+  --success-dark: #1e7e34;
+  --quick-add: #ffc107;
+  --quick-add-light: #ffcd39;
+  --bg: #f4f7f6;
+  --card: #ffffff;
+  --text: #212529;
+  --text-light: #6c757d;
+  --border: #dee2e6;
+  --hover: #e9ecef;
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow-md: 0 0.5rem 1rem rgba(0, 123, 255, 0.1);
+  --shadow-lg: 0 1rem 3rem rgba(0, 123, 255, 0.175);
+  --transition: all 0.3s ease-in-out;
 }
 
 * { 
@@ -30,7 +30,7 @@
 body {
   margin: 0; 
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg); 
   color: var(--text);
   line-height: 1.5;
@@ -59,7 +59,7 @@ body {
 }
 
 .sidebar-header {
-  padding: 20px;
+  padding: 25px 20px; /* Increased top/bottom padding */
   display: flex;
   align-items: center;
   gap: 15px;
@@ -95,12 +95,12 @@ body {
 }
 
 .sidebar-section {
-  padding: 15px 20px;
+  padding: 20px; /* Increased padding */
   border-bottom: 1px solid var(--border);
 }
 
 .sidebar-section h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0; /* Increased bottom margin */
   font-size: 0.9rem;
   text-transform: uppercase;
   color: var(--text-light);
@@ -116,8 +116,8 @@ body {
 .sidebar-btn {
   width: 100%;
   text-align: left;
-  padding: 10px 15px;
-  margin: 5px 0;
+  padding: 12px 15px; /* Increased padding */
+  margin: 6px 0; /* Increased margin */
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -147,13 +147,13 @@ body {
 /* Main content area */
 .main-content {
   flex: 1;
-  padding: 30px;
+  padding: 40px; /* Increased padding */
   overflow-y: auto;
   background: var(--bg);
 }
 
 .content-header {
-  margin-bottom: 20px;
+  margin-bottom: 30px; /* Increased bottom margin */
 }
 
 .content-header h2 {
@@ -166,9 +166,10 @@ body {
   margin: auto;
   background: var(--card);
   border-radius: 12px;
-  padding: 30px;
+  padding: 40px; /* Increased padding */
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
+  transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out; /* Added transition */
 }
 
 h1, h2, h3 {
@@ -298,6 +299,7 @@ a:hover {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.85rem;
+  border: 1px solid transparent; /* Add a transparent border */
 }
 
 /* Quick Add button - more prominent */
@@ -367,6 +369,7 @@ a:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   opacity: 0.95;
+  border-color: rgba(0, 0, 0, 0.1); /* Add a subtle border on hover */
 }
 
 .btn:active {
@@ -464,7 +467,7 @@ tr.inactive-row:hover {
 .modal-content {
   background: #fff;
   border-radius: 12px;
-  padding: 25px;
+  padding: 30px; /* Increased padding */
   width: 90%;
   max-width: 700px;
   max-height: 90vh;
@@ -527,8 +530,8 @@ tr.inactive-row:hover {
 
 .modal-header {
   position: relative;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
+  margin-bottom: 25px; /* Increased bottom margin */
+  padding-bottom: 20px; /* Increased bottom padding */
   border-bottom: 1px solid var(--border);
 }
 
@@ -609,8 +612,8 @@ textarea {
 
 .modal-footer {
   text-align: right;
-  margin-top: 2em;
-  padding-top: 1.5em;
+  margin-top: 2.5em; /* Increased top margin */
+  padding-top: 2em; /* Increased top padding */
   border-top: 1px solid var(--border);
 }
 
