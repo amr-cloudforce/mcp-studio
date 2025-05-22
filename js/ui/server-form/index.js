@@ -12,6 +12,7 @@ import * as viewModes from './view-modes.js';
 import * as tavilyHandler from './template-handlers/tavily.js';
 import * as filesystemHandler from './template-handlers/filesystem.js';
 import * as apifyHandler from './template-handlers/apify.js';
+import * as composioHandler from './template-handlers/composio.js';
 
 class ServerForm {
   constructor() {
@@ -246,6 +247,9 @@ class ServerForm {
         case 'apify-web-adapter':
           config = apifyHandler.handleSubmit(config);
           break;
+        case 'composio-mcp':
+          config = composioHandler.handleSubmit(config);
+          break;
         default:
           // For unknown templates, use the advanced view
           const type = document.querySelector('input[name="type"]:checked').value;
@@ -376,6 +380,9 @@ class ServerForm {
             addBtn.style.marginBottom = '10px';
           }
         }, 100);
+        break;
+      case 'composio-mcp':
+        this.quickInputs.innerHTML = composioHandler.generateForm(config);
         break;
       default:
         // For unknown templates, just show a message

@@ -1,6 +1,18 @@
 // File: js/renderer.js
+// With nodeIntegration: true and contextIsolation: false,
+// we can directly require Node.js modules
+const { ipcRenderer, shell } = require('electron');
+const fs = require('fs').promises;
+const path = require('path');
+const composioService = require('../composio-service.js');
+
 window.addEventListener('DOMContentLoaded', () => {
-    const { readConfig, writeConfig, revealConfig, openUrl, checkPrerequisites } = window.api;
+    // Direct IPC calls instead of using window.api
+    const readConfig = () => ipcRenderer.invoke('read-config');
+    const writeConfig = (cfg) => ipcRenderer.invoke('write-config', cfg);
+    const revealConfig = () => ipcRenderer.invoke('reveal-config');
+    const openUrl = (url) => ipcRenderer.invoke('open-url', url);
+    const checkPrerequisites = () => ipcRenderer.invoke('check-prerequisites');
   
     // —— ACE JSON editor setup —— 
     const editor = ace.edit("json-editor");
@@ -237,7 +249,7 @@ window.addEventListener('DOMContentLoaded', () => {
       setActiveModal(serverModal);
     }
   
-    // —— “Paste Config” logic —— 
+    // —— "Paste Config" logic —— 
     pasteBtn.onclick    = () => setActiveModal(pasteModal);
     pasteCancel.onclick = closeActiveModal;
     pasteClose.onclick  = closeActiveModal;

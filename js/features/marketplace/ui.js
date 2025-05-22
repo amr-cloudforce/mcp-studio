@@ -596,7 +596,7 @@ function showItemDetails(item) {
       <p>${item.summary_200_words || 'No description available'}</p>
     </div>
     <div class="details-links">
-      ${item.repo ? `<button class="btn btn-link external-link" onclick="window.api.openUrl('${item.repo}')">View on GitHub</button>` : ''}
+      ${item.repo ? `<button class="btn btn-link external-link" onclick="require('electron').ipcRenderer.invoke('open-url', '${item.repo}')">View on GitHub</button>` : ''}
     </div>
     <div class="details-readme">
       <h3>README</h3>
@@ -627,7 +627,7 @@ async function loadReadme(url) {
   const readmeContent = document.getElementById('readme-content');
   
   try {
-    const response = await window.api.fetchUrl(url);
+    const response = await require('electron').ipcRenderer.invoke('fetch-url', url);
     
     // More comprehensive markdown to HTML conversion
     let html = response
@@ -684,7 +684,7 @@ async function importServer(item) {
     }
     
     // Fetch the README
-    const readmeContent = await window.api.fetchUrl(item.readme_url);
+    const readmeContent = await require('electron').ipcRenderer.invoke('fetch-url', item.readme_url);
     
     // Parse the README to extract server configuration
     const config = parseUrlResponse(item.repo || '', readmeContent);

@@ -20,7 +20,7 @@ class ConfigManager {
    */
   async loadConfig() {
     try {
-      const configText = await window.api.readConfig();
+      const configText = await require('electron').ipcRenderer.invoke('read-config');
       console.log("Loaded MCP config:", configText);
       
       try {
@@ -52,7 +52,7 @@ class ConfigManager {
    */
   async saveConfig() {
     try {
-      await window.api.writeConfig(JSON.stringify(this.config, null, 2));
+      await require('electron').ipcRenderer.invoke('write-config', JSON.stringify(this.config, null, 2));
       this.notifyChangeListeners();
       return true;
     } catch (err) {

@@ -53,7 +53,7 @@ async function initializeApp() {
     addServerBtn.addEventListener('click', () => addServerModal.openModal());
     marketplaceBtn.addEventListener('click', () => marketplace.openModal());
     exportBtn.addEventListener('click', () => jsonEditor.openModal());
-    revealBtn.addEventListener('click', () => window.api.revealConfig());
+    revealBtn.addEventListener('click', () => require('electron').ipcRenderer.invoke('reveal-config'));
     aboutBtn.addEventListener('click', () => aboutModal.openModal());
     logsBtn.addEventListener('click', () => logViewer.openModal());
     

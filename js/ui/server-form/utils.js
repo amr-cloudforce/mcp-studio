@@ -117,7 +117,8 @@ export function getTemplateDescription(templateId) {
   const descriptions = {
     'tavily-mcp': 'AI-powered search engine',
     'filesystem-server': 'Access files from specified directories',
-    'apify-web-adapter': 'Scrape websites using Apify\'s actors'
+    'apify-web-adapter': 'Scrape websites using Apify\'s actors',
+    'composio-mcp': 'Connect to third-party services via Composio'
   };
   
   return descriptions[templateId] || 'Quick Add template';

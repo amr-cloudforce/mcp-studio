@@ -1,19 +1,3 @@
-const { contextBridge, ipcRenderer } = require('electron');
-
-contextBridge.exposeInMainWorld('api', {
-  readConfig: () => ipcRenderer.invoke('read-config'),
-  writeConfig: cfg => ipcRenderer.invoke('write-config', cfg),
-  revealConfig: () => ipcRenderer.invoke('reveal-config'),
-  openUrl: url => ipcRenderer.invoke('open-url', url),
-  checkPrerequisites: () => ipcRenderer.invoke('check-prerequisites'),
-  restartClaude: () => ipcRenderer.invoke('restart-claude'),
-  getLogs: () => ipcRenderer.invoke('get-logs'),
-  selectDirectory: () => ipcRenderer.invoke('select-directory'),
-  fetchUrl: url => ipcRenderer.invoke('fetch-url', url),
-  readMarketplaceData: () => ipcRenderer.invoke('read-marketplace-data')
-});
-
-// Listen for prerequisites status
-ipcRenderer.on('prerequisites-status', (_, data) => {
-  window.postMessage({ type: 'prerequisites-status', data }, '*');
-});
+// This is a placeholder preload script.
+// With nodeIntegration: true and contextIsolation: false,
+// the renderer process can directly access Node.js APIs.

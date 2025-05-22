@@ -10,7 +10,7 @@
 export async function loadMarketplaceData() {
   try {
     // Try to load from the default location (marketplace.json)
-    const data = await window.api.readMarketplaceData();
+    const data = await require('electron').ipcRenderer.invoke('read-marketplace-data');
     return JSON.parse(data);
   } catch (error) {
 

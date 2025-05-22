@@ -119,6 +119,7 @@ function addTemplateInput(input, container) {
     return;
   }
   
+  
   let inputHtml = '';
   
   if (input.type === 'select') {

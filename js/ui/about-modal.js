@@ -31,15 +31,15 @@ class AboutModal {
     // Set up installation links
     this.dockerInstLink.addEventListener('click', (e) => {
       e.preventDefault();
-      window.api.checkPrerequisites().then(status => {
-        window.api.openUrl(status.dockerUrl);
+      require('electron').ipcRenderer.invoke('check-prerequisites').then(status => {
+        require('electron').ipcRenderer.invoke('open-url', status.dockerUrl);
       });
     });
     
     this.nodejsInstLink.addEventListener('click', (e) => {
       e.preventDefault();
-      window.api.checkPrerequisites().then(status => {
-        window.api.openUrl(status.nodejsUrl);
+      require('electron').ipcRenderer.invoke('check-prerequisites').then(status => {
+        require('electron').ipcRenderer.invoke('open-url', status.nodejsUrl);
       });
     });
     
@@ -52,7 +52,7 @@ class AboutModal {
   async openModal() {
     try {
       // Get prerequisites status
-      const status = await window.api.checkPrerequisites();
+      const status = await require('electron').ipcRenderer.invoke('check-prerequisites');
       
       // Update status display
       this.updateStatus(status);

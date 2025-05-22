@@ -25,13 +25,13 @@ class Notifications {
     
     // Set up install buttons
     this.installDockerBtn.addEventListener('click', async () => {
-      const status = await window.api.checkPrerequisites();
-      window.api.openUrl(status.dockerUrl);
+      const status = await require('electron').ipcRenderer.invoke('check-prerequisites');
+      require('electron').ipcRenderer.invoke('open-url', status.dockerUrl);
     });
     
     this.installNodejsBtn.addEventListener('click', async () => {
-      const status = await window.api.checkPrerequisites();
-      window.api.openUrl(status.nodejsUrl);
+      const status = await require('electron').ipcRenderer.invoke('check-prerequisites');
+      require('electron').ipcRenderer.invoke('open-url', status.nodejsUrl);
     });
     
     // Check prerequisites
@@ -52,7 +52,7 @@ class Notifications {
    */
   async checkPrerequisites() {
     try {
-      const status = await window.api.checkPrerequisites();
+      const status = await require('electron').ipcRenderer.invoke('check-prerequisites');
       this.updatePrerequisitesStatus(status);
     } catch (error) {
       console.error('Failed to check prerequisites:', error);
@@ -125,7 +125,7 @@ class Notifications {
       
       // Start the restart process but don't await it
       // This way the function continues executing regardless of Claude restarting
-      window.api.restartClaude().catch(error => {
+      require('electron').ipcRenderer.invoke('restart-claude').catch(error => {
         console.error('Error in background restart:', error);
       });
       
