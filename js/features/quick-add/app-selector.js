@@ -3,6 +3,9 @@
  * Handles fetching and selecting Composio apps
  */
 
+import * as connection from './quick-add-connection.js';
+import * as ui from './quick-add-ui.js';
+
 let base;
 let appSelectorContainer;
 let apiKeyInput;
@@ -25,14 +28,6 @@ export function init(baseModule) {
 }
 
 /**
- * Set up event listeners
- */
-function setupEventListeners() {
-  // Fetch button click handler
-  fetchButton.addEventListener('click', fetchApps);
-}
-
-/**
  * Fetch apps from Composio
  */
 async function fetchApps() {
@@ -48,17 +43,11 @@ async function fetchApps() {
   errorDisplay.style.display = 'none';
   
   try {
-    // Use the composio-service.js module
-    const composioService = require('./composio-service.js');
-    
-    // Initialize SDK with the API key
-    composioService.initializeSDK(apiKey);
-    
-    // Verify API key
-    await composioService.verifyApiKey();
+    // Initialize the Composio service
+    await connection.initializeService(apiKey);
     
     // Fetch available apps
-    const apps = await composioService.listApps();
+    const apps = await connection.getService().listApps();
     cachedApps = apps;
     
     // Populate the select dropdown
@@ -125,6 +114,66 @@ export function generateHtml() {
         <div id="app-error" style="display: none; margin-top: 10px; color: red; text-align: center; font-weight: bold;"></div>
       </div>
       <select id="app-select" style="width: 100%; display: none; margin-top: 10px; padding: 10px; border: 2px solid #4A56E2; border-radius: 4px; font-size: 14px;"></select>
+      
+      <!-- Connect button (initially hidden) -->
+      <div id="app-connect-container" style="display: none; margin-top: 15px;">
+        <button type="button" id="connect-app-btn" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 16px; font-weight: bold; background-color: #4A56E2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          CONNECT TO APP
+        </button>
+      </div>
+      
+      <!-- Connection status (initially hidden) -->
+      <div id="app-connection-status" style="display: none; margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
+        <p id="app-status-message" style="margin: 0; font-weight: bold;"></p>
+      </div>
+      
+      <!-- OAuth Flow (initially hidden) -->
+      <div id="app-oauth-container" style="display: none; margin-top: 15px;">
+        <p><strong>OAuth Authentication Required:</strong></p>
+        <p>Please open this URL in your browser to authorize:</p>
+        <div style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; word-break: break-all;">
+          <a id="app-oauth-link" href="#" target="_blank" style="color: #4A56E2;"></a>
+        </div>
+        <button type="button" id="check-status-btn" class="btn btn-primary" style="margin-top: 10px; padding: 8px 15px; background-color: #4A56E2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          Check Connection Status
+        </button>
+      </div>
+      
+      <!-- API Key Input (initially hidden) -->
+      <div id="app-api-key-prompt" style="display: none; margin-top: 15px;">
+        <p><strong>API Key Required:</strong></p>
+        <p>This app requires an API key/token. Please provide it below:</p>
+        <input type="text" id="app-api-key-prompt-input" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+        <button type="button" id="submit-api-key-btn" class="btn btn-primary" style="margin-top: 10px; padding: 8px 15px; background-color: #4A56E2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          Submit
+        </button>
+      </div>
+      
+      <!-- MCP Server Creation (initially hidden) -->
+      <div id="app-mcp-container" style="display: none; margin-top: 15px;">
+        <div style="background-color: #d4edda; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+          <p style="margin: 0; color: #155724;"><strong>Connection Active!</strong> You can now create an MCP server.</p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <label for="app-mcp-name">MCP Server Name</label>
+          <input type="text" id="app-mcp-name" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+          <small>Enter a name for your MCP server</small>
+        </div>
+        
+        <button type="button" id="create-mcp-btn" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 16px; font-weight: bold; background-color: #4A56E2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          CREATE MCP SERVER
+        </button>
+        
+        <div id="app-mcp-result" style="display: none; margin-top: 15px; background-color: #d4edda; padding: 10px; border-radius: 4px;">
+          <p style="margin: 0; color: #155724;"><strong>MCP Server Created Successfully!</strong></p>
+          <p style="margin-top: 10px; margin-bottom: 5px;">Your MCP server is now available at:</p>
+          <div style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; word-break: break-all;">
+            <a id="app-mcp-url" href="#" target="_blank" style="color: #4A56E2;"></a>
+          </div>
+          <p style="margin-top: 10px; margin-bottom: 0;">Use this URL with your MCP client to access the tools provided by this connection.</p>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -142,6 +191,13 @@ export function initializeSelector() {
   apiKeyInput = document.getElementById('input-COMPOSIO_API_KEY');
   appNameInput = document.getElementById('input-appName');
   
+  // Get new UI elements
+  const connectButton = document.getElementById('connect-app-btn');
+  const connectContainer = document.getElementById('app-connect-container');
+  const checkStatusButton = document.getElementById('check-status-btn');
+  const submitApiKeyButton = document.getElementById('submit-api-key-btn');
+  const createMcpButton = document.getElementById('create-mcp-btn');
+  
   if (!fetchButton || !appSelect || !loadingIndicator || !errorDisplay) {
     console.error('App selector elements not found');
     return;
@@ -152,9 +208,23 @@ export function initializeSelector() {
     return;
   }
   
+  // Initialize UI elements
+  if (!ui.initializeUI()) {
+    console.error('Failed to initialize UI elements');
+    return;
+  }
+  
   // Set up event listeners
   fetchButton.addEventListener('click', fetchApps);
   
   // Set up change handler for the app select
-  appSelect.addEventListener('change', updateAppNameInput);
+  appSelect.addEventListener('change', () => {
+    updateAppNameInput();
+    
+    // Show connect button when an app is selected
+    ui.showConnectButton(connectContainer);
+  });
+  
+  // Set up event handlers for the new UI elements
+  ui.setupEventHandlers(connectButton, checkStatusButton, submitApiKeyButton, createMcpButton, apiKeyInput);
 }
