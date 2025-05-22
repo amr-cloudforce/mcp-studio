@@ -1,143 +1,161 @@
 /**
- * Composio Connection Module
- * Handles the connection process for Composio apps
+ * Composio Connection Template Handler
+ * Handles form generation and submission for the Composio Connection template
  */
 
-// State variables
-let currentConnectionRequest = null;
-let composioService = null;
+import * as ui from './composio-ui.js';
+import * as connectionUtils from './composio-connection-utils.js';
 
 /**
- * Initialize the Composio service
- * @param {string} apiKey - The Composio API key
- * @returns {Object} - The Composio service instance
+ * Generate form for Composio Connection template
+ * @param {object} config - Server configuration
+ * @returns {string} - Form HTML
  */
-export async function initializeService(apiKey) {
-  try {
-    // Use the composio-service.js directly with require
-    composioService = require('./composio-service.js');
-    
-    // Initialize SDK with the API key
-    composioService.initializeSDK(apiKey);
-    
-    // Verify API key
-    await composioService.verifyApiKey();
-    
-    return composioService;
-  } catch (error) {
-    console.error('Error initializing Composio service:', error);
-    throw error;
-  }
+export function generateForm(config) {
+  // Generate the form HTML
+  const formHtml = ui.generateFormHtml(config);
+  
+  // Extract API key and app name from config
+  const apiKey = config.env && config.env.COMPOSIO_API_KEY ? config.env.COMPOSIO_API_KEY : '';
+  const appName = config.metadata && config.metadata.composioApp ? config.metadata.composioApp : '';
+  
+  // Set up event handlers after a short delay to ensure DOM is ready
+  setTimeout(() => {
+    ui.setupEventHandlers(apiKey, appName);
+  }, 100);
+  
+  return formHtml;
 }
 
 /**
- * Fetch available apps
- * @returns {Array} - The list of available apps
+ * Handle Composio Connection form submission
+ * @param {object} config - Server configuration object to be modified
+ * @returns {object} - Updated server configuration
  */
-export async function fetchApps() {
-  if (!composioService) {
-    throw new Error('Composio service not initialized');
+export function handleSubmit(config) {
+  // Get form values
+  const { apiKey, appName } = ui.getFormValues();
+  
+  // Validate inputs
+  if (!apiKey) {
+    alert('Composio API Key is required');
+    return null;
   }
   
-  try {
-    // Fetch available apps
-    const apps = await composioService.listApps();
-    return apps;
-  } catch (error) {
-    console.error('Error fetching Composio apps:', error);
-    throw error;
-  }
-}
-
-/**
- * Initiate a connection for the selected app
- * @param {string} appKey - The selected app key
- * @returns {Object} - The connection request
- */
-export async function initiateConnection(appKey) {
-  if (!composioService) {
-    throw new Error('Composio service not initialized');
+  if (!appName) {
+    alert('Please select a Composio app');
+    return null;
   }
   
-  try {
-    // Initiate the connection
-    currentConnectionRequest = await composioService.initiateConnection(appKey);
-    return currentConnectionRequest;
-  } catch (error) {
-    console.error('Error initiating connection:', error);
-    throw error;
-  }
-}
-
-/**
- * Check connection status
- * @returns {Object} - The connection details
- */
-export async function checkConnectionStatus() {
-  if (!composioService || !currentConnectionRequest?.connectedAccountId) {
-    throw new Error('Connection not initiated');
+  // Set command and args
+  config.command = 'node';
+  
+  // Set args - create a script that uses composio-service.js
+  config.args = [
+    '-e',
+    `
+    const composio = require('./composio-service.js');
+    
+    (async () => {
+      try {
+        // Initialize SDK
+        composio.initializeSDK(process.env.COMPOSIO_API_KEY);
+        console.log('Composio SDK initialized');
+        
+        // Verify API key
+        await composio.verifyApiKey();
+        console.log('API key verified');
+        
+        // Initiate connection
+        const { connectedAccountId, redirectUrl, connectionStatus } = 
+          await composio.initiateConnection('${appName}');
+        
+        if (redirectUrl) {
+          console.log('Please open this URL in your browser to complete the OAuth flow:');
+          console.log(redirectUrl);
+          
+          // Poll for connection status
+          console.log('Waiting for OAuth flow to complete...');
+          let status = connectionStatus;
+          let connection = null;
+          
+          while (status !== 'ACTIVE') {
+            // Wait 5 seconds between polls
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            
+            // Get updated connection status
+            connection = await composio.getConnection(connectedAccountId);
+            status = connection.status;
+            
+            console.log('Connection status:', status);
+            
+            if (status === 'PENDING_PARAMS') {
+              console.log('Additional parameters required. Please update the connection data manually.');
+              break;
+            }
+            
+            if (status === 'ERROR') {
+              console.error('Connection error:', connection.error || 'Unknown error');
+              break;
+            }
+          }
+          
+          if (status === 'ACTIVE') {
+            // Create MCP server
+            const v3Connections = await composio.getConnectedAccounts();
+            const connection = v3Connections.find(c => c.id === connectedAccountId);
+            
+            if (connection) {
+              const mcp = await composio.createMcpServer('${appName}-mcp', connection);
+              console.log('MCP server created successfully!');
+              console.log('MCP URL:', mcp.mcp_url || mcp.url);
+            } else {
+              console.error('Connection not found in V3 API');
+            }
+          }
+        } else if (connectionStatus === 'ACTIVE') {
+          console.log('Connection is already active');
+          
+          // Create MCP server
+          const v3Connections = await composio.getConnectedAccounts();
+          const connection = v3Connections.find(c => c.id === connectedAccountId);
+          
+          if (connection) {
+            const mcp = await composio.createMcpServer('${appName}-mcp', connection);
+            console.log('MCP server created successfully!');
+            console.log('MCP URL:', mcp.mcp_url || mcp.url);
+          } else {
+            console.error('Connection not found in V3 API');
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error.message);
+      }
+    })();
+    `
+  ];
+  
+  // Set environment variables
+  config.env = {
+    COMPOSIO_API_KEY: apiKey
+  };
+  
+  // Set disabled flag
+  const disabled = document.getElementById('quick-disabled').checked;
+  if (disabled) config.disabled = true;
+  
+  // Store template ID and app name in metadata
+  if (!config.metadata) {
+    config.metadata = {
+      quickAddTemplate: 'composio-connection',
+      templateName: 'Composio Integration',
+      composioApp: appName
+    };
+  } else {
+    config.metadata.quickAddTemplate = 'composio-connection';
+    config.metadata.templateName = 'Composio Integration';
+    config.metadata.composioApp = appName;
   }
   
-  try {
-    const connectionId = currentConnectionRequest.connectedAccountId;
-    
-    // Get connection details
-    const connectionDetails = await composioService.getConnection(connectionId);
-    
-    // Preserve the auth_config from the original connection request
-    if (currentConnectionRequest.auth_config && !connectionDetails.auth_config) {
-      connectionDetails.auth_config = currentConnectionRequest.auth_config;
-    }
-    
-    // Update current connection request with the latest details
-    if (connectionDetails.status === 'ACTIVE') {
-      currentConnectionRequest = connectionDetails;
-    }
-    
-    return connectionDetails;
-  } catch (error) {
-    console.error('Error checking status:', error);
-    throw error;
-  }
-}
-
-/**
- * Submit API key for a connection
- * @param {string} apiKey - The API key to submit
- * @returns {Object} - The update response
- */
-export async function submitApiKey(apiKey) {
-  if (!composioService || !currentConnectionRequest?.connectedAccountId) {
-    throw new Error('Connection not initiated');
-  }
-  
-  try {
-    const connectionId = currentConnectionRequest.connectedAccountId;
-    
-    // Create a simple payload with the API key
-    const updatePayload = { api_key: apiKey };
-    
-    // Update the connection data with the provided params
-    const updateResponse = await composioService.updateConnectionData(connectionId, updatePayload);
-    return updateResponse;
-  } catch (error) {
-    console.error('Error submitting credentials:', error);
-    throw error;
-  }
-}
-
-/**
- * Get the current connection request
- * @returns {Object} - The current connection request
- */
-export function getCurrentConnection() {
-  return currentConnectionRequest;
-}
-
-/**
- * Get the Composio service
- * @returns {Object} - The Composio service
- */
-export function getService() {
-  return composioService;
+  return config;
 }

@@ -51,6 +51,30 @@
         </ul>
       </div>
       
+      <div class="sidebar-section" id="composio-apps-section">
+        <h3>Composio Apps</h3>
+        <ul class="sidebar-menu">
+          <li>
+            <button id="composio-settings-btn" class="sidebar-btn">
+              <span class="sidebar-icon">⚙️</span>
+              <span>Settings</span>
+            </button>
+          </li>
+          <li>
+            <button id="composio-refresh-btn" class="sidebar-btn">
+              <span class="sidebar-icon">🔄</span>
+              <span>Refresh Apps</span>
+            </button>
+          </li>
+          <div id="composio-apps-list">
+            <!-- Dynamically populated apps will appear here -->
+            <div class="composio-apps-placeholder" style="padding: 10px; color: #999; font-style: italic; text-align: center;">
+              Configure API key in settings
+            </div>
+          </div>
+        </ul>
+      </div>
+      
       <div class="sidebar-section">
         <h3>Tools</h3>
         <ul class="sidebar-menu">
@@ -371,6 +395,120 @@
       </div>
       <div class="modal-footer">
         <button id="about-close-btn" class="btn btn-reveal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Composio Settings Modal -->
+  <div id="composio-settings-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close" id="composio-settings-close">&times;</span>
+        <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+        <h2>Composio Settings</h2>
+      </div>
+      <div class="composio-settings-content">
+        <div class="form-group">
+          <label for="composio-api-key">API Key</label>
+          <input type="password" id="composio-api-key" placeholder="sk_live_...">
+          <small>Your Composio API key (starts with sk_live_)</small>
+        </div>
+        
+        <div id="composio-connection-status" style="margin: 20px 0; padding: 15px; border-radius: 8px; background-color: #f8f9fa; display: none;">
+          <p id="composio-status-message" style="margin: 0; font-weight: bold;"></p>
+        </div>
+        
+        <div class="form-group">
+          <h3>Cache Settings</h3>
+          <label>
+            <input type="checkbox" id="composio-auto-refresh" checked>
+            Automatically refresh app list daily
+          </label>
+          <br>
+          <label>
+            <input type="checkbox" id="composio-store-status" checked>
+            Store connection status
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="composio-settings-cancel" class="btn btn-reveal">Cancel</button>
+        <button id="composio-settings-save" class="btn btn-success">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Composio App Modal -->
+  <div id="composio-app-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close" id="composio-app-close">&times;</span>
+        <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+        <h2 id="composio-app-title">App Name</h2>
+      </div>
+      <div class="composio-app-content">
+        <div class="app-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+          <div id="composio-app-icon" style="width: 64px; height: 64px; margin-right: 20px; background-color: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+            🔌
+          </div>
+          <div>
+            <h3 id="composio-app-name" style="margin: 0 0 5px 0;">App Name</h3>
+            <p id="composio-app-description" style="margin: 0; color: #666;">App description goes here</p>
+          </div>
+        </div>
+        
+        <div id="composio-app-status" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: #f8f9fa;">
+          <p id="composio-app-status-message" style="margin: 0; font-weight: bold;">Not connected</p>
+        </div>
+        
+        <!-- Connection flow - initially hidden -->
+        <div id="composio-connection-flow" style="display: none;">
+          <div id="composio-connection-step-1">
+            <p>To connect to this app, you'll need to authorize access.</p>
+            <ol>
+              <li>Click the button below to open the authorization page in your browser.</li>
+              <li>Log in to your account and approve the requested permissions.</li>
+              <li>Return here and click "Check Connection Status" to complete the process.</li>
+            </ol>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button id="composio-open-browser" class="btn btn-primary">Open in Browser</button>
+              <button id="composio-check-status" class="btn btn-reveal">Check Connection Status</button>
+            </div>
+          </div>
+          
+          <div id="composio-connection-step-2" style="display: none;">
+            <div class="progress-container" style="margin: 30px 0;">
+              <div id="composio-progress-bar" style="height: 20px; background-color: var(--primary); width: 0%; border-radius: 4px; transition: width 0.3s ease-in-out;"></div>
+            </div>
+            <p id="composio-progress-message" style="text-align: center; font-weight: bold;">Creating MCP server...</p>
+          </div>
+        </div>
+        
+        <!-- Connected view - initially hidden -->
+        <div id="composio-connected-view" style="display: none;">
+          <div style="margin-bottom: 20px;">
+            <h3>Connected Account</h3>
+            <p id="composio-connected-account">account@example.com</p>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <h3>Available Tools</h3>
+            <div id="composio-tools-list" style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+              <!-- Tools will be populated here -->
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button id="composio-reconnect" class="btn btn-reveal">Reconnect</button>
+            <button id="composio-view-server" class="btn btn-primary">View MCP Server</button>
+          </div>
+        </div>
+        
+        <!-- Not connected view - initially shown -->
+        <div id="composio-not-connected-view">
+          <p>This app is not connected. Click the button below to connect.</p>
+          <button id="composio-connect-btn" class="btn btn-success">Connect Now</button>
+        </div>
       </div>
     </div>
   </div>

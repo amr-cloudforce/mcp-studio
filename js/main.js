@@ -17,6 +17,7 @@ import logViewer from './features/log-viewer.js';
 import quickAddTemplates from './quick-add-templates.js';
 import addServerModal from './ui/add-server-modal.js';
 import marketplace from './features/marketplace/index.js';
+import composioManager from './features/composio-manager.js';
 
 // Make global objects available
 window.quickAddTemplates = quickAddTemplates;
@@ -43,6 +44,7 @@ async function initializeApp() {
     notifications.initialize();
     logViewer.initialize();
     marketplace.initialize();
+    composioManager.initialize();
     
     // Register event handlers
     serverList.on('edit', ({ name, section }) => {

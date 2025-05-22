@@ -13,6 +13,8 @@ import * as tavilyHandler from './template-handlers/tavily.js';
 import * as filesystemHandler from './template-handlers/filesystem.js';
 import * as apifyHandler from './template-handlers/apify.js';
 import * as composioHandler from './template-handlers/composio.js';
+import * as composioConnectionHandler from './template-handlers/composio-connection.js';
+import * as composioMcpHandler from './template-handlers/composio-mcp.js';
 
 class ServerForm {
   constructor() {
@@ -247,8 +249,47 @@ class ServerForm {
         case 'apify-web-adapter':
           config = apifyHandler.handleSubmit(config);
           break;
-        case 'composio-mcp':
-          config = composioHandler.handleSubmit(config);
+        case 'composio-connection':
+          config = composioConnectionHandler.handleSubmit(config);
+          break;
+      case 'composio-mcp':
+          // Get form values
+          const authConfigId = document.getElementById('auth-config-id').value.trim();
+          const allowedToolsStr = document.getElementById('allowed-tools')?.value.trim();
+          const disabled = document.getElementById('quick-disabled')?.checked;
+          
+          // Validate inputs
+          if (!authConfigId) {
+            alert('Auth Config ID is required');
+            return null;
+          }
+          
+          // Parse allowed tools
+          const allowedTools = allowedToolsStr ? 
+            allowedToolsStr.split(',').map(tool => tool.trim()).filter(Boolean) : 
+            [];
+          
+          // Generate config
+          const inputs = {
+            'auth-config-id': authConfigId,
+            'allowed-tools': allowedToolsStr
+          };
+          
+          config = composioMcpHandler.generateConfig(inputs);
+          
+          // Set disabled flag
+          if (disabled) config.disabled = true;
+          
+          // Store template ID in metadata
+          if (!config.metadata) {
+            config.metadata = {
+              quickAddTemplate: 'composio-mcp',
+              templateName: 'Composio MCP Server'
+            };
+          } else {
+            config.metadata.quickAddTemplate = 'composio-mcp';
+            config.metadata.templateName = 'Composio MCP Server';
+          }
           break;
         default:
           // For unknown templates, use the advanced view
@@ -381,8 +422,33 @@ class ServerForm {
           }
         }, 100);
         break;
+      case 'composio-connection':
+        this.quickInputs.innerHTML = composioConnectionHandler.generateForm(config);
+        break;
       case 'composio-mcp':
-        this.quickInputs.innerHTML = composioHandler.generateForm(config);
+        this.quickInputs.innerHTML = composioMcpHandler.getTemplate().inputs.map(input => `
+          <div class="form-group">
+            <label for="${input.id}">${input.label}</label>
+            <input type="text" id="${input.id}" placeholder="${input.placeholder}" value="${config.authConfigId || ''}" ${input.required ? 'required' : ''}>
+            <small>${input.help}</small>
+          </div>
+        `).join('');
+        
+        // Add advanced inputs
+        this.quickAdvancedOptions.innerHTML = composioMcpHandler.getTemplate().advancedInputs.map(input => `
+          <div class="form-group">
+            <label for="${input.id}">${input.label}</label>
+            <input type="text" id="${input.id}" placeholder="${input.placeholder}" value="${config.allowedTools ? config.allowedTools.join(', ') : ''}" ${input.required ? 'required' : ''}>
+            <small>${input.help}</small>
+          </div>
+        `).join('');
+        
+        // Add disabled checkbox
+        this.quickAdvancedOptions.innerHTML += `
+          <div class="form-group">
+            <label><input type="checkbox" id="quick-disabled" ${config.disabled ? 'checked' : ''}> Disabled</label>
+          </div>
+        `;
         break;
       default:
         // For unknown templates, just show a message

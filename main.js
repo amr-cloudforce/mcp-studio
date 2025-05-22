@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const { exec } = require('child_process');
 const os = require('os');
+const composioService = require('./composio-service');
 const readline = require('readline');
 const https = require('https');
 const http = require('http');
@@ -313,6 +314,11 @@ ipcMain.handle('get-logs', async () => {
     console.error('Failed to get logs:', error);
     return {};
   }
+});
+
+// IPC handler for getting Composio service
+ipcMain.handle('get-composio-service', async () => {
+  return composioService;
 });
 
 // IPC handler for fetching a URL

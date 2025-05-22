@@ -3,7 +3,7 @@
  * Handles UI components and event handlers for the Composio template
  */
 
-import * as connection from './composio-connection.js';
+import * as connection from './composio-connection-utils.js';
 import * as mcp from './composio-mcp.js';
 
 // Store the list of apps for use in the form

@@ -1,60 +1,75 @@
 /**
- * Composio MCP Module
- * Handles MCP server creation for Composio connections
+ * Composio MCP Template Handler
+ * Handles the creation of MCP servers from Composio connections
  */
-
-import * as connection from './composio-connection.js';
 
 /**
- * Create an MCP server for the current connection
- * @param {string} name - The name for the MCP server
- * @returns {Object} - The MCP server details
+ * Get the template definition
+ * @returns {Object} Template definition
  */
-export async function createMcpServer(name) {
-  const composioService = connection.getService();
-  const currentConnection = connection.getCurrentConnection();
-  
-  if (!composioService) {
-    throw new Error('Composio service not initialized');
-  }
-  
-  if (!currentConnection) {
-    throw new Error('No active connection available');
-  }
-  
-  try {
-    // Get all V3 connections
-    const v3Connections = await composioService.getConnectedAccounts();
-    
-    // Find the matching connection by ID
-    const connectionId = currentConnection.connectedAccountId || currentConnection.id;
-    const matchingConnection = v3Connections.find(conn => 
-      conn.id === connectionId || 
-      (conn.deprecated && conn.deprecated.uuid === connectionId)
-    );
-    
-    if (!matchingConnection) {
-      throw new Error('Connection not found in V3 API');
-    }
-    
-    if (!matchingConnection.auth_config || !matchingConnection.auth_config.id) {
-      throw new Error('Connection missing auth_config.id');
-    }
-    
-    // Create MCP server
-    const mcpServer = await composioService.createMcpServer(name, matchingConnection);
-    return mcpServer;
-  } catch (error) {
-    console.error('Error creating MCP server:', error);
-    throw error;
-  }
+export function getTemplate() {
+  return {
+    id: 'composio-mcp',
+    name: 'Composio MCP Server',
+    description: 'Create an MCP server from a Composio connection',
+    icon: '🔌',
+    category: 'Integrations',
+    inputs: [
+      {
+        id: 'auth-config-id',
+        label: 'Auth Config ID',
+        type: 'text',
+        placeholder: 'auth_config_123456',
+        required: true,
+        help: 'The ID of the Composio auth config'
+      }
+    ],
+    advancedInputs: [
+      {
+        id: 'allowed-tools',
+        label: 'Allowed Tools',
+        type: 'text',
+        placeholder: 'tool1,tool2,tool3',
+        required: false,
+        help: 'Comma-separated list of allowed tools (leave empty for all tools)'
+      }
+    ]
+  };
 }
 
 /**
- * Get the MCP server URL
- * @param {Object} mcpServer - The MCP server object
- * @returns {string} - The MCP server URL
+ * Generate server configuration from inputs
+ * @param {Object} inputs - Form inputs
+ * @returns {Object} Server configuration
  */
-export function getMcpServerUrl(mcpServer) {
-  return mcpServer.mcp_url || mcpServer.url;
+export function generateConfig(inputs) {
+  const config = {
+    command: 'composio-mcp',
+    authConfigId: inputs['auth-config-id']
+  };
+  
+  // Add allowed tools if specified
+  if (inputs['allowed-tools']) {
+    config.allowedTools = inputs['allowed-tools'].split(',').map(tool => tool.trim());
+  }
+  
+  return config;
+}
+
+/**
+ * Parse server configuration to inputs
+ * @param {Object} config - Server configuration
+ * @returns {Object} Form inputs
+ */
+export function parseConfig(config) {
+  const inputs = {
+    'auth-config-id': config.authConfigId || ''
+  };
+  
+  // Parse allowed tools if present
+  if (config.allowedTools && Array.isArray(config.allowedTools)) {
+    inputs['allowed-tools'] = config.allowedTools.join(', ');
+  }
+  
+  return inputs;
 }
