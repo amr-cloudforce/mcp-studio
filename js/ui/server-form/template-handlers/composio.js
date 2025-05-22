@@ -106,7 +106,7 @@ function setupEventHandlers(initialApiKey, initialAppName) {
     
     try {
       // Use the composio-service.js directly with require
-      const composioService = require('../../../../composio-service.js');
+      const composioService = require('./composio-service.js');
       
       // Initialize SDK with the API key
       composioService.initializeSDK(apiKey);
