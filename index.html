@@ -6,7 +6,10 @@
   <title>MCP Studio</title>
 
   <!-- Styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/composio.css">
   <link rel="stylesheet" href="css/marketplace.css">
   
   <!-- Font Awesome for icons -->
@@ -137,6 +140,20 @@
         </thead>
         <tbody id="server-list"></tbody>
       </table>
+      
+      <!-- Composio Apps Grid -->
+      <div id="composio-apps-container" style="display: none;">
+        <div class="content-header">
+          <h2>Composio Apps</h2>
+          <div class="header-actions">
+            <button id="composio-grid-settings-btn" class="btn btn-reveal">Settings</button>
+            <button id="composio-grid-refresh-btn" class="btn btn-reveal">Refresh</button>
+          </div>
+        </div>
+        <div id="composio-apps-grid" class="app-grid">
+          <!-- Apps will be displayed here as cards -->
+        </div>
+      </div>
     </div>
   </div>
 

@@ -110,6 +110,23 @@ class Notifications {
   hideRestartWarning() {
     this.restartWarning.style.display = 'none';
   }
+  
+  /**
+   * Show a notification message
+   * @param {string} message - The message to display
+   * @param {string} type - The type of notification (success, error, warning, info)
+   */
+  show(message, type = 'info') {
+    // For now, just use console.log and alert
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    
+    if (type === 'error') {
+      alert(`Error: ${message}`);
+    } else if (type === 'success') {
+      // Optional: Show a success message
+      console.log(`Success: ${message}`);
+    }
+  }
 
   /**
    * Handle restart Claude button click

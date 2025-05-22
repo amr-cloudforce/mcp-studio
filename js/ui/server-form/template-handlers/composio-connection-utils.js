@@ -13,14 +13,11 @@ let currentConnectionId = null;
  */
 export async function initializeService(apiKey) {
   try {
-    // Get the Composio service from the main process
-    composioService = await require('electron').ipcRenderer.invoke('get-composio-service');
-    
     // Initialize the SDK with the API key
-    composioService.initializeSDK(apiKey);
+    await require('electron').ipcRenderer.invoke('composio-initialize-sdk', apiKey);
     
     // Verify the API key
-    await composioService.verifyApiKey();
+    await require('electron').ipcRenderer.invoke('composio-verify-api-key');
     
     return true;
   } catch (error) {
@@ -34,12 +31,8 @@ export async function initializeService(apiKey) {
  * @returns {Array} - List of available apps
  */
 export async function fetchApps() {
-  if (!composioService) {
-    throw new Error('Composio service not initialized');
-  }
-  
   try {
-    const apps = await composioService.listApps();
+    const apps = await require('electron').ipcRenderer.invoke('composio-list-apps');
     return apps;
   } catch (error) {
     console.error('Failed to fetch Composio apps:', error);
@@ -53,12 +46,8 @@ export async function fetchApps() {
  * @returns {Object} - Connection request details
  */
 export async function initiateConnection(appKey) {
-  if (!composioService) {
-    throw new Error('Composio service not initialized');
-  }
-  
   try {
-    const connectionRequest = await composioService.initiateConnection(appKey);
+    const connectionRequest = await require('electron').ipcRenderer.invoke('composio-initiate-connection', appKey);
     currentConnectionId = connectionRequest.connectedAccountId;
     return connectionRequest;
   } catch (error) {
@@ -72,12 +61,12 @@ export async function initiateConnection(appKey) {
  * @returns {Object} - Connection details
  */
 export async function checkConnectionStatus() {
-  if (!composioService || !currentConnectionId) {
+  if (!currentConnectionId) {
     throw new Error('No active connection to check');
   }
   
   try {
-    const connection = await composioService.getConnection(currentConnectionId);
+    const connection = await require('electron').ipcRenderer.invoke('composio-get-connection', currentConnectionId);
     return connection;
   } catch (error) {
     console.error('Failed to check connection status:', error);
@@ -90,12 +79,12 @@ export async function checkConnectionStatus() {
  * @param {string} value - API key or other parameter value
  */
 export async function submitApiKey(value) {
-  if (!composioService || !currentConnectionId) {
+  if (!currentConnectionId) {
     throw new Error('No active connection to update');
   }
   
   try {
-    await composioService.updateConnectionData(currentConnectionId, { apiKey: value });
+    await require('electron').ipcRenderer.invoke('composio-update-connection-data', currentConnectionId, { apiKey: value });
     return true;
   } catch (error) {
     console.error('Failed to submit API key:', error);
@@ -109,13 +98,13 @@ export async function submitApiKey(value) {
  * @returns {Object} - MCP server details
  */
 export async function createMcpServer(name) {
-  if (!composioService) {
-    throw new Error('Composio service not initialized');
+  if (!currentConnectionId) {
+    throw new Error('No active connection');
   }
   
   try {
     // Get connected accounts
-    const accounts = await composioService.getConnectedAccounts();
+    const accounts = await require('electron').ipcRenderer.invoke('composio-get-connected-accounts');
     
     // Find the current connection
     const connection = accounts.find(account => account.id === currentConnectionId);
@@ -125,7 +114,7 @@ export async function createMcpServer(name) {
     }
     
     // Create MCP server
-    const mcpServer = await composioService.createMcpServer(name, connection);
+    const mcpServer = await require('electron').ipcRenderer.invoke('composio-create-mcp-server', name, connection);
     return mcpServer;
   } catch (error) {
     console.error('Failed to create MCP server:', error);

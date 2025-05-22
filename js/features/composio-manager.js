@@ -65,8 +65,11 @@ export function initialize() {
   // Load settings from localStorage
   loadSettings();
   
-  // Load Composio service
-  loadComposioService();
+  // Initialize Composio service with saved API key
+  const apiKey = localStorage.getItem(STORAGE_KEY_API_KEY);
+  if (apiKey) {
+    initializeWithApiKey(apiKey);
+  }
   
   // Check if we should auto-refresh
   const autoRefresh = localStorage.getItem(STORAGE_KEY_AUTO_REFRESH) !== 'false';
@@ -90,12 +93,37 @@ export function initialize() {
 }
 
 /**
+ * Initialize with a saved API key
+ * @param {string} apiKey - The API key to initialize with
+ */
+async function initializeWithApiKey(apiKey) {
+  try {
+    console.log('Initializing with saved API key');
+    await require('electron').ipcRenderer.invoke('composio-initialize-sdk', apiKey);
+    composioService = { initialized: true };
+    
+    // Load apps if we have a cache
+    const cachedApps = localStorage.getItem(STORAGE_KEY_APPS_CACHE);
+    if (!cachedApps) {
+      // No cached apps, fetch them
+      refreshApps();
+    }
+  } catch (error) {
+    console.error('Failed to initialize with saved API key:', error);
+    // Don't clear the API key here, it might be valid but the service is down
+  }
+}
+
+/**
  * Load the Composio service module
  */
 async function loadComposioService() {
   try {
-    composioService = await require('electron').ipcRenderer.invoke('get-composio-service');
-    console.log('Composio service loaded');
+    // We don't need to load the service anymore, we'll use IPC handlers
+    console.log('Composio service ready');
+    composioService = {
+      initialized: false
+    };
   } catch (error) {
     console.error('Failed to load Composio service:', error);
     notifications.show('Failed to load Composio service', 'error');
@@ -145,17 +173,12 @@ function saveSettings() {
  * @param {string} apiKey - The API key to verify
  */
 async function verifyApiKey(apiKey) {
-  if (!composioService) {
-    notifications.show('Composio service not loaded', 'error');
-    return;
-  }
-  
   try {
     // Initialize SDK with the new API key
-    composioService.initializeSDK(apiKey);
+    await require('electron').ipcRenderer.invoke('composio-initialize-sdk', apiKey);
     
     // Verify the API key
-    await composioService.verifyApiKey();
+    await require('electron').ipcRenderer.invoke('composio-verify-api-key');
     
     // If successful, refresh apps
     notifications.show('API key verified successfully', 'success');
@@ -200,17 +223,12 @@ async function refreshApps() {
     return;
   }
   
-  if (!composioService) {
-    notifications.show('Composio service not loaded', 'error');
-    return;
-  }
-  
   try {
     // Initialize SDK with the API key
-    composioService.initializeSDK(apiKey);
+    await require('electron').ipcRenderer.invoke('composio-initialize-sdk', apiKey);
     
     // Get apps
-    const apps = await composioService.listApps();
+    const apps = await require('electron').ipcRenderer.invoke('composio-list-apps');
     
     // Cache apps
     cacheApps(apps);
@@ -259,19 +277,20 @@ function loadAppsFromCache() {
 }
 
 /**
- * Display apps in the sidebar
+ * Display apps in the sidebar and grid
  * @param {Array} apps - The apps to display
  */
 function displayApps(apps) {
   if (!apps || apps.length === 0) {
     showPlaceholder('No apps available');
+    document.getElementById('composio-apps-container').style.display = 'none';
     return;
   }
   
-  // Clear the container
+  // Clear the sidebar container
   appsListContainer.innerHTML = '';
   
-  // Create a list item for each app
+  // Create a list item for each app in the sidebar
   apps.forEach(app => {
     const listItem = document.createElement('li');
     
@@ -296,6 +315,144 @@ function displayApps(apps) {
     listItem.appendChild(button);
     appsListContainer.appendChild(listItem);
   });
+  
+  // Display apps in the grid
+  const appsGrid = document.getElementById('composio-apps-grid');
+  appsGrid.innerHTML = '';
+  
+  // Show the apps container
+  document.getElementById('composio-apps-container').style.display = 'block';
+  
+  // Create a card for each app
+  apps.forEach(app => {
+    const card = document.createElement('div');
+    card.className = 'composio-app-card';
+    
+    // Create card header with icon and name
+    const header = document.createElement('div');
+    header.className = 'composio-app-header';
+    
+    const iconContainer = document.createElement('div');
+    iconContainer.className = 'composio-app-icon';
+    iconContainer.textContent = app.icon || '🔌';
+    
+    const info = document.createElement('div');
+    info.className = 'composio-app-info';
+    
+    const title = document.createElement('h3');
+    title.textContent = app.name;
+    
+    const description = document.createElement('p');
+    description.textContent = app.description || 'No description available';
+    
+    info.appendChild(title);
+    info.appendChild(description);
+    
+    header.appendChild(iconContainer);
+    header.appendChild(info);
+    
+    // Create card body
+    const body = document.createElement('div');
+    body.className = 'composio-app-body';
+    
+    // Status will be updated later
+    const status = document.createElement('div');
+    status.className = 'composio-app-status not-connected';
+    status.textContent = 'Not connected';
+    status.dataset.appId = app.uniqueKey || app.key;
+    
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'composio-app-actions';
+    
+    const connectBtn = document.createElement('button');
+    connectBtn.className = 'btn btn-success';
+    connectBtn.textContent = 'Connect';
+    connectBtn.addEventListener('click', () => {
+      openAppModal(app);
+      startConnectionFlow();
+    });
+    
+    actions.appendChild(connectBtn);
+    
+    body.appendChild(status);
+    body.appendChild(actions);
+    
+    card.appendChild(header);
+    card.appendChild(body);
+    
+    // Add click event listener to the card
+    card.addEventListener('click', (e) => {
+      // Don't trigger if clicking on a button
+      if (e.target.tagName !== 'BUTTON') {
+        openAppModal(app);
+      }
+    });
+    
+    appsGrid.appendChild(card);
+  });
+  
+  // Set up grid settings and refresh buttons
+  const gridSettingsBtn = document.getElementById('composio-grid-settings-btn');
+  const gridRefreshBtn = document.getElementById('composio-grid-refresh-btn');
+  
+  gridSettingsBtn.addEventListener('click', openSettingsModal);
+  gridRefreshBtn.addEventListener('click', refreshApps);
+  
+  // Check connection status for each app
+  checkAllAppConnections(apps);
+}
+
+/**
+ * Check connection status for all apps
+ * @param {Array} apps - The apps to check
+ */
+async function checkAllAppConnections(apps) {
+  try {
+    // Get connected accounts
+    const accounts = await require('electron').ipcRenderer.invoke('composio-get-connected-accounts');
+    
+    // Update status for each app
+    apps.forEach(app => {
+      // Find a connection for this app
+      const connection = accounts.find(account => 
+        (account.app_name && app.name && account.app_name === app.name) || 
+        (account.app_unique_key && app.uniqueKey && account.app_unique_key === app.uniqueKey) || 
+        (account.app_key && app.key && account.app_key === app.key)
+      );
+      
+      // Update status in the grid
+      const statusElements = document.querySelectorAll(`.composio-app-status[data-app-id="${app.uniqueKey || app.key}"]`);
+      
+      statusElements.forEach(element => {
+        if (connection) {
+          element.textContent = 'Connected';
+          element.classList.remove('not-connected');
+          element.classList.add('connected');
+          
+          // Update the connect button to say "View"
+          const actionsContainer = element.nextElementSibling;
+          if (actionsContainer && actionsContainer.querySelector('button')) {
+            const button = actionsContainer.querySelector('button');
+            button.textContent = 'View';
+            button.className = 'btn btn-primary';
+            
+            // Update click handler
+            button.replaceWith(button.cloneNode(true));
+            actionsContainer.querySelector('button').addEventListener('click', () => {
+              openAppModal(app);
+            });
+          }
+        } else {
+          element.textContent = 'Not connected';
+          element.classList.remove('connected');
+          element.classList.add('not-connected');
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Failed to check app connections:', error);
+  }
 }
 
 /**
@@ -347,25 +504,35 @@ function closeAppModal() {
  * @param {Object} app - The app data
  */
 async function checkAppConnection(app) {
-  if (!composioService) {
-    showAppNotConnected();
-    return;
-  }
-  
   try {
     // Get connected accounts
-    const accounts = await composioService.getConnectedAccounts();
+    const accounts = await require('electron').ipcRenderer.invoke('composio-get-connected-accounts');
+    console.log('Connected accounts:', accounts);
+    console.log('Checking connection for app:', app);
     
-    // Find a connection for this app
-    const connection = accounts.find(account => 
-      account.app_name === app.name || 
-      account.app_unique_key === app.uniqueKey || 
-      account.app_key === app.key
-    );
+    // Find a connection for this app by exact match
+    const connection = accounts.find(account => {
+      // Log the comparison for debugging
+      console.log('Comparing:', {
+        'account.app_name': account.app_name, 
+        'app.name': app.name,
+        'account.app_unique_key': account.app_unique_key, 
+        'app.uniqueKey': app.uniqueKey,
+        'account.app_key': account.app_key, 
+        'app.key': app.key
+      });
+      
+      // Strict equality check
+      return (account.app_name && app.name && account.app_name === app.name) || 
+             (account.app_unique_key && app.uniqueKey && account.app_unique_key === app.uniqueKey) || 
+             (account.app_key && app.key && account.app_key === app.key);
+    });
     
     if (connection) {
+      console.log('Found connection for app:', app.name, connection);
       showAppConnected(connection);
     } else {
+      console.log('No connection found for app:', app.name);
       showAppNotConnected();
     }
   } catch (error) {
@@ -466,14 +633,14 @@ function startConnectionFlow() {
  * Open the authorization page in the browser
  */
 async function openAuthorizationPage() {
-  if (!composioService || !currentAppData) {
+  if (!currentAppData) {
     notifications.show('Cannot start connection flow', 'error');
     return;
   }
   
   try {
     // Initiate connection
-    const response = await composioService.initiateConnection(currentAppData.name);
+    const response = await require('electron').ipcRenderer.invoke('composio-initiate-connection', currentAppData.name);
     
     // Open the authorization URL
     if (response.authorizationUrl) {
@@ -491,7 +658,7 @@ async function openAuthorizationPage() {
  * Check the connection status
  */
 async function checkConnectionStatus() {
-  if (!composioService || !currentAppData) {
+  if (!currentAppData) {
     notifications.show('Cannot check connection status', 'error');
     return;
   }
@@ -505,7 +672,7 @@ async function checkConnectionStatus() {
     updateProgress(10, 'Checking connection status...');
     
     // Get connected accounts
-    const accounts = await composioService.getConnectedAccounts();
+    const accounts = await require('electron').ipcRenderer.invoke('composio-get-connected-accounts');
     
     // Find a connection for this app
     const connection = accounts.find(account => 
@@ -525,12 +692,21 @@ async function checkConnectionStatus() {
     
     // Get available actions for this app
     updateProgress(50, 'Fetching available tools...');
-    const actions = await composioService.listActions();
-    const appActions = composioService.filterActionsByApp(actions, currentAppData.uniqueKey || currentAppData.key);
+    const actions = await require('electron').ipcRenderer.invoke('composio-list-actions');
+    const appActions = await require('electron').ipcRenderer.invoke(
+      'composio-filter-actions-by-app', 
+      actions, 
+      currentAppData.uniqueKey || currentAppData.key
+    );
     
     // Create MCP server
     updateProgress(70, 'Creating MCP server...');
-    const mcpServer = await composioService.createMcpServer(serverName, connection);
+    const mcpServer = await require('electron').ipcRenderer.invoke(
+      'composio-create-mcp-server', 
+      serverName, 
+      connection, 
+      appActions.map(action => action.name)
+    );
     
     // Add server to config
     updateProgress(90, 'Saving configuration...');

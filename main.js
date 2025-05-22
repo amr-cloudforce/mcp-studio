@@ -316,9 +316,104 @@ ipcMain.handle('get-logs', async () => {
   }
 });
 
-// IPC handler for getting Composio service
-ipcMain.handle('get-composio-service', async () => {
-  return composioService;
+// IPC handlers for Composio service
+ipcMain.handle('composio-initialize-sdk', async (_, apiKey) => {
+  try {
+    composioService.initializeSDK(apiKey);
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize Composio SDK:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-verify-api-key', async () => {
+  try {
+    const result = await composioService.verifyApiKey();
+    return result;
+  } catch (error) {
+    console.error('Failed to verify Composio API key:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-list-apps', async () => {
+  try {
+    const apps = await composioService.listApps();
+    return apps;
+  } catch (error) {
+    console.error('Failed to list Composio apps:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-list-actions', async () => {
+  try {
+    const actions = await composioService.listActions();
+    return actions;
+  } catch (error) {
+    console.error('Failed to list Composio actions:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-filter-actions-by-app', async (_, actions, appKey) => {
+  try {
+    return composioService.filterActionsByApp(actions, appKey);
+  } catch (error) {
+    console.error('Failed to filter Composio actions:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-get-connected-accounts', async () => {
+  try {
+    const accounts = await composioService.getConnectedAccounts();
+    return accounts;
+  } catch (error) {
+    console.error('Failed to get Composio connected accounts:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-initiate-connection', async (_, appName, entityId) => {
+  try {
+    const result = await composioService.initiateConnection(appName, entityId);
+    return result;
+  } catch (error) {
+    console.error('Failed to initiate Composio connection:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-get-connection', async (_, connectedAccountId) => {
+  try {
+    const connection = await composioService.getConnection(connectedAccountId);
+    return connection;
+  } catch (error) {
+    console.error('Failed to get Composio connection:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-update-connection-data', async (_, connectedAccountId, data) => {
+  try {
+    const result = await composioService.updateConnectionData(connectedAccountId, data);
+    return result;
+  } catch (error) {
+    console.error('Failed to update Composio connection data:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('composio-create-mcp-server', async (_, name, connection, allowedTools) => {
+  try {
+    const server = await composioService.createMcpServer(name, connection, allowedTools);
+    return server;
+  } catch (error) {
+    console.error('Failed to create Composio MCP server:', error);
+    throw error;
+  }
 });
 
 // IPC handler for fetching a URL
