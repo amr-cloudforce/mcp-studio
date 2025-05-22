@@ -4,6 +4,7 @@
  */
 
 import * as connection from './quick-add-connection.js';
+import configManager from '../../config/config-manager.js';
 
 /**
  * Create an MCP server for the current connection
@@ -57,4 +58,43 @@ export async function createMcpServer(name) {
  */
 export function getMcpServerUrl(mcpServer) {
   return mcpServer.mcp_url || mcpServer.url;
+}
+
+/**
+ * Add MCP server to the application configuration
+ * @param {string} name - The name for the MCP server
+ * @param {Object} mcpServer - The MCP server object from Composio API
+ * @returns {boolean} - Whether the operation was successful
+ */
+export async function addMcpServerToConfig(name, mcpServer) {
+  try {
+    const url = getMcpServerUrl(mcpServer);
+    
+    if (!url) {
+      throw new Error('MCP server URL not found');
+    }
+    
+    // Create server configuration
+    const serverConfig = {
+      command: 'npx',
+      args: [
+        '@composio/mcp@latest',
+        'start',
+        '--url',
+        url
+      ]
+    };
+    
+    // Add server to configuration
+    configManager.addServer(name, serverConfig, 'active');
+    
+    // Save configuration
+    await configManager.saveConfig();
+    
+    console.log(`Added MCP server "${name}" to configuration with URL: ${url}`);
+    return true;
+  } catch (error) {
+    console.error('Error adding MCP server to configuration:', error);
+    return false;
+  }
 }

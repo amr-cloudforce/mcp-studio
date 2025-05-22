@@ -175,6 +175,18 @@ export function setupEventHandlers(connectButton, checkStatusButton, submitApiKe
         mcpUrl.href = url;
         mcpUrl.textContent = url;
         mcpResult.style.display = 'block';
+        
+        // Add MCP server to configuration
+        const added = await mcp.addMcpServerToConfig(mcpName, mcpServer);
+        
+        if (added) {
+          // Update success message to indicate the server was added to the configuration
+          const successMessage = document.createElement('p');
+          successMessage.style.marginTop = '10px';
+          successMessage.style.color = '#155724';
+          successMessage.textContent = 'MCP server added to configuration. You can now start it from the main screen.';
+          mcpResult.appendChild(successMessage);
+        }
       } catch (error) {
         console.error('Error creating MCP server:', error);
         alert('Error creating MCP server: ' + (error.message || 'Unknown error'));
