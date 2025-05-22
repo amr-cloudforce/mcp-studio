@@ -73,3 +73,33 @@ A more secure alternative would be to:
 3. Use IPC (Inter-Process Communication) to handle operations that need Node.js access, keeping the renderer process isolated from direct Node.js access.
 
 This would provide better security while still allowing the necessary functionality.
+
+## Additional Lessons Learned
+
+### Module Path Resolution
+
+When using `nodeIntegration: true`, it's important to understand how Node.js resolves module paths:
+
+1. **Working Directory Matters**: The current working directory for the renderer process is the root of the application (`/Users/amr/src/mcp-studio`), not the directory of the JavaScript file that's doing the requiring.
+
+2. **Relative Paths**: When using relative paths like `./composio-service.js`, Node.js looks for the module relative to the current working directory, not relative to the file doing the requiring.
+
+3. **Path Errors**: We encountered errors like:
+   ```
+   Error: Cannot find module '../../../composio-service.js'
+   ```
+   This happened because we were trying to navigate up from the file's location, but Node.js was interpreting it relative to the working directory.
+
+4. **Solution**: Use paths relative to the working directory. For modules in the root directory, use `./module-name.js` regardless of where the requiring file is located in the directory structure.
+
+### Consistent Approach
+
+When switching to `nodeIntegration: true`, it's important to:
+
+1. Update ALL files that need to access Node.js APIs, not just the ones directly related to the feature you're working on.
+
+2. Be consistent in how you access IPC - either through `window.api` (with contextBridge) or direct `require('electron').ipcRenderer` calls, but not a mix of both.
+
+3. Test thoroughly after making changes, as path resolution issues might not be immediately apparent until specific features are used.
+
+These lessons highlight the importance of understanding the Electron security model and the implications of changing it. While the less secure approach solved our immediate problem, it's important to consider the long-term security implications and potentially refactor to a more secure approach in the future.
