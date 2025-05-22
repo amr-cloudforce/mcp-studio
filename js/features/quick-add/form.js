@@ -5,6 +5,7 @@
 
 import * as directory from './directory.js';
 import * as actor from './actor.js';
+import * as appSelector from './app-selector.js';
 
 let base;
 let inputsContainer;
@@ -50,7 +51,7 @@ export function generateFormFields(baseModule, template) {
     docContainer.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="margin: 0;">${template.name}</h3>
-        <button class="btn btn-link external-link" onclick="window.api.openUrl('${template.documentationUrl}')">Documentation</button>
+        <button class="btn btn-link external-link" onclick="require('electron').ipcRenderer.invoke('open-url', '${template.documentationUrl}')">Documentation</button>
       </div>
     `;
     inputsContainer.appendChild(docContainer);
@@ -100,7 +101,7 @@ function addTemplateInput(input, container) {
   if (input.type === 'actor-list') {
     // Create an actor list input
     div.innerHTML = `
-      <label>${input.displayName} <button class="btn btn-link external-link" onclick="window.api.openUrl('https://apify.com/store')" title="Browse Apify actors">Browse Actors</button></label>
+      <label>${input.displayName} <button class="btn btn-link external-link" onclick="require('electron').ipcRenderer.invoke('open-url', 'https://apify.com/store')" title="Browse Apify actors">Browse Actors</button></label>
       <div id="actor-list-container" class="directory-list-container">
         <!-- Actor rows will be added here -->
       </div>
@@ -115,6 +116,28 @@ function addTemplateInput(input, container) {
     
     // Initialize actor functionality
     actor.init();
+    
+    return;
+  }
+  
+  if (input.type === 'app-selector') {
+    // Create an app selector input
+    div.innerHTML = `
+      <label for="input-${input.name}">${input.displayName}</label>
+      <input type="hidden" id="input-${input.name}" name="${input.name}" ${input.required ? 'required' : ''}>
+      ${appSelector.generateHtml()}
+    `;
+    
+    if (input.description) {
+      div.innerHTML += `<small>${input.description}</small>`;
+    }
+    
+    container.appendChild(div);
+    
+    // Initialize app selector after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      appSelector.initializeSelector();
+    }, 100);
     
     return;
   }

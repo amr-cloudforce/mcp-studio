@@ -23,7 +23,7 @@ const quickAddTemplates = {
         "name": "appName",
         "displayName": "App Name",
         "description": "The name of the Composio app to connect to (e.g., slack, github)",
-        "type": "string",
+        "type": "app-selector",
         "required": true
       },
       {
