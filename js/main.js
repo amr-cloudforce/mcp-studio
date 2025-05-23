@@ -17,6 +17,7 @@ import logViewer from './features/log-viewer.js';
 import quickAddTemplates from './quick-add-templates.js';
 import addServerModal from './ui/add-server-modal.js';
 import marketplace from './features/marketplace/index.js';
+import composioMarketplace from './features/composio-marketplace/index.js';
 
 // Make global objects available
 window.quickAddTemplates = quickAddTemplates;
@@ -24,7 +25,8 @@ window.modalManager = modalManager;
 
 // DOM elements
 const addServerBtn = document.getElementById('add-server-btn');
-const marketplaceBtn = document.getElementById('marketplace-btn');
+const localMarketplaceBtn = document.getElementById('local-marketplace-btn');
+const composioMarketplaceBtn = document.getElementById('composio-marketplace-btn');
 const exportBtn = document.getElementById('export-json-btn');
 const revealBtn = document.getElementById('reveal-btn');
 const aboutBtn = document.getElementById('about-btn');
@@ -43,6 +45,7 @@ async function initializeApp() {
     notifications.initialize();
     logViewer.initialize();
     marketplace.initialize();
+    composioMarketplace.initialize();
     
     // Register event handlers
     serverList.on('edit', ({ name, section }) => {
@@ -51,7 +54,8 @@ async function initializeApp() {
     
     // Set up event listeners
     addServerBtn.addEventListener('click', () => addServerModal.openModal());
-    marketplaceBtn.addEventListener('click', () => marketplace.openModal());
+    localMarketplaceBtn.addEventListener('click', () => marketplace.openModal());
+    composioMarketplaceBtn.addEventListener('click', () => composioMarketplace.openModal());
     exportBtn.addEventListener('click', () => jsonEditor.openModal());
     revealBtn.addEventListener('click', () => require('electron').ipcRenderer.invoke('reveal-config'));
     aboutBtn.addEventListener('click', () => aboutModal.openModal());

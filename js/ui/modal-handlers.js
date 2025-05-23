@@ -1,6 +1,31 @@
 /**
- * Modal Handlers
- * Centralizes logic for various modals (About, JSON Editor, Paste).
+ * @file modal-handlers.js
+ * @description Centralizes logic for various modals (About, JSON Editor, Paste).
+ * 
+ * This module provides a unified interface for handling different modal dialogs
+ * in the application, including opening modals, handling form submissions,
+ * and processing user interactions.
+ * 
+ * ## Responsibilities:
+ * - Initialize modal-related DOM elements and event handlers
+ * - Open and populate modal dialogs with appropriate content
+ * - Process user interactions within modals (form submissions, button clicks)
+ * - Communicate with other modules via events
+ * 
+ * ## Modularization Strategy:
+ * If this module grows too large, consider these strategies:
+ * 
+ * 1. Split into separate modules for each modal type
+ *    (e.g., about-modal.js, json-editor-modal.js, paste-modal.js)
+ * 
+ * 2. Create a base modal handler class that specific modal handlers can extend
+ *    while maintaining the singleton pattern for each instance
+ * 
+ * 3. Extract common modal functionality into utility functions
+ *    (e.g., modal opening/closing, form validation)
+ * 
+ * 4. Use a more structured event system for communication between
+ *    modal handlers and other modules
  */
 
 import modalManager from './modal-manager.js';

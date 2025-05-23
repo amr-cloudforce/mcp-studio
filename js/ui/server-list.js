@@ -1,6 +1,31 @@
 /**
- * Server List
- * Handles rendering and interactions for the MCP server list.
+ * @file server-list.js
+ * @description Handles rendering and interactions for the MCP server list.
+ * 
+ * This module is responsible for displaying the list of MCP servers,
+ * handling user interactions with the list (edit, delete, activate, deactivate),
+ * and communicating with other modules via events.
+ * 
+ * ## Responsibilities:
+ * - Render the server list based on configuration
+ * - Handle user interactions with server list items
+ * - Trigger events for other modules to respond to
+ * - Update the list when configuration changes
+ * 
+ * ## Modularization Strategy:
+ * If this module grows too large, consider these strategies:
+ * 
+ * 1. Split rendering and event handling into separate modules
+ *    (e.g., server-list-renderer.js and server-list-events.js)
+ * 
+ * 2. Extract complex rendering logic into template functions
+ *    (e.g., createActiveServerRow, createInactiveServerRow)
+ * 
+ * 3. Use a component-based approach for different types of list items
+ *    while maintaining the singleton pattern
+ * 
+ * 4. Keep the public API simple and focused on the core responsibilities
+ *    (initialize, refreshList, on/trigger for events)
  */
 
 import configManager from '../config/config-manager.js';

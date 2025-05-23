@@ -1,0 +1,257 @@
+/**
+ * Composio Marketplace Modal Module
+ * Handles the creation and setup of the Composio marketplace modal
+ */
+
+// DOM element references
+let marketplaceModal;
+let marketplaceContent;
+let categoriesContainer;
+let itemsContainer;
+let detailsContainer;
+let backButton;
+let backToCategoriesButton;
+
+/**
+ * Create the Composio marketplace modal
+ * @returns {Object} - References to DOM elements
+ */
+export function createModal() {
+  // Create modal element if it doesn't exist
+  if (!document.getElementById('composio-marketplace-modal')) {
+    const modalHtml = `
+      <div id="composio-marketplace-modal" class="modal">
+        <div class="modal-content marketplace-modal-content">
+          <div class="modal-header">
+            <span class="close" id="composio-marketplace-close">&times;</span>
+            <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+            <h2>Composio Apps Marketplace</h2>
+          </div>
+          
+          <!-- API Key Form (initially hidden) -->
+          <div id="composio-api-key-view" style="display: none; padding: 20px;">
+            <div class="details-header">
+              <h3>Composio API Key Required</h3>
+              <p>To access Composio apps, please enter your Composio API key below.</p>
+            </div>
+            <form id="composio-api-key-form" style="margin-top: 20px;">
+              <div class="form-group">
+                <label for="composio-api-key">API Key</label>
+                <input type="text" id="composio-api-key" placeholder="sk_live_..." required>
+                <small>Your Composio API key starts with 'sk_live_'</small>
+              </div>
+              <div class="form-group" style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-success">Save API Key</button>
+                <button type="button" id="composio-api-key-clear" class="btn btn-reveal">Clear Saved Key</button>
+              </div>
+            </form>
+          </div>
+          
+          <div class="marketplace-container">
+            <div class="marketplace-search">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <input type="text" id="composio-marketplace-search-input" placeholder="Search all Composio apps...">
+                <button id="composio-api-key-settings" class="btn btn-reveal" style="margin-left: 10px; white-space: nowrap;">API Key Settings</button>
+              </div>
+            </div>
+            <div id="composio-marketplace-categories-view">
+              <div id="composio-marketplace-categories-container" class="marketplace-categories-container"></div>
+            </div>
+            <div id="composio-marketplace-items-view" style="display: none;">
+              <button id="composio-back-to-categories" class="btn btn-reveal">&larr; Back to categories</button>
+              <div class="marketplace-category-title">
+                <h3 id="composio-category-title"></h3>
+              </div>
+              <div id="composio-marketplace-items-container" class="marketplace-items-container"></div>
+            </div>
+            <div id="composio-marketplace-details-view" style="display: none;">
+              <button id="composio-back-to-marketplace" class="btn btn-reveal">&larr; Back to list</button>
+              <div id="composio-marketplace-details-container" class="marketplace-details-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Append modal to body
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHtml;
+    document.body.appendChild(modalContainer.firstElementChild);
+  }
+  
+  // Cache DOM elements
+  marketplaceModal = document.getElementById('composio-marketplace-modal');
+  marketplaceContent = marketplaceModal.querySelector('.marketplace-container');
+  categoriesContainer = document.getElementById('composio-marketplace-categories-container');
+  itemsContainer = document.getElementById('composio-marketplace-items-container');
+  detailsContainer = document.getElementById('composio-marketplace-details-container');
+  backButton = document.getElementById('composio-back-to-marketplace');
+  backToCategoriesButton = document.getElementById('composio-back-to-categories');
+  
+  return {
+    marketplaceModal,
+    marketplaceContent,
+    categoriesContainer,
+    itemsContainer,
+    detailsContainer,
+    backButton,
+    backToCategoriesButton
+  };
+}
+
+/**
+ * Show the Composio marketplace modal
+ * @param {HTMLElement} modal - The modal element
+ */
+export function showModal(modal) {
+  // Check if API key exists
+  const apiKey = localStorage.getItem('composioApiKey');
+  
+  if (!apiKey) {
+    // Show API key form
+    showApiKeyForm();
+  } else {
+    // Show marketplace content
+    showMarketplaceContent();
+  }
+  
+  window.modalManager.showModal(modal);
+}
+
+/**
+ * Show the API key form
+ */
+export function showApiKeyForm() {
+  // Hide marketplace content
+  document.querySelector('#composio-marketplace-modal .marketplace-container').style.display = 'none';
+  
+  // Show API key form
+  document.getElementById('composio-api-key-view').style.display = 'block';
+  
+  // Set up form submission handler
+  const form = document.getElementById('composio-api-key-form');
+  form.onsubmit = handleApiKeySubmit;
+  
+  // Set up clear button handler
+  const clearButton = document.getElementById('composio-api-key-clear');
+  clearButton.onclick = handleClearApiKey;
+  
+  // Pre-fill API key if it exists
+  const apiKey = localStorage.getItem('composioApiKey');
+  if (apiKey) {
+    document.getElementById('composio-api-key').value = apiKey;
+    clearButton.style.display = 'block';
+  } else {
+    clearButton.style.display = 'none';
+  }
+}
+
+/**
+ * Handle clearing the API key
+ */
+function handleClearApiKey() {
+  // Clear API key from localStorage
+  localStorage.removeItem('composioApiKey');
+  
+  // Clear input field
+  document.getElementById('composio-api-key').value = '';
+  
+  // Hide clear button
+  document.getElementById('composio-api-key-clear').style.display = 'none';
+  
+  // Show success message
+  alert('API key cleared successfully');
+}
+
+/**
+ * Show the marketplace content
+ */
+export function showMarketplaceContent() {
+  // Hide API key form
+  document.getElementById('composio-api-key-view').style.display = 'none';
+  
+  // Show marketplace content
+  document.querySelector('#composio-marketplace-modal .marketplace-container').style.display = 'block';
+}
+
+/**
+ * Handle API key form submission
+ * @param {Event} e - Form submission event
+ */
+function handleApiKeySubmit(e) {
+  e.preventDefault();
+  
+  // Get API key
+  const apiKey = document.getElementById('composio-api-key').value.trim();
+  
+  if (!apiKey) {
+    alert('Please enter a valid API key');
+    return;
+  }
+  
+  // Save API key to localStorage
+  localStorage.setItem('composioApiKey', apiKey);
+  
+  // Show marketplace content
+  showMarketplaceContent();
+  
+  // Reload marketplace data
+  import('../composio-marketplace/index.js').then(module => {
+    module.default.openModal();
+  });
+}
+
+/**
+ * Close the Composio marketplace modal
+ */
+export function closeModal() {
+  window.modalManager.closeActiveModal();
+}
+
+/**
+ * Show the categories view
+ */
+export function showCategoriesView() {
+  document.getElementById('composio-marketplace-categories-view').style.display = 'block';
+  document.getElementById('composio-marketplace-items-view').style.display = 'none';
+  document.getElementById('composio-marketplace-details-view').style.display = 'none';
+  
+  // Reset search input and placeholder
+  const searchInput = document.getElementById('composio-marketplace-search-input');
+  searchInput.value = '';
+  searchInput.placeholder = 'Search all Composio apps...';
+  
+  // Reset category title container style
+  const categoryTitleContainer = document.querySelector('#composio-marketplace-modal .marketplace-category-title');
+  categoryTitleContainer.style.borderBottom = '';
+  categoryTitleContainer.style.color = '';
+  
+  // Show all category cards
+  categoriesContainer.querySelectorAll('.marketplace-category-card').forEach(category => {
+    category.style.display = 'flex';
+  });
+  
+  // Hide any "no results" message
+  const noResults = document.getElementById('composio-no-search-results');
+  if (noResults) {
+    noResults.style.display = 'none';
+  }
+}
+
+/**
+ * Show the items view
+ */
+export function showItemsView() {
+  document.getElementById('composio-marketplace-categories-view').style.display = 'none';
+  document.getElementById('composio-marketplace-items-view').style.display = 'block';
+  document.getElementById('composio-marketplace-details-view').style.display = 'none';
+}
+
+/**
+ * Show the details view
+ */
+export function showDetailsView() {
+  document.getElementById('composio-marketplace-categories-view').style.display = 'none';
+  document.getElementById('composio-marketplace-items-view').style.display = 'none';
+  document.getElementById('composio-marketplace-details-view').style.display = 'block';
+}
