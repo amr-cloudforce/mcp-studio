@@ -6,7 +6,7 @@
 // Import modular components
 import * as modalModule from './modal.js';
 import * as itemsModule from './items.js';
-import * as searchModule from '../marketplace/search.js';
+import * as searchModule from './search.js';
 
 // DOM element references
 let marketplaceModal;
