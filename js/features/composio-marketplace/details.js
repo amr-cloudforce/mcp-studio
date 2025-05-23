@@ -5,7 +5,8 @@
 
 import { showDetailsView } from './modal.js';
 import * as connector from './composio-connector.js';
-import * as notifications from '../../ui/notifications-helper.js';
+import notifications from '../../ui/notifications.js';
+import configManager from '../../config/config-manager.js';
 
 // Current item being viewed
 let currentItem = null;
@@ -65,7 +66,7 @@ export function showItemDetails(item) {
           <ol>
             <li>Click "Connect" to connect to this app</li>
             <li>Complete any required authentication (OAuth or API key)</li>
-            <li>Create an MCP server for the app</li>
+            <li>Click "Check and Save" to automatically create an MCP server</li>
             <li>Start using the app with Claude</li>
           </ol>
           <p>For more information, refer to the Composio documentation.</p>
@@ -98,10 +99,10 @@ function createContainers(detailsContainer, item) {
     oauthContainer.innerHTML = `
       <div class="oauth-content">
         <h3>OAuth Authorization Required</h3>
-        <p>Please complete the authorization in your browser by opening the following URL:</p>
-        <a id="composio-oauth-link" href="#" target="_blank"></a>
-        <p>After completing the authorization, click the button below to check the connection status:</p>
-        <button id="composio-check-status-btn" class="btn btn-primary">Check Connection Status</button>
+        <p>Authenticate:</p>
+        <button id="composio-oauth-link" class="btn btn-primary" target="_blank">Open Authentication</button>
+        <p>After completing the authorization, click the button below:</p>
+        <button id="composio-check-status-btn" class="btn btn-primary">Check and Save</button>
       </div>
     `;
     
@@ -110,7 +111,7 @@ function createContainers(detailsContainer, item) {
     
     // Add check status button event listener
     document.getElementById('composio-check-status-btn').addEventListener('click', () => {
-      checkConnectionStatus(item);
+      checkAndSaveConnection(item);
     });
   }
   
@@ -142,38 +143,6 @@ function createContainers(detailsContainer, item) {
       }
     });
   }
-  
-  // Add MCP server container if it doesn't exist
-  if (!document.getElementById('composio-mcp-container')) {
-    const mcpContainer = document.createElement('div');
-    mcpContainer.id = 'composio-mcp-container';
-    mcpContainer.className = 'mcp-container';
-    mcpContainer.style.display = 'none';
-    mcpContainer.innerHTML = `
-      <div class="mcp-content">
-        <h3>Create MCP Server</h3>
-        <p>Connection is active! You can now create an MCP server for ${item.repo_name}.</p>
-        <div class="form-group">
-          <label for="composio-mcp-name">MCP Server Name:</label>
-          <input type="text" id="composio-mcp-name" value="${item.repo_name.toLowerCase()}-mcp">
-        </div>
-        <button id="composio-create-mcp-btn" class="btn btn-success">Create MCP Server</button>
-        <div id="composio-mcp-result" style="display: none; margin-top: 15px;">
-          <h4>MCP Server Created Successfully!</h4>
-          <p>Your MCP server is now available at: <a id="composio-mcp-url" href="#" target="_blank"></a></p>
-        </div>
-      </div>
-    `;
-    
-    // Insert at the top of the details container
-    detailsContainer.insertBefore(mcpContainer, detailsContainer.firstChild);
-    
-    // Add create MCP server button event listener
-    document.getElementById('composio-create-mcp-btn').addEventListener('click', () => {
-      const mcpName = document.getElementById('composio-mcp-name').value.trim() || `${item.repo_name.toLowerCase()}-mcp`;
-      createMcpServer(mcpName, item);
-    });
-  }
 }
 
 /**
@@ -196,12 +165,12 @@ async function connectToApp(item) {
     
     // Handle connection response
     if (connection.redirectUrl) {
-      // OAuth flow - exactly like in quick-add-ui.js
+      // OAuth flow - show as button instead of link
       const oauthContainer = document.getElementById('composio-oauth-container');
-      const oauthLink = document.getElementById('composio-oauth-link');
+      const oauthButton = document.getElementById('composio-oauth-link');
       
-      oauthLink.href = connection.redirectUrl;
-      oauthLink.textContent = connection.redirectUrl;
+      // Set up button to open OAuth URL
+      oauthButton.onclick = () => window.open(connection.redirectUrl, '_blank');
       oauthContainer.style.display = 'block';
       
       // Show notification
@@ -214,8 +183,8 @@ async function connectToApp(item) {
       // Show notification
       notifications.showInfo('API key required. Please enter the API key for ' + item.repo_name);
     } else if (connection.connectionStatus === 'ACTIVE') {
-      // Connection is already active, show MCP server creation
-      handleConnectionActive(item);
+      // Connection is already active, automatically create MCP server
+      await autoCreateMcpServer(item);
     } else {
       // Other status
       notifications.showWarning(`Connection initiated with status: ${connection.connectionStatus}. Please check the connection details.`);
@@ -236,10 +205,10 @@ async function connectToApp(item) {
 }
 
 /**
- * Check connection status
+ * Check connection status and automatically save MCP server
  * @param {Object} item - Composio marketplace item
  */
-async function checkConnectionStatus(item) {
+async function checkAndSaveConnection(item) {
   try {
     // Show loading state
     const checkBtn = document.getElementById('composio-check-status-btn');
@@ -252,8 +221,8 @@ async function checkConnectionStatus(item) {
     
     // Handle connection status
     if (connectionDetails.status === 'ACTIVE') {
-      // Connection is active, show MCP server creation
-      handleConnectionActive(item);
+      // Connection is active, automatically create and save MCP server
+      await autoCreateMcpServer(item);
     } else {
       // Still not active
       notifications.showWarning(`Connection Status: ${connectionDetails.status}. Please complete the authorization if not done.`);
@@ -268,7 +237,7 @@ async function checkConnectionStatus(item) {
     
     // Reset button
     const checkBtn = document.getElementById('composio-check-status-btn');
-    checkBtn.textContent = 'Check Connection Status';
+    checkBtn.textContent = 'Check and Save';
     checkBtn.disabled = false;
   }
 }
@@ -294,8 +263,8 @@ async function submitApiKey(apiKey, item) {
     
     // Handle connection status
     if (connectionDetails.status === 'ACTIVE') {
-      // Connection is active, show MCP server creation
-      handleConnectionActive(item);
+      // Connection is active, automatically create MCP server
+      await autoCreateMcpServer(item);
     } else {
       // Still not active
       notifications.showWarning(`Connection Status: ${connectionDetails.status}. Please check the connection details.`);
@@ -320,67 +289,43 @@ async function submitApiKey(apiKey, item) {
 }
 
 /**
- * Create an MCP server for the current connection
- * @param {string} name - The name for the MCP server
+ * Automatically create and save MCP server (using EXACT same process as original)
  * @param {Object} item - Composio marketplace item
  */
-async function createMcpServer(name, item) {
+async function autoCreateMcpServer(item) {
   try {
-    // Show loading state
-    const createBtn = document.getElementById('composio-create-mcp-btn');
-    const originalText = createBtn.textContent;
-    createBtn.textContent = 'Creating...';
-    createBtn.disabled = true;
+    // Hide all containers
+    hideAllContainers();
     
-    // Create MCP server
-    const mcpServer = await connector.createMcpServer(name);
+    // Generate MCP server name
+    const mcpName = `${item.repo_name.toLowerCase()}-mcp`;
     
-    // Get MCP server URL
-    const url = connector.getMcpServerUrl(mcpServer);
+    // Step 1: Create MCP server via Composio API (same as original)
+    const mcpServer = await connector.createMcpServer(mcpName);
     
-    // Show MCP server URL
-    const mcpUrl = document.getElementById('composio-mcp-url');
-    mcpUrl.href = url;
-    mcpUrl.textContent = url;
-    document.getElementById('composio-mcp-result').style.display = 'block';
+    // Step 2: Add MCP server to configuration (using EXACT same function as original)
+    const success = await connector.addMcpServerToConfig(mcpName, mcpServer);
     
-    // Add MCP server to configuration
-    await connector.addMcpServerToConfig(name, mcpServer);
+    if (success) {
+      // Step 3: Show restart warning (same as manual server addition)
+      notifications.showRestartWarning();
+      
+      // Step 4: Close Composio modal and navigate to main view
+      setTimeout(() => {
+        // Close the modal
+        window.modalManager.closeActiveModal();
+        
+        // Refresh server list to show new server
+        if (window.serverList && window.serverList.refreshList) {
+          window.serverList.refreshList();
+        }
+      }, 2000);
+    }
     
-    // Show success message
-    notifications.showSuccess(`Successfully created MCP server "${name}" for ${item.repo_name}`);
-    
-    // Reset button
-    createBtn.textContent = originalText;
-    createBtn.disabled = false;
   } catch (error) {
     console.error('Error creating MCP server:', error);
     notifications.showError(`Error creating MCP server: ${error.message}`);
-    
-    // Reset button
-    const createBtn = document.getElementById('composio-create-mcp-btn');
-    createBtn.textContent = 'Create MCP Server';
-    createBtn.disabled = false;
   }
-}
-
-/**
- * Handle connection active state
- * @param {Object} item - Composio marketplace item
- */
-function handleConnectionActive(item) {
-  // Hide OAuth and API key containers
-  document.getElementById('composio-oauth-container').style.display = 'none';
-  document.getElementById('composio-api-key-container').style.display = 'none';
-  
-  // Set default MCP server name
-  document.getElementById('composio-mcp-name').value = `${item.repo_name.toLowerCase()}-mcp`;
-  
-  // Show MCP container
-  document.getElementById('composio-mcp-container').style.display = 'block';
-  
-  // Show success message
-  notifications.showSuccess(`Connection for ${item.repo_name} is active! You can now create an MCP server.`);
 }
 
 /**
@@ -389,8 +334,7 @@ function handleConnectionActive(item) {
 function hideAllContainers() {
   const containers = [
     'composio-oauth-container',
-    'composio-api-key-container',
-    'composio-mcp-container'
+    'composio-api-key-container'
   ];
   
   containers.forEach(id => {
