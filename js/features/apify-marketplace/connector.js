@@ -7,7 +7,7 @@ const { ipcRenderer } = require('electron');
 
 /**
  * Add an actor to the Apify server configuration
- * @param {string} actorId - Actor ID to add
+ * @param {string} actorId - Actor identifier (username/name format) to add
  * @returns {Promise<boolean>} - True if successful
  */
 export async function addActor(actorId) {
@@ -16,7 +16,7 @@ export async function addActor(actorId) {
     
     // Get current configuration
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'apify-actors';
+    const serverName = 'actors-mcp-server';
     
     // Get API key
     const apiKey = await ipcRenderer.invoke('apify-get-api-key');
@@ -66,6 +66,9 @@ export async function addActor(actorId) {
     await ipcRenderer.invoke('save-config', config);
     console.log('[DEBUG] Actor added successfully:', actorId);
     
+    // Show success notification and refresh server list
+    await showSuccessAndRefresh(`Actor ${actorId} added successfully!`);
+    
     return true;
   } catch (error) {
     console.error('Failed to add actor:', error);
@@ -75,7 +78,7 @@ export async function addActor(actorId) {
 
 /**
  * Remove an actor from the Apify server configuration
- * @param {string} actorId - Actor ID to remove
+ * @param {string} actorId - Actor identifier (username/name format) to remove
  * @returns {Promise<boolean>} - True if successful
  */
 export async function removeActor(actorId) {
@@ -84,7 +87,7 @@ export async function removeActor(actorId) {
     
     // Get current configuration
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'apify-actors';
+    const serverName = 'actors-mcp-server';
     
     if (!config.mcpServers[serverName]) {
       console.log('[DEBUG] No Apify server found, nothing to remove');
@@ -117,6 +120,9 @@ export async function removeActor(actorId) {
     await ipcRenderer.invoke('save-config', config);
     console.log('[DEBUG] Actor removed successfully:', actorId);
     
+    // Show success notification and refresh server list
+    await showSuccessAndRefresh(`Actor ${actorId} removed successfully!`);
+    
     return true;
   } catch (error) {
     console.error('Failed to remove actor:', error);
@@ -126,12 +132,12 @@ export async function removeActor(actorId) {
 
 /**
  * Get all currently configured actors
- * @returns {Promise<Array>} - Array of actor IDs
+ * @returns {Promise<Array>} - Array of actor identifiers
  */
 export async function getConfiguredActors() {
   try {
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'apify-actors';
+    const serverName = 'actors-mcp-server';
     
     if (!config.mcpServers[serverName]) {
       return [];
@@ -154,7 +160,7 @@ export async function getConfiguredActors() {
 
 /**
  * Check if an actor is currently configured
- * @param {string} actorId - Actor ID to check
+ * @param {string} actorId - Actor identifier to check
  * @returns {Promise<boolean>} - True if actor is configured
  */
 export async function isActorConfigured(actorId) {
@@ -170,7 +176,7 @@ export async function isActorConfigured(actorId) {
 export async function updateApiKey(apiKey) {
   try {
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'apify-actors';
+    const serverName = 'actors-mcp-server';
     
     if (config.mcpServers[serverName]) {
       config.mcpServers[serverName].env = {
@@ -185,5 +191,37 @@ export async function updateApiKey(apiKey) {
   } catch (error) {
     console.error('Failed to update API key in server config:', error);
     return false;
+  }
+}
+
+/**
+ * Show success notification and refresh server list (like Composio does)
+ * @param {string} message - Success message to show
+ */
+async function showSuccessAndRefresh(message) {
+  try {
+    // Import notifications module
+    const notifications = await import('../../ui/notifications.js');
+    
+    // Show success notification
+    notifications.default.showSuccess(message);
+    
+    // Show restart warning (same as Composio)
+    notifications.default.showRestartWarning();
+    
+    // Refresh server list to show changes
+    if (window.serverList && window.serverList.refreshList) {
+      window.serverList.refreshList();
+    }
+    
+    // Close modal after a short delay (like Composio does)
+    setTimeout(() => {
+      if (window.modalManager && window.modalManager.closeActiveModal) {
+        window.modalManager.closeActiveModal();
+      }
+    }, 2000);
+    
+  } catch (error) {
+    console.error('Failed to show success notification:', error);
   }
 }

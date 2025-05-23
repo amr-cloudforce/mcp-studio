@@ -77,6 +77,9 @@ export async function loadApifyActors() {
       // Transform actors to match marketplace item format
       console.log('[DEBUG] Transforming actors data. First actor:', data.data.items[0]);
       const formattedActors = data.data.items.map(actor => {
+        // Create proper actor identifier: username/name
+        const actorIdentifier = `${actor.username || 'unknown'}/${actor.name || actor.id}`;
+        
         const formattedActor = {
           repo_name: actor.name || actor.id,
           summary_200_words: actor.description || 'No description available',
@@ -84,14 +87,16 @@ export async function loadApifyActors() {
           server_type: 'apify',
           stars: actor.stats?.totalRuns || 0,
           available: true,
-          actor_id: actor.id, // Store the actor ID for server config
+          actor_id: actorIdentifier, // Use username/name format for server config
           actor_name: actor.name || 'Unknown',
           actor_username: actor.username || '',
           actor_title: actor.title || actor.name || 'Unknown',
           actor_description: actor.description || 'No description available',
           actor_stats: actor.stats || {},
           actor_categories: actor.categories || [],
-          actor_pricing: actor.currentPricingInfo || null
+          actor_pricing: actor.currentPricingInfo || null,
+          // Keep original ID for reference
+          original_id: actor.id
         };
         console.log('[DEBUG] Transformed actor:', formattedActor);
         return formattedActor;
@@ -117,12 +122,12 @@ export async function loadApifyActors() {
 
 /**
  * Get currently selected actors from server configuration
- * @returns {Promise<Array>} - Array of selected actor IDs
+ * @returns {Promise<Array>} - Array of selected actor identifiers
  */
 export async function getSelectedActors() {
   try {
     const config = await ipcRenderer.invoke('get-config');
-    const apifyServer = config.mcpServers['apify-actors'];
+    const apifyServer = config.mcpServers['actors-mcp-server'];
     
     if (!apifyServer || !apifyServer.args) {
       return [];
@@ -144,7 +149,7 @@ export async function getSelectedActors() {
 
 /**
  * Check if an actor is currently selected
- * @param {string} actorId - Actor ID to check
+ * @param {string} actorId - Actor identifier to check
  * @returns {Promise<boolean>} - True if actor is selected
  */
 export async function isActorSelected(actorId) {
