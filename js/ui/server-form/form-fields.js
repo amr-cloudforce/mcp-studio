@@ -1,29 +1,88 @@
 /**
- * Form Fields
- * Handles dynamic form field generation
+ * Server Form - Form Fields Module
+ * Handles dynamic form field generation and manipulation.
  */
 
-import * as utils from './utils.js';
+export function makeRow(container, html) {
+  const div = document.createElement('div');
+  div.className = 'row';
+  div.innerHTML = html;
+  div.querySelector('button').onclick = () => div.remove();
+  container.appendChild(div);
+  return div;
+}
+
+export function addGenericArg(container, value) {
+  makeRow(container, `
+    <input type="text" value="${value}">
+    <button class="btn btn-del">&times;</button>
+  `);
+}
+
+export function addGenericEnv(container, key, value) {
+  makeRow(container, `
+    <input class="env-key" type="text" placeholder="KEY" value="${key}">
+    <input class="env-val" type="text" placeholder="VALUE" value="${value}">
+    <button class="btn btn-del">&times;</button>
+  `);
+}
+
+export function addNpxArg(container, value) {
+  makeRow(container, `
+    <input type="text" value="${value}">
+    <button class="btn btn-del">&times;</button>
+  `);
+}
+
+export function addNpxEnv(container, key, value) {
+  makeRow(container, `
+    <input class="env-key" type="text" placeholder="KEY" value="${key}">
+    <input class="env-val" type="text" placeholder="VALUE" value="${value}">
+    <button class="btn btn-del">&times;</button>
+  `);
+}
+
+export function addDockerPort(container, value) {
+  makeRow(container, `
+    <input type="text" placeholder="host:container" value="${value}">
+    <button class="btn btn-del">&times;</button>
+  `);
+}
+
+export function addDockerVolume(container, value) {
+  makeRow(container, `
+    <input type="text" placeholder="src:dst" value="${value}">
+    <button class="btn btn-del">&times;</button>
+  `);
+}
+
+export function addDockerEnv(container, key, value) {
+  makeRow(container, `
+    <input class="env-key" type="text" placeholder="KEY" value="${key}">
+    <input class="env-val" type="text" placeholder="VALUE" value="${value}">
+    <button class="btn btn-del">&times;</button>
+  `);
+}
 
 /**
- * Initialize type selector
+ * Initialize the type selector
  * @param {NodeList} typeRadios - Type radio buttons
  */
 export function initTypeSelector(typeRadios) {
   typeRadios.forEach(radio => {
     radio.addEventListener('change', () => {
-      document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.form-section:not(#section-quick)').forEach(sec => sec.classList.remove('active'));
       document.getElementById(`section-${radio.value}`).classList.add('active');
     });
   });
 }
 
 /**
- * Set up form for a generic server
+ * Set up the generic form with configuration
  * @param {object} config - Server configuration
  * @param {HTMLElement} cmdInput - Command input element
- * @param {HTMLElement} genericArgs - Generic args container
- * @param {HTMLElement} genericEnv - Generic env container
+ * @param {HTMLElement} genericArgs - Generic arguments container
+ * @param {HTMLElement} genericEnv - Generic environment variables container
  * @param {HTMLElement} genericDis - Generic disabled checkbox
  */
 export function setupGenericForm(config, cmdInput, genericArgs, genericEnv, genericDis) {
@@ -31,91 +90,49 @@ export function setupGenericForm(config, cmdInput, genericArgs, genericEnv, gene
   genericDis.checked = !!config.disabled;
   
   genericArgs.innerHTML = '';
-  (config.args || []).forEach(a => utils.addGenericArg(genericArgs, a));
-  if (!(config.args || []).length) utils.addGenericArg(genericArgs, '');
+  (config.args || []).forEach(a => addGenericArg(genericArgs, a));
+  if (!(config.args || []).length) addGenericArg(genericArgs, '');
   
   genericEnv.innerHTML = '';
-  Object.entries(config.env || {}).forEach(([k, v]) => utils.addGenericEnv(genericEnv, k, v));
-  if (!config.env) utils.addGenericEnv(genericEnv, '', '');
+  Object.entries(config.env || {}).forEach(([k, v]) => addGenericEnv(genericEnv, k, v));
+  if (!config.env) addGenericEnv(genericEnv, '', '');
 }
 
 /**
- * Set up form for an NPX server
+ * Set up the NPX form with configuration
  * @param {object} config - Server configuration
- * @param {HTMLElement} npxRepo - NPX repo input element
+ * @param {HTMLElement} npxRepo - NPX repository input element
  * @param {NodeList} npxFlags - NPX flags checkboxes
- * @param {HTMLElement} npxArgs - NPX args container
- * @param {HTMLElement} npxEnv - NPX env container
+ * @param {HTMLElement} npxArgs - NPX arguments container
+ * @param {HTMLElement} npxEnv - NPX environment variables container
  * @param {HTMLElement} npxDis - NPX disabled checkbox
  */
 export function setupNpxForm(config, npxRepo, npxFlags, npxArgs, npxEnv, npxDis) {
   npxDis.checked = !!config.disabled;
   
-  // Get all arguments except -y (which is always included)
-  const allArgs = (config.args || []).filter(a => a !== '-y');
+  const flags = (config.args || []).filter(a => a.startsWith('-'));
+  const rest = (config.args || []).filter(a => !a.startsWith('-'));
   
-  // Find the repository (first non-flag argument)
-  const repoIndex = allArgs.findIndex(a => !a.startsWith('-'));
-  const repo = repoIndex >= 0 ? allArgs[repoIndex] : '';
+  npxFlags.forEach(c => c.checked = flags.includes(c.dataset.flag));
+  npxRepo.value = rest[0] || '';
   
-  // Set repository value
-  npxRepo.value = repo;
-  
-  // Handle standard flags (single dash flags like -y)
-  const standardFlags = allArgs.filter(a => a.startsWith('-') && !a.startsWith('--'));
-  npxFlags.forEach(c => c.checked = standardFlags.includes(c.dataset.flag));
-  
-  // Process remaining arguments, preserving flag-style arguments and their values
   npxArgs.innerHTML = '';
+  rest.slice(1).forEach(a => addNpxArg(npxArgs, a));
+  if (rest.length <= 1) addNpxArg(npxArgs, '');
   
-  if (allArgs.length > 0) {
-    // Skip the repository in the arguments list
-    const remainingArgs = [...allArgs];
-    if (repoIndex >= 0) {
-      remainingArgs.splice(repoIndex, 1);
-    }
-    
-    // Process remaining arguments, preserving flag-style arguments and their values
-    let i = 0;
-    while (i < remainingArgs.length) {
-      const arg = remainingArgs[i];
-      
-      // Skip standard flags that are handled by checkboxes
-      if (standardFlags.includes(arg)) {
-        i++;
-        continue;
-      }
-      
-      // Handle flag-style arguments (--flag value)
-      if (arg.startsWith('--') && i + 1 < remainingArgs.length && !remainingArgs[i + 1].startsWith('-')) {
-        utils.addNpxArg(npxArgs, `${arg} ${remainingArgs[i + 1]}`);
-        i += 2; // Skip both the flag and its value
-      } else {
-        utils.addNpxArg(npxArgs, arg);
-        i++;
-      }
-    }
-  }
-  
-  // Add an empty row if no arguments were added
-  if (npxArgs.children.length === 0) {
-    utils.addNpxArg(npxArgs, '');
-  }
-  
-  // Set up environment variables
   npxEnv.innerHTML = '';
-  Object.entries(config.env || {}).forEach(([k, v]) => utils.addNpxEnv(npxEnv, k, v));
-  if (!config.env) utils.addNpxEnv(npxEnv, '', '');
+  Object.entries(config.env || {}).forEach(([k, v]) => addNpxEnv(npxEnv, k, v));
+  if (!config.env) addNpxEnv(npxEnv, '', '');
 }
 
 /**
- * Set up form for a Docker server
+ * Set up the Docker form with configuration
  * @param {object} config - Server configuration
  * @param {HTMLElement} dockerImage - Docker image input element
  * @param {NodeList} dockerFlags - Docker flags checkboxes
  * @param {HTMLElement} dockerPorts - Docker ports container
  * @param {HTMLElement} dockerVolumes - Docker volumes container
- * @param {HTMLElement} dockerEnv - Docker env container
+ * @param {HTMLElement} dockerEnv - Docker environment variables container
  * @param {HTMLElement} dockerDis - Docker disabled checkbox
  */
 export function setupDockerForm(config, dockerImage, dockerFlags, dockerPorts, dockerVolumes, dockerEnv, dockerDis) {
@@ -128,8 +145,8 @@ export function setupDockerForm(config, dockerImage, dockerFlags, dockerPorts, d
   dockerImage.value = rest[0] || '';
   
   dockerEnv.innerHTML = '';
-  Object.entries(config.env || {}).forEach(([k, v]) => utils.addDockerEnv(dockerEnv, k, v));
-  if (!config.env) utils.addDockerEnv(dockerEnv, '', '');
+  Object.entries(config.env || {}).forEach(([k, v]) => addDockerEnv(dockerEnv, k, v));
+  if (!config.env) addDockerEnv(dockerEnv, '', '');
 }
 
 /**
@@ -137,71 +154,72 @@ export function setupDockerForm(config, dockerImage, dockerFlags, dockerPorts, d
  * @param {string} type - Server type
  * @param {object} config - Server configuration
  * @param {HTMLElement} cmdInput - Command input element
- * @param {HTMLElement} genericArgs - Generic args container
- * @param {HTMLElement} genericEnv - Generic env container
+ * @param {HTMLElement} genericArgs - Generic arguments container
+ * @param {HTMLElement} genericEnv - Generic environment variables container
  * @param {HTMLElement} genericDis - Generic disabled checkbox
- * @param {HTMLElement} npxRepo - NPX repo input element
+ * @param {HTMLElement} npxRepo - NPX repository input element
  * @param {NodeList} npxFlags - NPX flags checkboxes
- * @param {HTMLElement} npxArgs - NPX args container
- * @param {HTMLElement} npxEnv - NPX env container
+ * @param {HTMLElement} npxArgs - NPX arguments container
+ * @param {HTMLElement} npxEnv - NPX environment variables container
  * @param {HTMLElement} npxDis - NPX disabled checkbox
  * @param {HTMLElement} dockerImage - Docker image input element
  * @param {NodeList} dockerFlags - Docker flags checkboxes
  * @param {HTMLElement} dockerPorts - Docker ports container
  * @param {HTMLElement} dockerVolumes - Docker volumes container
- * @param {HTMLElement} dockerEnv - Docker env container
+ * @param {HTMLElement} dockerEnv - Docker environment variables container
  * @param {HTMLElement} dockerDis - Docker disabled checkbox
  * @returns {object} - Updated server configuration
  */
 export function handleAdvancedSubmit(
-  type, config, 
+  type, config,
   cmdInput, genericArgs, genericEnv, genericDis,
   npxRepo, npxFlags, npxArgs, npxEnv, npxDis,
   dockerImage, dockerFlags, dockerPorts, dockerVolumes, dockerEnv, dockerDis
 ) {
   if (type === 'generic') {
     config.command = cmdInput.value.trim();
-    config.args = utils.extractArgs(genericArgs);
+    config.args = Array.from(genericArgs.querySelectorAll('input'))
+      .map(i => i.value.trim())
+      .filter(Boolean);
     
-    const env = utils.extractEnvVars(genericEnv);
+    const env = {};
+    genericEnv.querySelectorAll('.row').forEach(r => {
+      const k = r.querySelector('.env-key').value.trim();
+      const v = r.querySelector('.env-val').value.trim();
+      if (k) env[k] = v;
+    });
+    
     if (Object.keys(env).length) config.env = env;
-    
     if (genericDis.checked) config.disabled = true;
   }
   
   if (type === 'npx') {
     config.command = 'npx';
     
-    // Repository (required)
     const repo = npxRepo.value.trim();
     if (!repo) {
       alert('Repository is required');
       return null;
     }
     
-    // Extract arguments and process them
-    const rawArgs = utils.extractArgs(npxArgs);
-    const processedArgs = [];
+    const flags = Array.from(npxFlags)
+      .filter(c => c.checked)
+      .map(c => c.dataset.flag);
     
-    // Process each argument, splitting flag-style arguments and their values
-    rawArgs.forEach(arg => {
-      // Check if this is a flag-style argument with its value (e.g., "--access-token value")
-      const flagMatch = arg.match(/^(--\S+)\s+(.+)$/);
-      if (flagMatch) {
-        // Split into flag and value
-        processedArgs.push(flagMatch[1], flagMatch[2]);
-      } else {
-        processedArgs.push(arg);
-      }
+    const extra = Array.from(npxArgs.querySelectorAll('input'))
+      .map(i => i.value.trim())
+      .filter(Boolean);
+    
+    config.args = ['-y', repo, ...extra];
+    
+    const env = {};
+    npxEnv.querySelectorAll('.row').forEach(r => {
+      const k = r.querySelector('.env-key').value.trim();
+      const v = r.querySelector('.env-val').value.trim();
+      if (k) env[k] = v;
     });
     
-    // Always include -y
-    config.args = ['-y', repo, ...processedArgs];
-    
-    // Environment variables
-    const env = utils.extractEnvVars(npxEnv);
     if (Object.keys(env).length) config.env = env;
-    
     if (npxDis.checked) config.disabled = true;
   }
   
@@ -218,10 +236,20 @@ export function handleAdvancedSubmit(
       return null;
     }
     
-    const ports = utils.extractArgs(dockerPorts);
-    const vols = utils.extractArgs(dockerVolumes);
+    const ports = Array.from(dockerPorts.querySelectorAll('input'))
+      .map(i => i.value.trim())
+      .filter(Boolean);
     
-    const env = utils.extractEnvVars(dockerEnv);
+    const vols = Array.from(dockerVolumes.querySelectorAll('input'))
+      .map(i => i.value.trim())
+      .filter(Boolean);
+    
+    const env = {};
+    dockerEnv.querySelectorAll('.row').forEach(r => {
+      const k = r.querySelector('.env-key').value.trim();
+      const v = r.querySelector('.env-val').value.trim();
+      if (k) env[k] = v;
+    });
     
     let args = ['run', ...flags];
     ports.forEach(p => args.push('-p', p));

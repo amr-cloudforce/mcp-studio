@@ -1,28 +1,13 @@
 /**
- * Filesystem Template Handler
- * Handles form generation and submission for the Filesystem template
+ * Server Form - Filesystem Template Handler
+ * Handles form generation and submission for the Filesystem template.
  */
 
-/**
- * Generate form for Filesystem template
- * @param {object} config - Server configuration
- * @returns {string} - Form HTML
- */
-export function generateForm(config) {
-  // Extract directories from args (skip the first two args which are -y and the package name)
+export function generateFilesystemForm(quickInputs, config) {
   const directories = config.args.slice(2) || [];
   
-  // Get documentation URL from templates
-  const templates = window.quickAddTemplates || {};
-  const docUrl = templates['filesystem-server']?.documentationUrl || 'https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem';
-  
-  // Create form HTML
-  return `
+  let formHtml = `
     <div class="form-group">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="margin: 0;">Filesystem Server</h3>
-        <a href="${docUrl}" target="_blank" class="external-link">Documentation</a>
-      </div>
       <label>Directories</label>
       <div id="quick-directory-container" class="directory-list-container">
         <!-- Directory rows will be added here -->
@@ -33,49 +18,42 @@ export function generateForm(config) {
       <label><input type="checkbox" id="quick-disabled" ${config.disabled ? 'checked' : ''}> Disabled</label>
     </div>
   `;
-}
-
-/**
- * Initialize directory rows for the form
- * @param {string[]} directories - Array of directory paths
- */
-export function initDirectoryRows(directories) {
-  const container = document.getElementById('quick-directory-container');
   
-  // Add directory rows
+  quickInputs.innerHTML = formHtml;
+  
+  const container = document.getElementById('quick-directory-container');
   directories.forEach(dir => {
-    addDirectoryRow(container, dir);
+    addQuickDirectoryRow(container, dir);
   });
   
-  // If no directories, add an empty row
   if (directories.length === 0) {
-    addDirectoryRow(container, '');
+    addQuickDirectoryRow(container, '');
   }
   
-  // Set up add directory button
   document.getElementById('quick-add-directory-btn').addEventListener('click', () => {
-    addDirectoryRow(container, '');
+    addQuickDirectoryRow(container, '');
   });
 }
 
-/**
- * Add a directory row to the container
- * @param {HTMLElement} container - Container element
- * @param {string} directory - Directory path
- */
-export function addDirectoryRow(container, directory) {
+// Alias for generateFilesystemForm to maintain compatibility with index.js
+export function generateForm(config) {
+  const dummyElement = document.createElement('div');
+  generateFilesystemForm(dummyElement, config);
+  return dummyElement.innerHTML;
+}
+
+export function addQuickDirectoryRow(container, value) {
   const row = document.createElement('div');
   row.className = 'directory-row';
   row.innerHTML = `
     <div class="row">
-      <input type="text" class="directory-input" value="${directory}" readonly>
+      <input type="text" class="directory-input" placeholder="Select a directory" value="${value}" readonly>
       <button type="button" class="btn btn-reveal browse-btn">Browse</button>
       <button type="button" class="btn btn-del remove-btn">&times;</button>
     </div>
   `;
   container.appendChild(row);
   
-  // Set up event listeners
   const browseBtn = row.querySelector('.browse-btn');
   const removeBtn = row.querySelector('.remove-btn');
   const input = row.querySelector('.directory-input');
@@ -92,35 +70,51 @@ export function addDirectoryRow(container, directory) {
   });
 }
 
-/**
- * Handle Filesystem form submission
- * @param {object} config - Server configuration object to be modified
- * @returns {object} - Updated server configuration
- */
-export function handleSubmit(config) {
-  // Set command and args
+// Function to initialize directory rows for index.js compatibility
+export function initDirectoryRows(directories) {
+  const container = document.getElementById('quick-directory-container');
+  if (!container) return;
+  
+  // Clear existing rows
+  container.innerHTML = '';
+  
+  // Add directory rows
+  directories.forEach(dir => {
+    addQuickDirectoryRow(container, dir);
+  });
+  
+  // If no directories, add an empty row
+  if (directories.length === 0) {
+    addQuickDirectoryRow(container, '');
+  }
+  
+  // Set up add directory button
+  const addBtn = document.getElementById('quick-add-directory-btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      addQuickDirectoryRow(container, '');
+    });
+  }
+}
+
+export function handleFilesystemSubmit(config) {
   config.command = 'npx';
   
-  // Get directories
   const directoryInputs = document.querySelectorAll('#quick-directory-container .directory-input');
   const directories = Array.from(directoryInputs)
     .map(input => input.value.trim())
     .filter(dir => dir !== '');
   
-  // Check if at least one directory is selected
   if (directories.length === 0) {
     alert('Please select at least one directory');
-    return null;
+    return;
   }
   
-  // Set args
   config.args = ['-y', '@modelcontextprotocol/server-filesystem', ...directories];
   
-  // Set disabled flag
   const disabled = document.getElementById('quick-disabled').checked;
   if (disabled) config.disabled = true;
   
-  // Store template ID in metadata
   if (!config.metadata) {
     config.metadata = {
       quickAddTemplate: 'filesystem-server',
@@ -129,4 +123,9 @@ export function handleSubmit(config) {
   }
   
   return config;
+}
+
+// Alias for handleFilesystemSubmit to maintain compatibility with index.js
+export function handleSubmit(config) {
+  return handleFilesystemSubmit(config);
 }
