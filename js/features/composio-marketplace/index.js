@@ -36,13 +36,20 @@ export function initialize() {
  */
 export async function openModal() {
   try {
+    console.log('[DEBUG] Opening Composio marketplace modal');
+    
     // Load Composio apps data
+    console.log('[DEBUG] Loading Composio apps data');
     const items = await data.loadComposioApps();
+    console.log('[DEBUG] Loaded Composio apps data:', items);
     
     // Filter items based on prerequisites
+    console.log('[DEBUG] Filtering items based on prerequisites:', prerequisites);
     const filteredItems = data.filterByPrerequisites(items, prerequisites);
+    console.log('[DEBUG] Filtered items:', filteredItems);
     
     // Open the marketplace modal
+    console.log('[DEBUG] Opening marketplace modal with filtered items');
     ui.openModal(filteredItems);
   } catch (error) {
     console.error('Failed to open Composio marketplace:', error);

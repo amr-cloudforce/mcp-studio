@@ -23,15 +23,21 @@ export async function loadComposioApps() {
   
   // Fetch fresh data
   try {
-    const composioService = require('../../../composio-service.js');
+    console.log('[DEBUG] Attempting to require composio-service.js');
+    // Use the same approach as in quick-add-connection.js
+    const composioService = require('./composio-service.js');
+    console.log('[DEBUG] composioService loaded:', !!composioService);
     
     // Get API key from localStorage
     const apiKey = localStorage.getItem('composioApiKey');
+    console.log('[DEBUG] API key found in localStorage:', !!apiKey);
     
     // If no API key is set, return demo apps
     if (!apiKey) {
       console.warn('No Composio API key found. Using demo data.');
-      return getDemoApps();
+      const demoApps = getDemoApps();
+      console.log('[DEBUG] Demo apps:', demoApps);
+      return demoApps;
     }
     
     // Initialize SDK
@@ -55,25 +61,35 @@ export async function loadComposioApps() {
     
     // Fetch apps
     try {
+      console.log('[DEBUG] Calling composioService.listApps()');
       const apps = await composioService.listApps();
+      console.log('[DEBUG] Raw apps data from API:', apps);
       
       // If apps is empty or undefined, use demo apps
       if (!apps || apps.length === 0) {
         console.warn('No Composio apps found. Using demo data.');
-        return getDemoApps();
+        const demoApps = getDemoApps();
+        console.log('[DEBUG] Using demo apps instead:', demoApps);
+        return demoApps;
       }
       
       // Transform apps to match marketplace item format
-      const formattedApps = apps.map(app => ({
-        repo_name: app.name || app.key,
-        summary_200_words: app.description || 'No description available',
-        category: app.category || 'Composio Apps',
-        server_type: 'composio',
-        stars: app.popularity || 0,
-        available: true,
-        app_id: app.id, // Store the app ID for connection
-        app_key: app.key // Store the app key for connection
-      }));
+      console.log('[DEBUG] Transforming apps data. First app:', apps[0]);
+      const formattedApps = apps.map(app => {
+        const formattedApp = {
+          repo_name: app.name || app.key,
+          summary_200_words: app.description || 'No description available',
+          category: app.category || 'Composio Apps',
+          server_type: 'composio',
+          stars: app.popularity || 0,
+          available: true,
+          app_id: app.id, // Store the app ID for connection
+          app_key: app.key // Store the app key for connection
+        };
+        console.log('[DEBUG] Transformed app:', formattedApp);
+        return formattedApp;
+      });
+      console.log('[DEBUG] All formatted apps:', formattedApps);
       
       // Cache the data
       localStorage.setItem('composioAppsCache', JSON.stringify(formattedApps));

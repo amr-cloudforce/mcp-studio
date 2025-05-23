@@ -89,8 +89,8 @@ async function importServer(item) {
     importBtn.textContent = 'Importing...';
     importBtn.disabled = true;
     
-    // Get Composio service
-    const composioService = require('../../../composio-service.js');
+    // Get Composio service using the same approach as in quick-add-connection.js
+    const composioService = require('./composio-service.js');
     
     // Initialize SDK if not already initialized
     try {

@@ -16,6 +16,7 @@ let allItems = [];
  * @param {Array} items - All Composio marketplace items
  */
 export function setAllItems(items) {
+  console.log('[DEBUG] Setting all items in items.js:', items);
   allItems = items;
 }
 

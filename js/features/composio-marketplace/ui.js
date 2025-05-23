@@ -81,8 +81,14 @@ function showItemsView() {
  * @param {Array} items - Composio marketplace items
  */
 export function populateMarketplace(items) {
+  console.log('[DEBUG] Populating marketplace with items:', items);
+  
   // Store all items for later use
   itemsModule.setAllItems(items);
+  
+  // Group items by category
+  const groupedItems = groupByCategory(items);
+  console.log('[DEBUG] Items grouped by category:', groupedItems);
   
   // Populate categories
   categoriesModule.populateCategories(items, categoriesContainer, groupByCategory);
@@ -93,12 +99,18 @@ export function populateMarketplace(items) {
  * @param {Array} items - Composio marketplace items
  */
 export function openModal(items) {
+  console.log('[DEBUG] Opening modal with items:', items);
+  
   // Populate marketplace with categories
   populateMarketplace(items);
   
+  // Get all items after they've been stored
+  const allItems = itemsModule.getAllItems();
+  console.log('[DEBUG] All items retrieved from itemsModule:', allItems);
+  
   // Initialize search functionality with the populated items
   searchModule.initSearch(
-    itemsModule.getAllItems(),
+    allItems,
     categoriesContainer,
     itemsModule.showSearchResults
   );
