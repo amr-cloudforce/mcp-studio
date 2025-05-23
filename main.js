@@ -143,8 +143,28 @@ function saveComposioData() {
   fsSync.writeFileSync(composioDataPath, JSON.stringify(composioData, null, 2), 'utf8');
 }
 
+// Storage for Apify data
+let apifyData = {};
+const apifyDataPath = path.join(app.getPath('userData'), 'apify.json');
+
+// Load apify data on startup
+function loadApifyData() {
+  try {
+    const data = fsSync.readFileSync(apifyDataPath, 'utf8');
+    apifyData = JSON.parse(data);
+  } catch {
+    apifyData = {};
+  }
+}
+
+// Save apify data
+function saveApifyData() {
+  fsSync.writeFileSync(apifyDataPath, JSON.stringify(apifyData, null, 2), 'utf8');
+}
+
 // Load data on startup
 loadComposioData();
+loadApifyData();
 
 // IPC handlers for Composio storage
 ipcMain.handle('composio-get-api-key', () => {
@@ -165,10 +185,41 @@ ipcMain.handle('composio-set-apps-cache', (_, cache) => {
   saveComposioData();
 });
 
+// IPC handlers for Apify storage
+ipcMain.handle('apify-get-api-key', () => {
+  return apifyData.apiKey || '';
+});
+
+ipcMain.handle('apify-set-api-key', (_, key) => {
+  apifyData.apiKey = key;
+  saveApifyData();
+});
+
+ipcMain.handle('apify-get-actors-cache', () => {
+  return apifyData.actorsCache || null;
+});
+
+ipcMain.handle('apify-set-actors-cache', (_, cache) => {
+  apifyData.actorsCache = cache;
+  saveApifyData();
+});
+
 // IPC handlers
 ipcMain.handle('read-config', async () => {
   const file = await ensureConfigFile();
   return fs.readFile(file, 'utf-8');
+});
+
+ipcMain.handle('get-config', async () => {
+  const file = await ensureConfigFile();
+  const content = await fs.readFile(file, 'utf-8');
+  return JSON.parse(content);
+});
+
+ipcMain.handle('save-config', async (_, config) => {
+  const file = await ensureConfigFile();
+  await fs.writeFile(file, JSON.stringify(config, null, 2), 'utf-8');
+  return file;
 });
 
 ipcMain.handle('read-marketplace-data', async () => {

@@ -1,0 +1,156 @@
+/* ======================================
+   APIFY MARKETPLACE STYLES
+   ====================================== */
+
+/* Marketplace modal content */
+.marketplace-modal-content {
+  width: 95%;
+  max-width: 1000px;
+  max-height: 85vh;
+  height: 85vh;
+}
+
+/* Marketplace container */
+.marketplace-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Search section */
+.marketplace-search {
+  flex-shrink: 0;
+  padding: 15px;
+  border-bottom: 1px solid var(--border);
+  background: #f9faff;
+}
+
+.marketplace-search input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Items view */
+#apify-marketplace-items-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Category title */
+.marketplace-category-title {
+  flex-shrink: 0;
+  padding: 15px;
+  border-bottom: 1px solid var(--border);
+  background: #f9faff;
+}
+
+.marketplace-category-title h3 {
+  margin: 0;
+  color: var(--primary-dark);
+  font-size: 1.3rem;
+}
+
+/* Items container */
+.marketplace-items-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  align-content: start;
+}
+
+/* Details view */
+#apify-marketplace-details-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 15px;
+}
+
+/* Back button */
+#apify-back-to-marketplace {
+  flex-shrink: 0;
+  margin-bottom: 15px;
+  align-self: flex-start;
+}
+
+/* Details container */
+#apify-marketplace-details-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Selected item styling */
+.marketplace-item.selected {
+  border-color: var(--success);
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.marketplace-item.selected::before {
+  content: '✓';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--success);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  #apify-marketplace-items-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .marketplace-modal-content {
+    width: 98%;
+    max-height: 95vh;
+    height: 95vh;
+  }
+  
+  #apify-marketplace-items-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}
+
+/* Scrollbar styling for webkit browsers */
+#apify-marketplace-items-container::-webkit-scrollbar,
+#apify-marketplace-details-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#apify-marketplace-items-container::-webkit-scrollbar-track,
+#apify-marketplace-details-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+#apify-marketplace-items-container::-webkit-scrollbar-thumb,
+#apify-marketplace-details-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+#apify-marketplace-items-container::-webkit-scrollbar-thumb:hover,
+#apify-marketplace-details-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

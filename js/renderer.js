@@ -62,6 +62,7 @@ import QuickAdd from './quick-add.js';
 import serverForm from './ui/server-form/index.js';
 import serverList from './ui/server-list.js';
 import modalHandlers from './ui/modal-handlers.js';
+import apifyMarketplace from './features/apify-marketplace/index.js';
 
 window.addEventListener('DOMContentLoaded', async () => {
   // ACE JSON editor setup
@@ -76,6 +77,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   serverForm.initialize();
   modalHandlers.initialize();
   serverList.initialize();
+  apifyMarketplace.initialize();
 
   // Register event handlers
   serverList.on('edit', ({ name }) => {
