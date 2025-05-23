@@ -79,6 +79,16 @@ export function showItemDetails(item) {
     connectToApp(item);
   });
   
+  // Create containers for OAuth, API key, and MCP server
+  createContainers(detailsContainer, item);
+}
+
+/**
+ * Create containers for OAuth, API key, and MCP server
+ * @param {HTMLElement} detailsContainer - The details container
+ * @param {Object} item - Composio marketplace item
+ */
+function createContainers(detailsContainer, item) {
   // Add OAuth container if it doesn't exist
   if (!document.getElementById('composio-oauth-container')) {
     const oauthContainer = document.createElement('div');
@@ -94,7 +104,9 @@ export function showItemDetails(item) {
         <button id="composio-check-status-btn" class="btn btn-primary">Check Connection Status</button>
       </div>
     `;
-    detailsContainer.appendChild(oauthContainer);
+    
+    // Insert at the top of the details container
+    detailsContainer.insertBefore(oauthContainer, detailsContainer.firstChild);
     
     // Add check status button event listener
     document.getElementById('composio-check-status-btn').addEventListener('click', () => {
@@ -116,7 +128,9 @@ export function showItemDetails(item) {
         <button id="composio-submit-api-key-btn" class="btn btn-primary">Submit</button>
       </div>
     `;
-    detailsContainer.appendChild(apiKeyContainer);
+    
+    // Insert at the top of the details container
+    detailsContainer.insertBefore(apiKeyContainer, detailsContainer.firstChild);
     
     // Add submit API key button event listener
     document.getElementById('composio-submit-api-key-btn').addEventListener('click', () => {
@@ -150,7 +164,9 @@ export function showItemDetails(item) {
         </div>
       </div>
     `;
-    detailsContainer.appendChild(mcpContainer);
+    
+    // Insert at the top of the details container
+    detailsContainer.insertBefore(mcpContainer, detailsContainer.firstChild);
     
     // Add create MCP server button event listener
     document.getElementById('composio-create-mcp-btn').addEventListener('click', () => {
@@ -180,7 +196,7 @@ async function connectToApp(item) {
     
     // Handle connection response
     if (connection.redirectUrl) {
-      // OAuth flow
+      // OAuth flow - exactly like in quick-add-ui.js
       const oauthContainer = document.getElementById('composio-oauth-container');
       const oauthLink = document.getElementById('composio-oauth-link');
       
@@ -189,7 +205,7 @@ async function connectToApp(item) {
       oauthContainer.style.display = 'block';
       
       // Show notification
-      notifications.showInfo('OAuth authentication required. Please complete the authorization in your browser.');
+      notifications.showInfo('OAuth connection initiated. Please complete the authorization in your browser.');
     } else if (connection.connectionStatus === 'PENDING_PARAMS') {
       // API key required
       const apiKeyContainer = document.getElementById('composio-api-key-container');

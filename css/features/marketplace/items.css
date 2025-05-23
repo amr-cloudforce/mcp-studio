@@ -1,80 +1,6 @@
 /* ======================================
-   COMPOSIO MARKETPLACE STYLES
+   MARKETPLACE ITEMS STYLES
    ====================================== */
-
-/* 
- * TABLE OF CONTENTS:
- * 1. Core Layout & Structure
- * 2. Search Bar
- * 3. Item Styles
- * 4. Connect Button
- * 5. Details View
- * 6. Utility Classes
- * 7. Responsive Adjustments
- */
-
-/* ======================================
-   1. CORE LAYOUT & STRUCTURE
-   ====================================== */
-
-/* Modal content */
-.marketplace-modal-content {
-  width: 95%;
-  max-width: 1200px;
-  height: 80vh;
-  max-height: 800px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Container */
-.marketplace-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow: hidden;
-  height: calc(100% - 70px);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-/* Views */
-#marketplace-categories-view,
-#marketplace-items-view,
-#marketplace-details-view {
-  width: 100%;
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Search */
-.marketplace-search {
-  padding: 15px;
-  border-bottom: 1px solid var(--border);
-  background: #f9faff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.marketplace-search input {
-  width: 100%;
-  padding: 10px 15px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 1rem;
-  background: #f9faff;
-  transition: var(--transition);
-}
-
-.marketplace-search input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(74, 86, 226, 0.1);
-  background: #fff;
-}
 
 /* Categories container */
 .marketplace-categories-container {
@@ -124,7 +50,7 @@
   text-align: center;
   color: var(--text);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out; /* Added transition */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
 }
 
 /* Category card color bar */
@@ -165,7 +91,7 @@
 }
 
 .marketplace-category-card:hover {
-  transform: translateY(-5px); /* Increased hover effect */
+  transform: translateY(-5px);
   box-shadow: var(--shadow-md);
   border-color: var(--primary-light);
   background: #fff;
@@ -254,10 +180,6 @@
   }
 }
 
-/* ======================================
-   3. ITEM STYLES
-   ====================================== */
-
 /* Item */
 .marketplace-item {
   border: 1px solid var(--border);
@@ -342,10 +264,6 @@
   color: var(--text);
 }
 
-/* ======================================
-   4. CONNECT BUTTON
-   ====================================== */
-
 /* Connect button styling */
 .connect-btn {
   padding: 5px 12px;
@@ -399,207 +317,7 @@
   border: 1px solid var(--danger-light);
 }
 
-/* Back buttons */
-#back-to-categories, #back-to-marketplace {
-  margin: 15px;
-}
-
-/* ======================================
-   5. DETAILS VIEW
-   ====================================== */
-
-/* Details view */
-#marketplace-details-view {
-  padding: 20px;
-  overflow-y: auto;
-  width: 100%;
-}
-
-.details-header {
-  margin-bottom: 20px;
-}
-
-.details-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.details-header h2 {
-  margin: 0;
-  color: var(--primary);
-}
-
-#import-server-btn {
-  font-weight: 600;
-  padding: 8px 16px;
-  font-size: 1rem;
-}
-
-.details-meta {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.details-summary {
-  margin-bottom: 20px;
-  padding: 15px;
-  background: #f9faff;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.details-links {
-  margin-bottom: 20px;
-}
-
-.details-readme {
-  margin-bottom: 20px;
-}
-
-.details-readme h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: var(--primary-dark);
-}
-
-.readme-content {
-  padding: 15px;
-  background: #f9faff;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.readme-html {
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.readme-html h1,
-.readme-html h2,
-.readme-html h3,
-.readme-html h4 {
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  color: var(--primary-dark);
-}
-
-.readme-html h1 {
-  font-size: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.3em;
-}
-
-.readme-html h2 {
-  font-size: 1.3rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.3em;
-}
-
-.readme-html h3 {
-  font-size: 1.1rem;
-}
-
-.readme-html h4 {
-  font-size: 1rem;
-}
-
-.readme-html p {
-  margin-bottom: 1em;
-}
-
-.readme-html ul, 
-.readme-html ol {
-  margin-bottom: 1em;
-  padding-left: 2em;
-}
-
-.readme-html li {
-  margin-bottom: 0.5em;
-}
-
-.readme-html a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.readme-html a:hover {
-  text-decoration: underline;
-}
-
-.readme-html pre {
-  background: #f0f0f0;
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-  margin-bottom: 1em;
-}
-
-.readme-html code {
-  font-family: monospace;
-  background: #f0f0f0;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-size: 0.85em;
-}
-
-.readme-html strong {
-  font-weight: 600;
-}
-
-.readme-html em {
-  font-style: italic;
-}
-
-.details-actions {
-  margin-top: 20px;
-  text-align: right;
-}
-
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: var(--text-light);
-}
-
-.error {
-  color: var(--danger);
-  padding: 15px;
-  background: #fff0f0;
-  border-radius: 8px;
-  border: 1px solid var(--danger-light);
-}
-
-.no-items {
-  text-align: center;
-  padding: 30px;
-  color: var(--text-light);
-  font-style: italic;
-}
-
-/* ======================================
-   7. RESPONSIVE ADJUSTMENTS
-   ====================================== */
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
-  .marketplace-modal-content {
-    width: 95%;
-    height: 90vh;
-  }
-  
-  .marketplace-container {
-    flex-direction: column;
-  }
-  
-  #marketplace-details-view {
-    height: 100%;
-  }
-  
   .connect-btn {
     padding: 8px 16px; /* Larger touch target on mobile */
     font-size: 1rem;
