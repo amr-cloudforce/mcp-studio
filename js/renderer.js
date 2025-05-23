@@ -1,4 +1,34 @@
-// File: js/renderer.js
+/**
+ * @file renderer.js
+ * @description Main renderer process for the MCP Studio application.
+ * 
+ * This file serves as the entry point for the renderer process and coordinates
+ * the initialization and interaction between various UI modules.
+ * 
+ * ## Responsibilities:
+ * - Initialize core modules (notifications, modal manager, server form, etc.)
+ * - Set up event listeners for UI interactions
+ * - Load and manage configuration
+ * - Coordinate between different UI components
+ * 
+ * ## Modularization Strategy:
+ * If this file grows too large, consider these strategies:
+ * 
+ * 1. Identify groups of related functionality and extract them into separate modules
+ *    (e.g., server management, modal handling, configuration management)
+ * 
+ * 2. Create singleton modules that follow the project pattern:
+ *    - Export a singleton instance, not a class
+ *    - Provide an initialize() method
+ *    - Use event-based communication between modules
+ * 
+ * 3. Keep the main renderer.js file as a coordinator that initializes and connects
+ *    modules, rather than implementing detailed functionality
+ * 
+ * 4. Avoid over-engineering by ensuring each module has a clear, focused purpose
+ *    and follows the established patterns in the project
+ */
+
 // With nodeIntegration: true and contextIsolation: false,
 // we can directly require Node.js modules
 const { ipcRenderer, shell } = require('electron');
