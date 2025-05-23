@@ -87,21 +87,62 @@ const composioStore = require('../../storage/composioStore.js');
 This failed because the renderer process couldn't resolve the relative path properly.
 
 #### Solution
-We implemented an IPC-based storage solution following Electron best practices:
+We **completely abandoned the separate storage file** and implemented an IPC-based storage solution:
 
-1. **Main Process Storage**: Moved storage logic to `main.js` using `app.getPath('userData')`
-2. **IPC Handlers**: Added IPC handlers in main process:
+**IMPORTANT: The `js/storage/composioStore.js` file was deleted - it's no longer used.**
+
+1. **Main Process Storage**: Moved ALL storage logic directly into `main.js`:
    ```javascript
-   ipcMain.handle('composio-get-api-key', () => { /* ... */ });
-   ipcMain.handle('composio-set-api-key', (_, key) => { /* ... */ });
-   ipcMain.handle('composio-get-apps-cache', () => { /* ... */ });
-   ipcMain.handle('composio-set-apps-cache', (_, cache) => { /* ... */ });
+   // In main.js - this is where storage actually happens now
+   let composioData = {};
+   const composioDataPath = path.join(app.getPath('userData'), 'composio.json');
+
+   function loadComposioData() {
+     try {
+       const data = fsSync.readFileSync(composioDataPath, 'utf8');
+       composioData = JSON.parse(data);
+     } catch {
+       composioData = {};
+     }
+   }
+
+   function saveComposioData() {
+     fsSync.writeFileSync(composioDataPath, JSON.stringify(composioData, null, 2), 'utf8');
+   }
+
+   // IPC handlers - these replace the composioStore module
+   ipcMain.handle('composio-get-api-key', () => {
+     return composioData.apiKey || '';
+   });
+
+   ipcMain.handle('composio-set-api-key', (_, key) => {
+     composioData.apiKey = key;
+     saveComposioData();
+   });
+
+   ipcMain.handle('composio-get-apps-cache', () => {
+     return composioData.appsCache || null;
+   });
+
+   ipcMain.handle('composio-set-apps-cache', (_, cache) => {
+     composioData.appsCache = cache;
+     saveComposioData();
+   });
    ```
-3. **Renderer IPC Calls**: Updated renderer files to use IPC:
+
+2. **Renderer Files Use IPC** (no more imports):
    ```javascript
+   // In modal.js, data.js, composio-connector.js
    const { ipcRenderer } = require('electron');
+   
+   // Instead of: composioStore.getApiKey()
    const apiKey = await ipcRenderer.invoke('composio-get-api-key');
+   
+   // Instead of: composioStore.setApiKey(key)
+   await ipcRenderer.invoke('composio-set-api-key', key);
    ```
+
+**Key Point: No separate storage module exists anymore - everything goes through IPC.**
 
 #### Lesson Learned
 **CRITICAL: Never use relative path require() in Electron renderer process**

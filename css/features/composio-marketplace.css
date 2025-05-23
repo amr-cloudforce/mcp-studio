@@ -67,12 +67,11 @@
   align-content: start;
 }
 
-/* Details view */
+/* Details view - FIXED: removed overflow: hidden */
 #composio-marketplace-details-view {
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: hidden;
   padding: 15px;
 }
 
