@@ -50,17 +50,13 @@ export function createModal() {
           <div class="marketplace-container">
             <div class="marketplace-search">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <input type="text" id="composio-marketplace-search-input" placeholder="Search all Composio apps...">
+                <input type="text" id="composio-marketplace-search-input" placeholder="Search Composio apps...">
                 <button id="composio-api-key-settings" class="btn btn-reveal" style="margin-left: 10px; white-space: nowrap;">API Key Settings</button>
               </div>
             </div>
-            <div id="composio-marketplace-categories-view">
-              <div id="composio-marketplace-categories-container" class="marketplace-categories-container"></div>
-            </div>
-            <div id="composio-marketplace-items-view" style="display: none;">
-              <button id="composio-back-to-categories" class="btn btn-reveal">&larr; Back to categories</button>
+            <div id="composio-marketplace-items-view">
               <div class="marketplace-category-title">
-                <h3 id="composio-category-title"></h3>
+                <h3 id="composio-category-title">Composio Apps</h3>
               </div>
               <div id="composio-marketplace-items-container" class="marketplace-items-container"></div>
             </div>
@@ -82,20 +78,16 @@ export function createModal() {
   // Cache DOM elements
   marketplaceModal = document.getElementById('composio-marketplace-modal');
   marketplaceContent = marketplaceModal.querySelector('.marketplace-container');
-  categoriesContainer = document.getElementById('composio-marketplace-categories-container');
   itemsContainer = document.getElementById('composio-marketplace-items-container');
   detailsContainer = document.getElementById('composio-marketplace-details-container');
   backButton = document.getElementById('composio-back-to-marketplace');
-  backToCategoriesButton = document.getElementById('composio-back-to-categories');
   
   return {
     marketplaceModal,
     marketplaceContent,
-    categoriesContainer,
     itemsContainer,
     detailsContainer,
-    backButton,
-    backToCategoriesButton
+    backButton
   };
 }
 
@@ -209,27 +201,15 @@ export function closeModal() {
 }
 
 /**
- * Show the categories view
+ * Show all apps directly
  */
-export function showCategoriesView() {
-  document.getElementById('composio-marketplace-categories-view').style.display = 'block';
-  document.getElementById('composio-marketplace-items-view').style.display = 'none';
+export function showAllApps() {
+  document.getElementById('composio-marketplace-items-view').style.display = 'block';
   document.getElementById('composio-marketplace-details-view').style.display = 'none';
   
-  // Reset search input and placeholder
+  // Reset search input
   const searchInput = document.getElementById('composio-marketplace-search-input');
   searchInput.value = '';
-  searchInput.placeholder = 'Search all Composio apps...';
-  
-  // Reset category title container style
-  const categoryTitleContainer = document.querySelector('#composio-marketplace-modal .marketplace-category-title');
-  categoryTitleContainer.style.borderBottom = '';
-  categoryTitleContainer.style.color = '';
-  
-  // Show all category cards
-  categoriesContainer.querySelectorAll('.marketplace-category-card').forEach(category => {
-    category.style.display = 'flex';
-  });
   
   // Hide any "no results" message
   const noResults = document.getElementById('composio-no-search-results');
@@ -239,10 +219,9 @@ export function showCategoriesView() {
 }
 
 /**
- * Show the items view
+ * Show the items view (now the main view)
  */
 export function showItemsView() {
-  document.getElementById('composio-marketplace-categories-view').style.display = 'none';
   document.getElementById('composio-marketplace-items-view').style.display = 'block';
   document.getElementById('composio-marketplace-details-view').style.display = 'none';
 }
@@ -251,7 +230,6 @@ export function showItemsView() {
  * Show the details view
  */
 export function showDetailsView() {
-  document.getElementById('composio-marketplace-categories-view').style.display = 'none';
   document.getElementById('composio-marketplace-items-view').style.display = 'none';
   document.getElementById('composio-marketplace-details-view').style.display = 'block';
 }

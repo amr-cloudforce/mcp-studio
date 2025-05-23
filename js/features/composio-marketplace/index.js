@@ -48,9 +48,15 @@ export async function openModal() {
     const filteredItems = data.filterByPrerequisites(items, prerequisites);
     console.log('[DEBUG] Filtered items:', filteredItems);
     
+    // Force all items to have "Composio Apps" category
+    const composioItems = filteredItems.map(item => ({
+      ...item,
+      category: 'Composio Apps'
+    }));
+    
     // Open the marketplace modal
-    console.log('[DEBUG] Opening marketplace modal with filtered items');
-    ui.openModal(filteredItems);
+    console.log('[DEBUG] Opening marketplace modal with Composio items');
+    ui.openModal(composioItems);
   } catch (error) {
     console.error('Failed to open Composio marketplace:', error);
     alert('Failed to load Composio apps data. Please try again later.' + error);

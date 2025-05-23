@@ -1,4 +1,21 @@
-/* Marketplace Styles */
+/* ======================================
+   COMPOSIO MARKETPLACE STYLES
+   ====================================== */
+
+/* 
+ * TABLE OF CONTENTS:
+ * 1. Core Layout & Structure
+ * 2. Search Bar
+ * 3. Item Styles
+ * 4. Connect Button
+ * 5. Details View
+ * 6. Utility Classes
+ * 7. Responsive Adjustments
+ */
+
+/* ======================================
+   1. CORE LAYOUT & STRUCTURE
+   ====================================== */
 
 /* Modal content */
 .marketplace-modal-content {
@@ -237,6 +254,10 @@
   }
 }
 
+/* ======================================
+   3. ITEM STYLES
+   ====================================== */
+
 /* Item */
 .marketplace-item {
   border: 1px solid var(--border);
@@ -250,11 +271,11 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out; /* Added transition */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
 }
 
 .marketplace-item:hover {
-  transform: translateY(-5px); /* Increased hover effect */
+  transform: translateY(-5px);
   box-shadow: var(--shadow-md);
   border-color: var(--primary);
   background: #fff;
@@ -321,6 +342,33 @@
   color: var(--text);
 }
 
+/* ======================================
+   4. CONNECT BUTTON
+   ====================================== */
+
+/* Connect button styling */
+.connect-btn {
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.connect-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.connect-btn:disabled {
+  background-color: var(--primary-light);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 /* Unavailable item */
 .marketplace-item.unavailable {
   opacity: 0.7;
@@ -355,6 +403,10 @@
 #back-to-categories, #back-to-marketplace {
   margin: 15px;
 }
+
+/* ======================================
+   5. DETAILS VIEW
+   ====================================== */
 
 /* Details view */
 #marketplace-details-view {
@@ -529,6 +581,10 @@
   font-style: italic;
 }
 
+/* ======================================
+   7. RESPONSIVE ADJUSTMENTS
+   ====================================== */
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marketplace-modal-content {
@@ -542,5 +598,10 @@
   
   #marketplace-details-view {
     height: 100%;
+  }
+  
+  .connect-btn {
+    padding: 8px 16px; /* Larger touch target on mobile */
+    font-size: 1rem;
   }
 }

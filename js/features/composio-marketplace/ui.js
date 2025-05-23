@@ -3,11 +3,8 @@
  * Handles rendering the Composio marketplace UI
  */
 
-import { groupByCategory } from './data.js';
-
 // Import modular components
 import * as modalModule from './modal.js';
-import * as categoriesModule from '../marketplace/categories.js';
 import * as itemsModule from './items.js';
 import * as searchModule from '../marketplace/search.js';
 
@@ -26,9 +23,7 @@ export function init() {
   
   // Store DOM references
   marketplaceModal = domElements.marketplaceModal;
-  categoriesContainer = domElements.categoriesContainer;
   backButton = domElements.backButton;
-  backToCategoriesButton = domElements.backToCategoriesButton;
   
   // Set up event listeners
   setupEventListeners();
@@ -39,35 +34,29 @@ export function init() {
  */
 function setupEventListeners() {
   // Close button
-  document.getElementById('composio-marketplace-close').addEventListener('click', () => {
-    modalModule.closeModal();
-  });
-  
-  // Back to categories button
-  backToCategoriesButton.addEventListener('click', () => {
-    // Reset search input when going back to categories
-    searchModule.resetSearch();
-    showCategoriesView();
-  });
+  const closeButton = document.getElementById('composio-marketplace-close');
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      modalModule.closeModal();
+    });
+  }
   
   // Back to items button
-  backButton.addEventListener('click', () => {
-    showItemsView();
-  });
+  if (backButton) {
+    backButton.addEventListener('click', () => {
+      showItemsView();
+    });
+  }
   
   // API Key Settings button
-  document.getElementById('composio-api-key-settings').addEventListener('click', () => {
-    modalModule.showApiKeyForm();
-  });
+  const apiKeySettingsButton = document.getElementById('composio-api-key-settings');
+  if (apiKeySettingsButton) {
+    apiKeySettingsButton.addEventListener('click', () => {
+      modalModule.showApiKeyForm();
+    });
+  }
 }
 
-/**
- * Show the categories view
- */
-function showCategoriesView() {
-  modalModule.showCategoriesView();
-  itemsModule.setCurrentCategory(null);
-}
 
 /**
  * Show the items view
@@ -77,7 +66,7 @@ function showItemsView() {
 }
 
 /**
- * Populate the Composio marketplace with categories
+ * Populate the Composio marketplace with items
  * @param {Array} items - Composio marketplace items
  */
 export function populateMarketplace(items) {
@@ -86,12 +75,8 @@ export function populateMarketplace(items) {
   // Store all items for later use
   itemsModule.setAllItems(items);
   
-  // Group items by category
-  const groupedItems = groupByCategory(items);
-  console.log('[DEBUG] Items grouped by category:', groupedItems);
-  
-  // Populate categories
-  categoriesModule.populateCategories(items, categoriesContainer, groupByCategory);
+  // Display all items directly
+  itemsModule.showAllItems();
 }
 
 /**
@@ -101,7 +86,7 @@ export function populateMarketplace(items) {
 export function openModal(items) {
   console.log('[DEBUG] Opening modal with items:', items);
   
-  // Populate marketplace with categories
+  // Populate marketplace with items directly
   populateMarketplace(items);
   
   // Get all items after they've been stored
@@ -111,12 +96,12 @@ export function openModal(items) {
   // Initialize search functionality with the populated items
   searchModule.initSearch(
     allItems,
-    categoriesContainer,
+    document.getElementById('composio-marketplace-items-container'),
     itemsModule.showSearchResults
   );
   
-  // Show categories view
-  showCategoriesView();
+  // Show items view directly
+  modalModule.showItemsView();
   
   // Show modal
   modalModule.showModal(marketplaceModal);

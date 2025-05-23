@@ -6,6 +6,8 @@
 import { getCategoryColor } from '../marketplace/colors.js';
 import { getCategoryIcon } from '../marketplace/icons.js';
 import { showDetailsView } from './modal.js';
+import * as connector from './composio-connector.js';
+import * as notifications from '../../ui/notifications-helper.js';
 
 // State variables
 let currentCategory = null;
@@ -77,23 +79,130 @@ export function createItemElement(item, showCategory = false) {
     <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
+      <button class="btn btn-primary connect-btn">Connect</button>
     </div>
     ${!item.available ? `<div class="unavailable-overlay">
       <span class="unavailable-reason">${item.unavailableReason}</span>
     </div>` : ''}
   `;
   
-  // Add click event
+  // Add click event for the item (show details)
   if (item.available) {
-    itemElement.addEventListener('click', () => {
-      showItemDetails(item);
-    });
+    const itemTitle = itemElement.querySelector('h3');
+    const itemDesc = itemElement.querySelector('p');
+    
+    if (itemTitle) {
+      itemTitle.addEventListener('click', () => {
+        showItemDetails(item);
+      });
+    }
+    
+    if (itemDesc) {
+      itemDesc.addEventListener('click', () => {
+        showItemDetails(item);
+      });
+    }
+    
+    // Add click event for the connect button
+    const connectBtn = itemElement.querySelector('.connect-btn');
+    if (connectBtn) {
+      connectBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent item click
+        connectToApp(item);
+      });
+    }
   }
   
   // Add the item to the wrapper
   wrapper.appendChild(itemElement);
   
   return wrapper;
+}
+
+/**
+ * Connect to a Composio app
+ * @param {Object} item - The Composio app item
+ */
+async function connectToApp(item) {
+  try {
+    // Get the connect button
+    const connectBtn = event.target;
+    const originalText = connectBtn.textContent;
+    
+    // Show loading state
+    connectBtn.textContent = 'Connecting...';
+    connectBtn.disabled = true;
+    
+    // Connect to the app
+    const connection = await connector.connectToApp(item);
+    
+    // Handle connection response
+    if (connection.redirectUrl) {
+      // OAuth flow
+      const confirmed = confirm(`OAuth authentication required for ${item.repo_name}. Open the authorization URL in a new tab?`);
+      if (confirmed) {
+        window.open(connection.redirectUrl, '_blank');
+        alert('After completing the authorization, click "Connect" again to create the MCP server.');
+      }
+    } else if (connection.connectionStatus === 'ACTIVE') {
+      // Connection is already active, create MCP server
+      const serverName = `${item.repo_name.toLowerCase()}-mcp`;
+      const mcpServer = await connector.createMcpServer(serverName);
+      
+      // Add MCP server to configuration
+      await connector.addMcpServerToConfig(serverName, mcpServer);
+      
+      // Show success message
+      notifications.showSuccess(`Successfully connected to ${item.repo_name} and created MCP server "${serverName}"`);
+    } else {
+      // Other status (like PENDING_PARAMS)
+      notifications.showWarning(`Connection initiated with status: ${connection.connectionStatus}. Please check the connection details.`);
+    }
+    
+    // Reset button
+    connectBtn.textContent = originalText;
+    connectBtn.disabled = false;
+  } catch (error) {
+    console.error('Error connecting to app:', error);
+    notifications.showError(`Error connecting to ${item.repo_name}: ${error.message}`);
+    
+    // Reset button
+    if (event && event.target) {
+      const connectBtn = event.target;
+      connectBtn.textContent = 'Connect';
+      connectBtn.disabled = false;
+    }
+  }
+}
+
+/**
+ * Show all items
+ */
+export function showAllItems() {
+  setCurrentCategory(null);
+  
+  // Get the items container
+  const itemsContainer = document.getElementById('composio-marketplace-items-container');
+  
+  // Clear items container
+  itemsContainer.innerHTML = '';
+  
+  // Filter for available items only
+  const availableItems = allItems.filter(item => item.available);
+  
+  // Create items
+  if (availableItems.length > 0) {
+    availableItems.forEach(item => {
+      const itemElement = createItemElement(item);
+      itemsContainer.appendChild(itemElement);
+    });
+  } else {
+    // Show no items message
+    const noItems = document.createElement('div');
+    noItems.className = 'no-items';
+    noItems.textContent = 'No available Composio apps';
+    itemsContainer.appendChild(noItems);
+  }
 }
 
 /**
@@ -108,33 +217,38 @@ export function showItemsForCategory(category) {
   
   // Update category title
   const categoryTitle = document.getElementById('composio-category-title');
-  categoryTitle.textContent = category;
-  
-  // Apply category color to title
-  const categoryColor = getCategoryColor(category);
-  const categoryTitleContainer = document.querySelector('#composio-marketplace-modal .marketplace-category-title');
-  categoryTitleContainer.style.borderBottom = `3px solid ${categoryColor}`;
-  categoryTitleContainer.style.color = 'var(--text)';
-  
-  // Set the icon color to match the category
-  setTimeout(() => {
-    const titleIcon = categoryTitleContainer.querySelector('i');
-    if (titleIcon) {
-      titleIcon.style.color = categoryColor;
+  if (categoryTitle) {
+    categoryTitle.textContent = category;
+    
+    // Apply category color to title
+    const categoryColor = getCategoryColor(category);
+    const categoryTitleContainer = document.querySelector('#composio-marketplace-modal .marketplace-category-title');
+    if (categoryTitleContainer) {
+      categoryTitleContainer.style.borderBottom = `3px solid ${categoryColor}`;
+      categoryTitleContainer.style.color = 'var(--text)';
+      
+      // Set the icon color to match the category
+      setTimeout(() => {
+        const titleIcon = categoryTitleContainer.querySelector('i');
+        if (titleIcon) {
+          titleIcon.style.color = categoryColor;
+        }
+      }, 0);
+      
+      // Get category icon
+      const icon = getCategoryIcon(category);
+      
+      // Set the title text first
+      categoryTitle.textContent = category;
+      
+      // Then prepend the icon to ensure proper rendering
+      categoryTitle.innerHTML = icon + ' ' + categoryTitle.textContent;
     }
-  }, 0);
-  
-  // Get category icon
-  const icon = getCategoryIcon(category);
-  
-  // Set the title text first
-  categoryTitle.textContent = category;
-  
-  // Then prepend the icon to ensure proper rendering
-  categoryTitle.innerHTML = icon + ' ' + categoryTitle.textContent;
+  }
   
   // Get the items container
   const itemsContainer = document.getElementById('composio-marketplace-items-container');
+  if (!itemsContainer) return;
   
   // Clear items container
   itemsContainer.innerHTML = '';
@@ -157,11 +271,16 @@ export function showItemsForCategory(category) {
   }
   
   // Show items view
-  document.getElementById('composio-marketplace-categories-view').style.display = 'none';
-  document.getElementById('composio-marketplace-items-view').style.display = 'block';
+  const itemsView = document.getElementById('composio-marketplace-items-view');
+  if (itemsView) {
+    itemsView.style.display = 'block';
+  }
   
   // Update search placeholder
-  document.getElementById('composio-marketplace-search-input').placeholder = `Search in ${category}...`;
+  const searchInput = document.getElementById('composio-marketplace-search-input');
+  if (searchInput) {
+    searchInput.placeholder = `Search in ${category}...`;
+  }
 }
 
 /**
@@ -172,15 +291,20 @@ export function showItemsForCategory(category) {
 export function showSearchResults(items, query) {
   // Update category title
   const categoryTitle = document.getElementById('composio-category-title');
-  categoryTitle.textContent = `Search Results: "${query}"`;
-  
-  // Apply styling to title
-  const categoryTitleContainer = document.querySelector('#composio-marketplace-modal .marketplace-category-title');
-  categoryTitleContainer.style.borderBottom = `3px solid var(--primary)`;
-  categoryTitleContainer.style.color = 'var(--text)';
+  if (categoryTitle) {
+    categoryTitle.textContent = `Search Results: "${query}"`;
+    
+    // Apply styling to title
+    const categoryTitleContainer = document.querySelector('#composio-marketplace-modal .marketplace-category-title');
+    if (categoryTitleContainer) {
+      categoryTitleContainer.style.borderBottom = `3px solid var(--primary)`;
+      categoryTitleContainer.style.color = 'var(--text)';
+    }
+  }
   
   // Get the items container
   const itemsContainer = document.getElementById('composio-marketplace-items-container');
+  if (!itemsContainer) return;
   
   // Clear items container
   itemsContainer.innerHTML = '';
@@ -203,16 +327,17 @@ export function showSearchResults(items, query) {
     itemsContainer.appendChild(noResults);
   }
   
-  // Update back button text
-  const backToCategoriesButton = document.getElementById('composio-back-to-categories');
-  backToCategoriesButton.textContent = '← Back to categories';
-  
   // Show items view (which now contains search results)
-  document.getElementById('composio-marketplace-categories-view').style.display = 'none';
-  document.getElementById('composio-marketplace-items-view').style.display = 'block';
+  const itemsView = document.getElementById('composio-marketplace-items-view');
+  if (itemsView) {
+    itemsView.style.display = 'block';
+  }
   
   // Update search placeholder
-  document.getElementById('composio-marketplace-search-input').placeholder = `Refine search...`;
+  const searchInput = document.getElementById('composio-marketplace-search-input');
+  if (searchInput) {
+    searchInput.placeholder = `Refine search...`;
+  }
 }
 
 /**
