@@ -4,7 +4,7 @@
  */
 
 import { filterCategories } from './categories.js';
-import { filterItems } from './items.js';
+import { filterItems, getAllItems } from './items.js';
 
 /**
  * Initialize search functionality
@@ -33,13 +33,16 @@ export function initSearch(allItems, categoriesContainer, showSearchResults) {
 /**
  * Handle search input
  * @param {string} query - Search query
- * @param {Array} allItems - All marketplace items
+ * @param {Array} allItems - All marketplace items (initial value, may be stale)
  * @param {HTMLElement} categoriesContainer - The categories container element
  * @param {Function} showSearchResults - Function to show search results
  */
 function handleSearch(query, allItems, categoriesContainer, showSearchResults) {
+  // Always use the latest items from the items module
+  const latestItems = getAllItems();
+  
   if (document.getElementById('marketplace-categories-view').style.display !== 'none') {
-    filterCategories(query, allItems, categoriesContainer, showSearchResults);
+    filterCategories(query, latestItems, categoriesContainer, showSearchResults);
   } else {
     filterItems(query);
   }
