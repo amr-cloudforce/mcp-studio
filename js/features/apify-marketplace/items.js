@@ -221,6 +221,7 @@ export function filterItems(query) {
  * @param {HTMLElement} button - Button element
  */
 async function toggleActor(actorId, button) {
+  console.log('[DEBUG] toggleActor called with actorId:', actorId);
   const isSelected = selectedActors.has(actorId);
   
   try {

@@ -80,6 +80,13 @@ export async function loadApifyActors() {
         // Create proper actor identifier: username/name
         const actorIdentifier = `${actor.username || 'unknown'}/${actor.name || actor.id}`;
         
+        console.log('[DEBUG] Creating actor identifier:', {
+          username: actor.username,
+          name: actor.name,
+          id: actor.id,
+          actorIdentifier: actorIdentifier
+        });
+        
         const formattedActor = {
           repo_name: actor.name || actor.id,
           summary_200_words: actor.description || 'No description available',
@@ -98,7 +105,7 @@ export async function loadApifyActors() {
           // Keep original ID for reference
           original_id: actor.id
         };
-        console.log('[DEBUG] Transformed actor:', formattedActor);
+        console.log('[DEBUG] Transformed actor - actor_id field:', formattedActor.actor_id);
         return formattedActor;
       });
       console.log('[DEBUG] All formatted actors:', formattedActors);
