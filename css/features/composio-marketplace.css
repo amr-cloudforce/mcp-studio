@@ -131,3 +131,52 @@
 #composio-marketplace-details-container::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* ======================================
+   TOOLKIT LOGO STYLES
+   ====================================== */
+
+/* Item title row with logo */
+.item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+/* Toolkit logo styling */
+.toolkit-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #f8f9fa;
+  padding: 2px;
+  border: 1px solid #e9ecef;
+  flex-shrink: 0;
+}
+
+/* Toolkit name in footer */
+.toolkit-name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid #e9ecef;
+}
+
+/* Adjust item footer to accommodate toolkit name */
+.item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Ensure h3 in title row doesn't have extra margin */
+.item-title-row h3 {
+  margin: 0;
+  flex: 1;
+}

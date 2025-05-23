@@ -82,6 +82,54 @@ async function createMcpServer(name, connection, allowedTools = []) {
   return res.json();
 }
 
+async function listTools(options = {}) {
+  _guard();
+  const { limit = 100, cursor, search, important, tags, toolkit_slug } = options;
+  
+  const params = new URLSearchParams();
+  if (limit) params.append('limit', limit.toString());
+  if (cursor) params.append('cursor', cursor);
+  if (search) params.append('search', search);
+  if (important) params.append('important', important.toString());
+  if (tags && Array.isArray(tags)) {
+    tags.forEach(tag => params.append('tags', tag));
+  }
+  if (toolkit_slug) params.append('toolkit_slug', toolkit_slug);
+  
+  const url = `https://backend.composio.dev/api/v3/tools${params.toString() ? '?' + params.toString() : ''}`;
+  
+  const res = await fetch(url, {
+    headers: { 'x-api-key': _toolset.apiKey }
+  });
+  
+  if (!res.ok) throw _httpErr('list tools', res);
+  const data = await res.json();
+  return data.items || [];
+}
+
+async function listToolkits(options = {}) {
+  _guard();
+  const { limit = 100, cursor, category, managed_by, is_local, sort_by } = options;
+  
+  const params = new URLSearchParams();
+  if (limit) params.append('limit', limit.toString());
+  if (cursor) params.append('cursor', cursor);
+  if (category) params.append('category', category);
+  if (managed_by) params.append('managed_by', managed_by);
+  if (is_local !== undefined) params.append('is_local', is_local.toString());
+  if (sort_by) params.append('sort_by', sort_by);
+  
+  const url = `https://backend.composio.dev/api/v3/toolkits${params.toString() ? '?' + params.toString() : ''}`;
+  
+  const res = await fetch(url, {
+    headers: { 'x-api-key': _toolset.apiKey }
+  });
+  
+  if (!res.ok) throw _httpErr('list toolkits', res);
+  const data = await res.json();
+  return data.items || [];
+}
+
 /* -------------------------------------------------- */
 /* -----------------  V1  HELPERS  ------------------ */
 /* -------------------------------------------------- */
@@ -187,6 +235,8 @@ module.exports = {
   getConnectedAccounts,
   createAuthConfig,
   createMcpServer,
+  listTools,
+  listToolkits,
 
   // V1 wrappers
   listApps,

@@ -64,35 +64,40 @@ export async function loadComposioApps() {
       return [];
     }
     
-    // Fetch apps
+    // Fetch toolkits using V3 API
     try {
-      console.log('[DEBUG] Calling composioService.listApps()');
-      const apps = await composioService.listApps();
-      console.log('[DEBUG] Raw apps data from API:', apps);
+      console.log('[DEBUG] Calling composioService.listToolkits()');
+      const toolkits = await composioService.listToolkits({ limit: 100 });
+      console.log('[DEBUG] Raw toolkits data from V3 API:', toolkits);
       
-      // If apps is empty or undefined, return empty array
-      if (!apps || apps.length === 0) {
-        console.warn('No Composio apps found. Please check your API key and try again.');
+      // If toolkits is empty or undefined, return empty array
+      if (!toolkits || toolkits.length === 0) {
+        console.warn('No Composio toolkits found. Please check your API key and try again.');
         return [];
       }
       
-      // Transform apps to match marketplace item format
-      console.log('[DEBUG] Transforming apps data. First app:', apps[0]);
-      const formattedApps = apps.map(app => {
+      // Transform toolkits to match marketplace item format
+      console.log('[DEBUG] Transforming toolkits data. First toolkit:', toolkits[0]);
+      const formattedApps = toolkits.map(toolkit => {
         const formattedApp = {
-          repo_name: app.name || app.key,
-          summary_200_words: app.description || 'No description available',
-          category: app.category || 'Composio Apps',
+          repo_name: toolkit.name || toolkit.slug,
+          summary_200_words: toolkit.meta?.description || 'No description available',
+          category: toolkit.meta?.categories?.[0]?.name || 'Composio Apps',
           server_type: 'composio',
-          stars: app.popularity || 0,
+          stars: 0, // V3 API doesn't provide popularity/stars
           available: true,
-          app_id: app.id, // Store the app ID for connection
-          app_key: app.key // Store the app key for connection
+          app_id: toolkit.slug, // Store the toolkit slug for connection
+          app_key: toolkit.slug, // Store the toolkit slug for connection
+          toolkit_logo: toolkit.meta?.logo || null, // Store the toolkit logo URL
+          toolkit_name: toolkit.name || 'Unknown',
+          toolkit_slug: toolkit.slug,
+          tools_count: toolkit.meta?.tools_count || 0,
+          triggers_count: toolkit.meta?.triggers_count || 0
         };
-        console.log('[DEBUG] Transformed app:', formattedApp);
+        console.log('[DEBUG] Transformed toolkit:', formattedApp);
         return formattedApp;
       });
-      console.log('[DEBUG] All formatted apps:', formattedApps);
+      console.log('[DEBUG] All formatted toolkits:', formattedApps);
       
       // Cache the data
       await ipcRenderer.invoke('composio-set-apps-cache', {
@@ -102,11 +107,11 @@ export async function loadComposioApps() {
       
       return formattedApps;
     } catch (error) {
-      console.error('Failed to fetch Composio apps:', error);
+      console.error('Failed to fetch Composio toolkits:', error);
       return [];
     }
   } catch (error) {
-    console.error('Failed to load Composio apps:', error);
+    console.error('Failed to load Composio toolkits:', error);
     return [];
   }
 }

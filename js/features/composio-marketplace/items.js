@@ -67,16 +67,25 @@ export function createItemElement(item, showCategory = false) {
   // Get category color for the label
   const categoryColor = getCategoryColor(item.category || 'Uncategorized');
   
-  // Create item content
+  // Create toolkit logo HTML
+  const logoHtml = item.toolkit_logo ? 
+    `<img src="${item.toolkit_logo}" alt="${item.toolkit_name || 'Toolkit'} logo" class="toolkit-logo" onerror="this.style.display='none'">` : 
+    '';
+  
+  // Create item content with toolkit logo
   itemElement.innerHTML = `
     <div class="item-header">
       <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
       ${showCategory ? `<span class="item-category" style="background: ${categoryColor}">${item.category || 'Uncategorized'}</span>` : ''}
     </div>
-    <h3>${item.repo_name}</h3>
+    <div class="item-title-row">
+      ${logoHtml}
+      <h3>${item.repo_name}</h3>
+    </div>
     <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
+      ${item.tools_count ? `<span class="toolkit-name">${item.tools_count} tools</span>` : ''}
     </div>
     ${!item.available ? `<div class="unavailable-overlay">
       <span class="unavailable-reason">${item.unavailableReason}</span>
