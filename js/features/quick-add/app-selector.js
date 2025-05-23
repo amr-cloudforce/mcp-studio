@@ -198,6 +198,13 @@ export function initializeSelector() {
   const submitApiKeyButton = document.getElementById('submit-api-key-btn');
   const createMcpButton = document.getElementById('create-mcp-btn');
   
+  // ADD THESE LOGS:
+  console.log('[APP SELECTOR - initializeSelector] connectButton element:', connectButton);
+  console.log('[APP SELECTOR - initializeSelector] checkStatusButton element:', checkStatusButton);
+  console.log('[APP SELECTOR - initializeSelector] submitApiKeyButton element:', submitApiKeyButton);
+  console.log('[APP SELECTOR - initializeSelector] createMcpButton element:', createMcpButton);
+  console.log('[APP SELECTOR - initializeSelector] apiKeyInput (for connect):', apiKeyInput); // apiKeyInput is a global in this module
+
   if (!fetchButton || !appSelect || !loadingIndicator || !errorDisplay) {
     console.error('App selector elements not found');
     return;
@@ -227,4 +234,5 @@ export function initializeSelector() {
   
   // Set up event handlers for the new UI elements
   ui.setupEventHandlers(connectButton, checkStatusButton, submitApiKeyButton, createMcpButton, apiKeyInput);
+  console.log('[APP SELECTOR - initializeSelector] Called ui.setupEventHandlers.');
 }

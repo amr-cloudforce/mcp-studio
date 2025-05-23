@@ -1,0 +1,24 @@
+:root {
+  /* Enhanced color palette - Revised */
+  --primary: #007bff;
+  --primary-light: #3395ff;
+  --primary-dark: #0056b3;
+  --danger: #dc3545;
+  --danger-light: #e3606d;
+  --danger-dark: #a71d2a;
+  --success: #28a745;
+  --success-light: #47b861;
+  --success-dark: #1e7e34;
+  --quick-add: #ffc107;
+  --quick-add-light: #ffcd39;
+  --bg: #f4f7f6;
+  --card: #ffffff;
+  --text: #212529;
+  --text-light: #6c757d;
+  --border: #dee2e6;
+  --hover: #e9ecef;
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow-md: 0 0.5rem 1rem rgba(0, 123, 255, 0.1);
+  --shadow-lg: 0 1rem 3rem rgba(0, 123, 255, 0.175);
+  --transition: all 0.3s ease-in-out;
+}

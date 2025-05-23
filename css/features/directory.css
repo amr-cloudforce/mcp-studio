@@ -1,0 +1,77 @@
+/* Directory list styles */
+.directory-list-container {
+  margin-bottom: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.directory-row {
+  margin-bottom: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.directory-row:last-child {
+  margin-bottom: 0;
+}
+
+.directory-input {
+  background: #f5f7ff;
+  cursor: default;
+}
+
+.browse-btn {
+  padding: 0.6em 1em;
+  font-size: 0.8rem;
+}
+
+.remove-btn {
+  padding: 0.6em;
+  font-size: 0.8rem;
+}
+
+/* Actor input styles */
+.actor-row {
+  margin-bottom: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.actor-row:last-child {
+  margin-bottom: 0;
+}
+
+.actor-input {
+  background: #f5f7ff;
+  padding-left: 1.8em !important;
+}
+
+.actor-input:focus {
+  padding-left: 0.8em !important;
+}
+
+.actor-info-btn {
+  padding: 0.6em;
+  font-size: 0.8rem;
+}
+
+.external-link {
+  font-size: 0.8em;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.external-link:hover {
+  text-decoration: underline;
+}
+
+.external-link:after {
+  content: "↗";
+  margin-left: 3px;
+  font-size: 0.9em;
+}

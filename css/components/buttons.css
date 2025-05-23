@@ -1,0 +1,93 @@
+/* Enhanced buttons */
+.btn {
+  display: inline-block;
+  padding: 0.7em 1.4em;
+  margin: 0 8px 12px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+  border: 1px solid transparent; /* Add a transparent border */
+}
+
+/* Quick Add button - more prominent */
+#quick-add-btn {
+  background: linear-gradient(135deg, var(--quick-add), var(--quick-add-light));
+  font-size: 0.95rem;
+  padding: 0.8em 1.6em;
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: pulse 2s infinite;
+}
+
+#quick-add-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4);
+  animation: none;
+}
+
+#quick-add-btn:after {
+  content: "★";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 140, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0);
+  }
+}
+
+.btn-add {
+  background: linear-gradient(135deg, var(--success), var(--success-light));
+}
+
+.btn-export {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+}
+
+.btn-reveal {
+  background: linear-gradient(135deg, #777, #999);
+}
+
+.btn-paste {
+  background: linear-gradient(135deg, #555, #777);
+}
+
+.btn-del {
+  background: linear-gradient(135deg, var(--danger), var(--danger-light));
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success), var(--success-light));
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  opacity: 0.95;
+  border-color: rgba(0, 0, 0, 0.1); /* Add a subtle border on hover */
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}

@@ -55,9 +55,12 @@ export function initializeUI() {
  * @param {HTMLElement} apiKeyInput - The API key input
  */
 export function setupEventHandlers(connectButton, checkStatusButton, submitApiKeyButton, createMcpButton, apiKeyInput) {
+  console.log('[FIX UI - setupEventHandlers] Function called. connectButton exists:', !!connectButton);
   // Connect button click handler
   if (connectButton) {
+    console.log('[FIX UI - setupEventHandlers] Attaching click listener to connectButton.');
     connectButton.addEventListener('click', async () => {
+      console.log('[FIX UI] Connect button clicked.');
       const selectedAppKey = appSelect.value;
       
       if (!selectedAppKey) {
@@ -70,42 +73,32 @@ export function setupEventHandlers(connectButton, checkStatusButton, submitApiKe
       updateStatus('Initiating connection for ' + selectedAppKey + '...', 'warning');
       
       try {
-        // Initiate the connection
+        console.log('[FIX UI] API Key from input for connection:', apiKeyInput.value.trim()); // apiKeyInput is passed to setupEventHandlers
+        console.log('[FIX UI] Selected App Key for connection:', selectedAppKey);
+
         const connectionRequest = await connection.initiateConnection(selectedAppKey, apiKeyInput.value.trim());
+        // This is your original debug line, ensure it's here:
+        console.log('QUICK ADD DEBUG - Connection Request (from UI):', JSON.stringify(connectionRequest, null, 2)); 
         
-        const connectionId = connectionRequest.connectedAccountId;
-        if (!connectionId) {
-          updateStatus('Connection initiation failed: No connection ID received', 'error');
-          return;
-        }
-        
-        // Check the initial status
-        const initialStatus = connectionRequest.connectionStatus;
-        console.log('Initial Connection Status:', initialStatus);
-        
-        if (initialStatus === 'ACTIVE') {
-          // Connection is immediately active
-          handleConnectionActive();
-        } else if (initialStatus === 'PENDING_PARAMS') {
-          // App requires user-provided parameters (like API Key)
-          updateStatus('Connection for ' + selectedAppKey + ' requires parameters', 'info');
-          
-          // Show API key prompt
-          apiKeyPrompt.style.display = 'block';
-        } else if (connectionRequest.redirectUrl) {
-          // OAuth flow initiated
-          updateStatus('OAuth connection initiated. Please complete the authorization in your browser.', 'info');
-          
-          // Show OAuth link
-          oauthLink.href = connectionRequest.redirectUrl;
-          oauthLink.textContent = connectionRequest.redirectUrl;
-          oauthContainer.style.display = 'block';
+        // ... rest of your existing logic to handle connectionRequest ...
+        // Ensure this part is reached and working:
+        if (connectionRequest.redirectUrl) {
+            console.log('[FIX UI] Redirect URL found:', connectionRequest.redirectUrl);
+            oauthLink.href = connectionRequest.redirectUrl;
+            oauthLink.textContent = connectionRequest.redirectUrl;
+            oauthContainer.style.display = 'block';
+            console.log('[FIX UI] OAuth container should now be visible.');
+            updateStatus('OAuth connection initiated. Please complete the authorization in your browser.', 'info');
+        } else if (connectionRequest.connectedAccountId) {
+          updateStatus('Connection successful!', 'success');
+          // Optionally, hide the OAuth container if not needed
+          oauthContainer.style.display = 'none';
         } else {
-          // Initiated but not active, not pending params, and no redirect
-          updateStatus('Connection initiated, but status is ' + initialStatus + ' and cannot proceed', 'warning');
+            console.log('[FIX UI] No redirectUrl in connectionRequest from UI.');
+            updateStatus('Connection initiated, but status is ' + connectionRequest.connectionStatus + ' and cannot proceed', 'warning');
         }
       } catch (error) {
-        console.error('Error initiating connection:', error);
+        console.error('[FIX UI] CRITICAL ERROR during connectButton click handler:', error); // This will show errors from initiateConnection
         updateStatus('Error initiating connection: ' + (error.message || 'Unknown error'), 'error');
       }
     });

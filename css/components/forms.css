@@ -1,0 +1,98 @@
+/* Enhanced form styling */
+.form-group {
+  margin-bottom: 1.5em;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  color: var(--text);
+}
+
+input[type="text"],
+input[type="password"],
+textarea {
+  width: 100%;
+  padding: 0.8em;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: monospace;
+  transition: var(--transition);
+  background: #fcfcff;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(74, 86, 226, 0.1);
+  background: #fff;
+}
+
+textarea {
+  height: 150px;
+  resize: vertical;
+}
+
+.row {
+  display: flex;
+  gap: 0.8em;
+  margin-bottom: 0.8em;
+  align-items: center;
+}
+
+.row input {
+  flex: 1;
+}
+
+.row button {
+  flex: 0 0 auto;
+}
+
+.modal-footer {
+  text-align: right;
+  margin-top: 2.5em; /* Increased top margin */
+  padding-top: 2em; /* Increased top padding */
+  border-top: 1px solid var(--border);
+}
+
+/* Radio buttons and checkboxes */
+input[type="radio"],
+input[type="checkbox"] {
+  margin-right: 0.5em;
+  accent-color: var(--primary);
+}
+
+.type-switch {
+  display: flex;
+  gap: 1.5em;
+  margin-bottom: 1.5em;
+  background: #f5f7ff;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.type-switch label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.form-section {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.form-section.active {
+  display: block;
+}
+
+.editor-container {
+  height: 300px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
