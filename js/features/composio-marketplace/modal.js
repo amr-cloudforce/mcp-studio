@@ -84,6 +84,22 @@ export function createModal() {
   detailsContainer = document.getElementById('composio-marketplace-details-container');
   backButton = document.getElementById('composio-back-to-marketplace');
   
+  // Debug: Log CSS properties to verify scrolling is enabled
+  console.log('[DEBUG] Composio modal CSS check:', {
+    itemsContainer: itemsContainer ? {
+      overflow: getComputedStyle(itemsContainer).overflow,
+      overflowY: getComputedStyle(itemsContainer).overflowY,
+      height: getComputedStyle(itemsContainer).height,
+      flex: getComputedStyle(itemsContainer).flex
+    } : 'not found',
+    detailsContainer: detailsContainer ? {
+      overflow: getComputedStyle(detailsContainer).overflow,
+      overflowY: getComputedStyle(detailsContainer).overflowY,
+      height: getComputedStyle(detailsContainer).height,
+      flex: getComputedStyle(detailsContainer).flex
+    } : 'not found'
+  });
+  
   return {
     marketplaceModal,
     marketplaceContent,
