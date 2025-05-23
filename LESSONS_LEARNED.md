@@ -57,3 +57,79 @@ When refactoring code in an existing project:
 3. **Incremental changes**: Make small, focused changes and test frequently to catch issues early.
 
 4. **Consistent module structure**: Maintain consistency in how modules are structured and exported. In this project, modules are exported as singleton instances with an `initialize` method.
+
+### 2025-05-23: Electron Renderer Process Module Resolution Error
+
+#### Issue
+When implementing a storage module for Composio data, we encountered this error:
+
+```
+node:internal/modules/cjs/loader:1082 Uncaught Error: Cannot find module '../../storage/composioStore.js'
+Require stack:
+- /Users/amr/src/mcp-studio/index.html
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1082:15)
+    at o._resolveFilename (node:electron/js2c/renderer_init:2:3879)
+```
+
+#### Root Cause
+The error occurred because we tried to use Node.js `require()` with relative paths in Electron's renderer process (browser context). Electron's renderer process has different module resolution rules than the main process:
+
+1. **Renderer Process Context**: Files like `modal.js` and `data.js` run in the renderer process (browser-like environment)
+2. **Module Resolution**: Node.js `require()` with relative paths doesn't work the same way in renderer as in main process
+3. **Security Context**: Even with `nodeIntegration: true`, the module resolution behavior is different
+
+#### Failed Approach
+We initially created `js/storage/composioStore.js` and tried to import it directly:
+```javascript
+const composioStore = require('../../storage/composioStore.js');
+```
+
+This failed because the renderer process couldn't resolve the relative path properly.
+
+#### Solution
+We implemented an IPC-based storage solution following Electron best practices:
+
+1. **Main Process Storage**: Moved storage logic to `main.js` using `app.getPath('userData')`
+2. **IPC Handlers**: Added IPC handlers in main process:
+   ```javascript
+   ipcMain.handle('composio-get-api-key', () => { /* ... */ });
+   ipcMain.handle('composio-set-api-key', (_, key) => { /* ... */ });
+   ipcMain.handle('composio-get-apps-cache', () => { /* ... */ });
+   ipcMain.handle('composio-set-apps-cache', (_, cache) => { /* ... */ });
+   ```
+3. **Renderer IPC Calls**: Updated renderer files to use IPC:
+   ```javascript
+   const { ipcRenderer } = require('electron');
+   const apiKey = await ipcRenderer.invoke('composio-get-api-key');
+   ```
+
+#### Lesson Learned
+**CRITICAL: Never use relative path require() in Electron renderer process**
+
+1. **Electron Architecture**: Understand the difference between main and renderer processes
+   - Main process: Full Node.js environment, can require any module
+   - Renderer process: Browser-like environment with limited Node.js access
+
+2. **Storage Best Practice**: Always handle storage in the main process
+   - Use `app.getPath('userData')` for persistent storage
+   - Expose storage via IPC handlers
+   - Keep renderer process focused on UI logic
+
+3. **Module Resolution Rules**:
+   - ✅ Main process: `require('./path/to/module')` works normally
+   - ❌ Renderer process: `require('./path/to/module')` may fail with relative paths
+   - ✅ Renderer process: `require('electron')` and built-in modules work
+   - ✅ Renderer process: Use IPC to communicate with main process
+
+4. **Prevention Strategy**:
+   - Always use IPC for cross-process communication
+   - Keep business logic in main process when possible
+   - Use preload scripts for secure renderer-main communication
+   - Test module imports immediately after creating them
+
+5. **Error Pattern Recognition**:
+   - Error message: "Cannot find module" with relative path
+   - Context: Renderer process trying to require local module
+   - Solution: Move logic to main process + IPC, or use preload script
+
+**This error pattern must never happen again - always use IPC for renderer-main communication.**

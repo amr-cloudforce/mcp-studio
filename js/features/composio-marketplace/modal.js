@@ -3,6 +3,8 @@
  * Handles the creation and setup of the Composio marketplace modal
  */
 
+const { ipcRenderer } = require('electron');
+
 // DOM element references
 let marketplaceModal;
 let marketplaceContent;
@@ -95,9 +97,9 @@ export function createModal() {
  * Show the Composio marketplace modal
  * @param {HTMLElement} modal - The modal element
  */
-export function showModal(modal) {
+export async function showModal(modal) {
   // Check if API key exists
-  const apiKey = localStorage.getItem('composioApiKey');
+  const apiKey = await ipcRenderer.invoke('composio-get-api-key');
   
   if (!apiKey) {
     // Show API key form
@@ -129,21 +131,22 @@ export function showApiKeyForm() {
   clearButton.onclick = handleClearApiKey;
   
   // Pre-fill API key if it exists
-  const apiKey = localStorage.getItem('composioApiKey');
-  if (apiKey) {
-    document.getElementById('composio-api-key').value = apiKey;
-    clearButton.style.display = 'block';
-  } else {
-    clearButton.style.display = 'none';
-  }
+  ipcRenderer.invoke('composio-get-api-key').then(apiKey => {
+    if (apiKey) {
+      document.getElementById('composio-api-key').value = apiKey;
+      clearButton.style.display = 'block';
+    } else {
+      clearButton.style.display = 'none';
+    }
+  });
 }
 
 /**
  * Handle clearing the API key
  */
 function handleClearApiKey() {
-  // Clear API key from localStorage
-  localStorage.removeItem('composioApiKey');
+  // Clear API key from storage
+  ipcRenderer.invoke('composio-set-api-key', '');
   
   // Clear input field
   document.getElementById('composio-api-key').value = '';
@@ -181,8 +184,8 @@ function handleApiKeySubmit(e) {
     return;
   }
   
-  // Save API key to localStorage
-  localStorage.setItem('composioApiKey', apiKey);
+  // Save API key to storage
+  ipcRenderer.invoke('composio-set-api-key', apiKey);
   
   // Show marketplace content
   showMarketplaceContent();

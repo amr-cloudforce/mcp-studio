@@ -9,21 +9,22 @@
  * Handles loading and parsing Composio apps data
  */
 
+const { ipcRenderer } = require('electron');
+
 /**
  * Load Composio apps data from the API and cache it
  * @returns {Promise<Array>} - Array of Composio apps
  */
 export async function loadComposioApps() {
   // Check cache first
-  const cachedData = localStorage.getItem('composioAppsCache');
-  const cacheTimestamp = localStorage.getItem('composioAppsCacheTimestamp');
+  const cachedData = await ipcRenderer.invoke('composio-get-apps-cache');
   
   // If cache exists and is less than 24 hours old
-  if (cachedData && cacheTimestamp) {
+  if (cachedData && cachedData.timestamp) {
     const now = Date.now();
-    const cacheAge = now - parseInt(cacheTimestamp);
+    const cacheAge = now - cachedData.timestamp;
     if (cacheAge < 24 * 60 * 60 * 1000) { // 24 hours
-      return JSON.parse(cachedData);
+      return cachedData.data;
     }
   }
   
@@ -34,9 +35,9 @@ export async function loadComposioApps() {
     const composioService = require('./composio-service.js');
     console.log('[DEBUG] composioService loaded:', !!composioService);
     
-    // Get API key from localStorage
-    const apiKey = localStorage.getItem('composioApiKey');
-    console.log('[DEBUG] API key found in localStorage:', !!apiKey);
+    // Get API key from storage
+    const apiKey = await ipcRenderer.invoke('composio-get-api-key');
+    console.log('[DEBUG] API key found in storage:', !!apiKey);
     
     // If no API key is set, return empty array
     if (!apiKey) {
@@ -52,7 +53,7 @@ export async function loadComposioApps() {
       
       // If the API key is invalid, clear it and show an error
       if (error.message.includes('apiKey')) {
-        localStorage.removeItem('composioApiKey');
+        await ipcRenderer.invoke('composio-set-api-key', '');
         alert('Invalid Composio API key. Please enter a valid key.');
         
         // Import the modal module to show the API key form
@@ -94,8 +95,10 @@ export async function loadComposioApps() {
       console.log('[DEBUG] All formatted apps:', formattedApps);
       
       // Cache the data
-      localStorage.setItem('composioAppsCache', JSON.stringify(formattedApps));
-      localStorage.setItem('composioAppsCacheTimestamp', Date.now().toString());
+      await ipcRenderer.invoke('composio-set-apps-cache', {
+        data: formattedApps,
+        timestamp: Date.now()
+      });
       
       return formattedApps;
     } catch (error) {

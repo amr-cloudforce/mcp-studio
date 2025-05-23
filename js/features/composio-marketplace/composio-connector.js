@@ -6,6 +6,8 @@
 import * as notifications from '../../ui/notifications-helper.js';
 import configManager from '../../config/config-manager.js';
 
+const { ipcRenderer } = require('electron');
+
 // State variables
 let composioService = null;
 let currentConnectionRequest = null;
@@ -16,8 +18,8 @@ let currentConnectionRequest = null;
  */
 export async function initializeService() {
   try {
-    // Get API key from localStorage
-    const apiKey = localStorage.getItem('composioApiKey');
+    // Get API key from storage
+    const apiKey = await ipcRenderer.invoke('composio-get-api-key');
     if (!apiKey) {
       throw new Error('Composio API key is required');
     }

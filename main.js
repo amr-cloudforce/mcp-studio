@@ -105,6 +105,47 @@ function getMarketplaceDataPath() {
   return path.join(__dirname, 'marketplace.json');
 }
 
+// Storage for Composio data
+let composioData = {};
+const composioDataPath = path.join(app.getPath('userData'), 'composio.json');
+
+// Load composio data on startup
+function loadComposioData() {
+  try {
+    const data = fsSync.readFileSync(composioDataPath, 'utf8');
+    composioData = JSON.parse(data);
+  } catch {
+    composioData = {};
+  }
+}
+
+// Save composio data
+function saveComposioData() {
+  fsSync.writeFileSync(composioDataPath, JSON.stringify(composioData, null, 2), 'utf8');
+}
+
+// Load data on startup
+loadComposioData();
+
+// IPC handlers for Composio storage
+ipcMain.handle('composio-get-api-key', () => {
+  return composioData.apiKey || '';
+});
+
+ipcMain.handle('composio-set-api-key', (_, key) => {
+  composioData.apiKey = key;
+  saveComposioData();
+});
+
+ipcMain.handle('composio-get-apps-cache', () => {
+  return composioData.appsCache || null;
+});
+
+ipcMain.handle('composio-set-apps-cache', (_, cache) => {
+  composioData.appsCache = cache;
+  saveComposioData();
+});
+
 // IPC handlers
 ipcMain.handle('read-config', async () => {
   const file = await ensureConfigFile();
