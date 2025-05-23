@@ -100,7 +100,10 @@ function createContainers(detailsContainer, item) {
       <div class="oauth-content">
         <h3>OAuth Authorization Required</h3>
         <p>Authenticate:</p>
-        <button id="composio-oauth-link" class="btn btn-primary" target="_blank">Open Authentication</button>
+        <div style="display: flex; gap: 10px; margin: 10px 0;">
+          <button id="composio-oauth-link" class="btn btn-primary" target="_blank">Open Authentication</button>
+          <button id="composio-copy-url-btn" class="btn btn-reveal">Copy URL</button>
+        </div>
         <p>After completing the authorization, click the button below:</p>
         <button id="composio-check-status-btn" class="btn btn-primary">Check and Save</button>
       </div>
@@ -171,6 +174,24 @@ async function connectToApp(item) {
       
       // Set up button to open OAuth URL
       oauthButton.onclick = () => window.open(connection.redirectUrl, '_blank');
+      
+      // Set up copy URL button
+      const copyButton = document.getElementById('composio-copy-url-btn');
+      copyButton.onclick = () => {
+        navigator.clipboard.writeText(connection.redirectUrl).then(() => {
+          notifications.showSuccess('OAuth URL copied to clipboard!');
+        }).catch(() => {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = connection.redirectUrl;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          notifications.showSuccess('OAuth URL copied to clipboard!');
+        });
+      };
+      
       oauthContainer.style.display = 'block';
       
       // Show notification

@@ -6,8 +6,6 @@
 import { getCategoryColor } from '../marketplace/colors.js';
 import { getCategoryIcon } from '../marketplace/icons.js';
 import { showDetailsView } from './modal.js';
-import * as connector from './composio-connector.js';
-import * as notifications from '../../ui/notifications-helper.js';
 
 // State variables
 let currentCategory = null;
@@ -79,7 +77,6 @@ export function createItemElement(item, showCategory = false) {
     <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
-      <button class="btn btn-primary connect-btn">Connect</button>
     </div>
     ${!item.available ? `<div class="unavailable-overlay">
       <span class="unavailable-reason">${item.unavailableReason}</span>
@@ -103,14 +100,6 @@ export function createItemElement(item, showCategory = false) {
       });
     }
     
-    // Add click event for the connect button
-    const connectBtn = itemElement.querySelector('.connect-btn');
-    if (connectBtn) {
-      connectBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent item click
-        connectToApp(item);
-      });
-    }
   }
   
   // Add the item to the wrapper
@@ -119,61 +108,6 @@ export function createItemElement(item, showCategory = false) {
   return wrapper;
 }
 
-/**
- * Connect to a Composio app
- * @param {Object} item - The Composio app item
- */
-async function connectToApp(item) {
-  try {
-    // Get the connect button
-    const connectBtn = event.target;
-    const originalText = connectBtn.textContent;
-    
-    // Show loading state
-    connectBtn.textContent = 'Connecting...';
-    connectBtn.disabled = true;
-    
-    // Connect to the app
-    const connection = await connector.connectToApp(item);
-    
-    // Handle connection response
-    if (connection.redirectUrl) {
-      // OAuth flow
-      const confirmed = confirm(`OAuth authentication required for ${item.repo_name}. Open the authorization URL in a new tab?`);
-      if (confirmed) {
-        window.open(connection.redirectUrl, '_blank');
-        alert('After completing the authorization, click "Connect" again to create the MCP server.');
-      }
-    } else if (connection.connectionStatus === 'ACTIVE') {
-      // Connection is already active, create MCP server
-      const serverName = `${item.repo_name.toLowerCase()}-mcp`;
-      const mcpServer = await connector.createMcpServer(serverName);
-      
-      // Add MCP server to configuration
-      await connector.addMcpServerToConfig(serverName, mcpServer);
-      
-      // Show success message
-      notifications.showSuccess(`Successfully connected to ${item.repo_name} and created MCP server "${serverName}"`);
-    } else {
-      // Other status (like PENDING_PARAMS)
-      notifications.showWarning(`Connection initiated with status: ${connection.connectionStatus}. Please check the connection details.`);
-    }
-    
-    // Reset button
-    connectBtn.textContent = originalText;
-    connectBtn.disabled = false;
-  } catch (error) {
-    console.error('Error connecting to app:', error);
-    notifications.showError(`Error connecting to ${item.repo_name}: ${error.message}`);
-    
-    // Reset button
-    if (event && event.target) {
-      const connectBtn = event.target;
-      connectBtn.textContent = 'Connect';
-      connectBtn.disabled = false;
-    }
-  }
-}
 
 /**
  * Show all items
