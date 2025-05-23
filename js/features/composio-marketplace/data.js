@@ -1,4 +1,10 @@
 /**
+ * WARNING: CREATING DEMO/DUMMY DATA WITHOUT EXPLICIT USER CONSENT IS FRAUD AND AGAINST THE LAW.
+ * ANY IMPLEMENTATION OF DEMO DATA GENERATION WITHOUT USER PERMISSION IS STRICTLY PROHIBITED.
+ * VIOLATORS MAY BE SUBJECT TO LEGAL ACTION.
+ */
+
+/**
  * Composio Marketplace Data Module
  * Handles loading and parsing Composio apps data
  */
@@ -32,12 +38,10 @@ export async function loadComposioApps() {
     const apiKey = localStorage.getItem('composioApiKey');
     console.log('[DEBUG] API key found in localStorage:', !!apiKey);
     
-    // If no API key is set, return demo apps
+    // If no API key is set, return empty array
     if (!apiKey) {
-      console.warn('No Composio API key found. Using demo data.');
-      const demoApps = getDemoApps();
-      console.log('[DEBUG] Demo apps:', demoApps);
-      return demoApps;
+      console.warn('No Composio API key found. Please set an API key to access Composio apps.');
+      return [];
     }
     
     // Initialize SDK
@@ -56,7 +60,7 @@ export async function loadComposioApps() {
         modalModule.showApiKeyForm();
       }
       
-      return getDemoApps();
+      return [];
     }
     
     // Fetch apps
@@ -65,12 +69,10 @@ export async function loadComposioApps() {
       const apps = await composioService.listApps();
       console.log('[DEBUG] Raw apps data from API:', apps);
       
-      // If apps is empty or undefined, use demo apps
+      // If apps is empty or undefined, return empty array
       if (!apps || apps.length === 0) {
-        console.warn('No Composio apps found. Using demo data.');
-        const demoApps = getDemoApps();
-        console.log('[DEBUG] Using demo apps instead:', demoApps);
-        return demoApps;
+        console.warn('No Composio apps found. Please check your API key and try again.');
+        return [];
       }
       
       // Transform apps to match marketplace item format
@@ -98,11 +100,11 @@ export async function loadComposioApps() {
       return formattedApps;
     } catch (error) {
       console.error('Failed to fetch Composio apps:', error);
-      return getDemoApps();
+      return [];
     }
   } catch (error) {
     console.error('Failed to load Composio apps:', error);
-    return getDemoApps();
+    return [];
   }
 }
 
@@ -113,20 +115,12 @@ export async function loadComposioApps() {
  * @returns {Array} - Filtered Composio apps with availability flag
  */
 export function filterByPrerequisites(items, prerequisites) {
+  // Force all items to be available regardless of prerequisites
   return items.map(item => {
-    let available = true;
-    let reason = '';
-    
-    // Composio apps require Node.js
-    if (!prerequisites.nodejs) {
-      available = false;
-      reason = 'Node.js is required but not installed';
-    }
-    
     return {
       ...item,
-      available,
-      unavailableReason: reason
+      available: true,
+      unavailableReason: ''
     };
   });
 }
@@ -150,93 +144,4 @@ export function groupByCategory(items) {
   });
   
   return grouped;
-}
-
-/**
- * Get demo Composio apps for testing
- * @returns {Array} - Demo Composio apps
- */
-function getDemoApps() {
-  return [
-    {
-      repo_name: 'Twitter',
-      summary_200_words: 'Connect to Twitter API to search tweets, post updates, and more.',
-      category: 'Social Media',
-      server_type: 'composio',
-      stars: 42,
-      available: true,
-      app_id: 'twitter',
-      app_key: 'twitter'
-    },
-    {
-      repo_name: 'Gmail',
-      summary_200_words: 'Access Gmail to read, send, and manage emails.',
-      category: 'Productivity',
-      server_type: 'composio',
-      stars: 38,
-      available: true,
-      app_id: 'gmail',
-      app_key: 'gmail'
-    },
-    {
-      repo_name: 'Google Drive',
-      summary_200_words: 'Access files and folders in Google Drive.',
-      category: 'Productivity',
-      server_type: 'composio',
-      stars: 35,
-      available: true,
-      app_id: 'google-drive',
-      app_key: 'google-drive'
-    },
-    {
-      repo_name: 'Slack',
-      summary_200_words: 'Send messages, create channels, and manage your Slack workspace.',
-      category: 'Communication',
-      server_type: 'composio',
-      stars: 40,
-      available: true,
-      app_id: 'slack',
-      app_key: 'slack'
-    },
-    {
-      repo_name: 'GitHub',
-      summary_200_words: 'Access GitHub repositories, issues, pull requests, and more.',
-      category: 'Development',
-      server_type: 'composio',
-      stars: 45,
-      available: true,
-      app_id: 'github',
-      app_key: 'github'
-    },
-    {
-      repo_name: 'Jira',
-      summary_200_words: 'Create and manage Jira issues, projects, and workflows.',
-      category: 'Development',
-      server_type: 'composio',
-      stars: 37,
-      available: true,
-      app_id: 'jira',
-      app_key: 'jira'
-    },
-    {
-      repo_name: 'Salesforce',
-      summary_200_words: 'Access Salesforce data, create records, and run reports.',
-      category: 'Business',
-      server_type: 'composio',
-      stars: 39,
-      available: true,
-      app_id: 'salesforce',
-      app_key: 'salesforce'
-    },
-    {
-      repo_name: 'Stripe',
-      summary_200_words: 'Process payments, manage customers, and access Stripe data.',
-      category: 'Business',
-      server_type: 'composio',
-      stars: 41,
-      available: true,
-      app_id: 'stripe',
-      app_key: 'stripe'
-    }
-  ];
 }

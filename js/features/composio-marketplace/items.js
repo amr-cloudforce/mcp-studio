@@ -17,7 +17,11 @@ let allItems = [];
  */
 export function setAllItems(items) {
   console.log('[DEBUG] Setting all items in items.js:', items);
-  allItems = items;
+  // Force all items to have available flag set to true
+  allItems = items.map(item => ({
+    ...item,
+    available: true
+  }));
 }
 
 /**
