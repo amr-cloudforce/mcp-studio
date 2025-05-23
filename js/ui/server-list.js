@@ -1,151 +1,158 @@
 /**
  * Server List
- * Handles rendering the server list and attaching event handlers
+ * Handles rendering and interactions for the MCP server list.
  */
 
 import configManager from '../config/config-manager.js';
-import modalManager from './modal-manager.js';
 import notifications from './notifications.js';
+import serverForm from './server-form/index.js';
 
 class ServerList {
   constructor() {
-    this.serverListElement = document.getElementById('server-list');
-    this.serverFormModal = document.getElementById('server-modal');
-    this.eventHandlers = {};
+    this.serverListElement = null;
+    this.eventListeners = {};
+    
+    // Listen for config changes to refresh the list
+    configManager.addChangeListener(() => this.refreshList());
   }
 
   /**
    * Initialize the server list
    */
   initialize() {
-    // Listen for configuration changes
-    configManager.addChangeListener(() => this.refreshList());
-    
+    this.serverListElement = document.getElementById('server-list');
     return this;
   }
 
   /**
-   * Refresh the server list
-   */
-  refreshList() {
-    const config = configManager.getConfig();
-    this.serverListElement.innerHTML = '';
-    
-    // Add active servers
-    Object.entries(config.mcpServers || {}).forEach(([name, serverConfig]) => {
-      this.addServerToList(name, serverConfig, 'active');
-    });
-    
-    // Add inactive servers
-    Object.entries(config.inactive || {}).forEach(([name, serverConfig]) => {
-      this.addServerToList(name, serverConfig, 'inactive');
-    });
-    
-    return this;
-  }
-
-  /**
-   * Add a server to the list
-   * @param {string} name - Server name
-   * @param {object} serverConfig - Server configuration
-   * @param {string} section - 'active' or 'inactive'
-   */
-  addServerToList(name, serverConfig, section) {
-    const tr = document.createElement('tr');
-    
-    if (section === 'inactive') {
-      tr.className = 'inactive-row';
-    }
-    
-    tr.innerHTML = `
-      <td>${name}</td>
-      <td>${serverConfig.command}</td>
-      <td>
-        <span class="badge ${section === 'active' ? 'badge-enabled' : 'badge-disabled'}">
-          ${section === 'active' ? 'Active' : 'Inactive'}
-        </span>
-      </td>
-      <td>
-        <button class="btn btn-export" data-action="edit" data-name="${name}" data-section="${section}">Edit</button>
-        <button class="btn btn-del" data-action="delete" data-name="${name}" data-section="${section}">Delete</button>
-        ${section === 'active' 
-          ? `<button class="btn btn-reveal" data-action="deactivate" data-name="${name}">Deactivate</button>`
-          : `<button class="btn btn-add" data-action="activate" data-name="${name}">Activate</button>`
-        }
-      </td>
-    `;
-    
-    // Add event listeners to buttons
-    tr.querySelectorAll('[data-action]').forEach(button => {
-      const action = button.dataset.action;
-      const name = button.dataset.name;
-      const section = button.dataset.section;
-      
-      button.addEventListener('click', () => {
-        this.handleAction(action, name, section);
-      });
-    });
-    
-    this.serverListElement.appendChild(tr);
-  }
-
-  /**
-   * Handle button actions
-   * @param {string} action - Action to perform
-   * @param {string} name - Server name
-   * @param {string} section - 'active' or 'inactive'
-   */
-  handleAction(action, name, section) {
-    switch (action) {
-      case 'edit':
-        this.triggerEvent('edit', { name, section });
-        break;
-        
-      case 'delete':
-        if (confirm(`Delete ${section} server "${name}"?`)) {
-          configManager.deleteServer(name, section);
-          configManager.saveConfig();
-          notifications.showRestartWarning();
-        }
-        break;
-        
-      case 'activate':
-        configManager.moveServer(name, 'active');
-        configManager.saveConfig();
-        notifications.showRestartWarning();
-        break;
-        
-      case 'deactivate':
-        configManager.moveServer(name, 'inactive');
-        configManager.saveConfig();
-        notifications.showRestartWarning();
-        break;
-    }
-  }
-
-  /**
-   * Register an event handler
+   * Register event listeners
    * @param {string} event - Event name
-   * @param {Function} handler - Event handler
+   * @param {Function} callback - Event callback
    */
-  on(event, handler) {
-    if (!this.eventHandlers[event]) {
-      this.eventHandlers[event] = [];
+  on(event, callback) {
+    if (!this.eventListeners[event]) {
+      this.eventListeners[event] = [];
     }
-    this.eventHandlers[event].push(handler);
+    this.eventListeners[event].push(callback);
     return this;
   }
 
   /**
    * Trigger an event
    * @param {string} event - Event name
-   * @param {object} data - Event data
+   * @param {*} data - Event data
    */
-  triggerEvent(event, data) {
-    if (this.eventHandlers[event]) {
-      this.eventHandlers[event].forEach(handler => handler(data));
+  trigger(event, data) {
+    if (this.eventListeners[event]) {
+      this.eventListeners[event].forEach(callback => callback(data));
     }
     return this;
+  }
+
+  /**
+   * Refreshes the server list based on the current configuration.
+   */
+  refreshList() {
+    if (!this.serverListElement) return;
+    
+    this.serverListElement.innerHTML = '';
+    const mcpConfig = configManager.getConfig();
+
+    // Add active servers
+    Object.entries(mcpConfig.mcpServers || {}).forEach(([n, c]) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${n}</td>
+        <td>${c.command}</td>
+        <td>
+          <span class="badge badge-enabled">Active</span>
+        </td>
+        <td>
+          <button class="btn btn-export" data-edit="${n}">Edit</button>
+          <button class="btn btn-del" data-del="${n}">Delete</button>
+          <button class="btn btn-reveal" data-deactivate="${n}">Deactivate</button>
+        </td>`;
+      this.serverListElement.appendChild(tr);
+    });
+
+    // Add inactive servers
+    Object.entries(mcpConfig.inactive || {}).forEach(([n, c]) => {
+      const tr = document.createElement('tr');
+      tr.className = 'inactive-row';
+      tr.innerHTML = `
+        <td>${n}</td>
+        <td>${c.command}</td>
+        <td>
+          <span class="badge badge-disabled">Inactive</span>
+        </td>
+        <td>
+          <button class="btn btn-export" data-edit-inactive="${n}">Edit</button>
+          <button class="btn btn-del" data-del-inactive="${n}">Delete</button>
+          <button class="btn btn-add" data-activate="${n}">Activate</button>
+        </td>`;
+      this.serverListElement.appendChild(tr);
+    });
+
+    this.wireEventHandlers();
+    return this;
+  }
+
+  /**
+   * Wires up event handlers for the server list buttons.
+   */
+  wireEventHandlers() {
+    this.serverListElement.querySelectorAll('[data-edit]').forEach(b =>
+      b.onclick = () => {
+        const name = b.dataset.edit;
+        this.trigger('edit', { name, section: 'active' });
+      }
+    );
+
+    this.serverListElement.querySelectorAll('[data-del]').forEach(b =>
+      b.onclick = async () => {
+        if (!confirm(`Delete "${b.dataset.del}"?`)) return;
+        configManager.deleteServer(b.dataset.del, 'active');
+        await configManager.saveConfig();
+        notifications.showRestartWarning();
+      }
+    );
+
+    this.serverListElement.querySelectorAll('[data-deactivate]').forEach(b =>
+      b.onclick = async () => {
+        const name = b.dataset.deactivate;
+        if (!confirm(`Deactivate "${name}"?`)) return;
+        configManager.moveServer(name, 'inactive');
+        await configManager.saveConfig();
+        notifications.showRestartWarning();
+      }
+    );
+
+    this.serverListElement.querySelectorAll('[data-edit-inactive]').forEach(b =>
+      b.onclick = () => {
+        const name = b.dataset.editInactive;
+        this.trigger('edit', { name, section: 'inactive' });
+      }
+    );
+
+    this.serverListElement.querySelectorAll('[data-del-inactive]').forEach(b =>
+      b.onclick = async () => {
+        const name = b.dataset.delInactive;
+        if (!confirm(`Delete inactive server "${name}"?`)) return;
+        configManager.deleteServer(name, 'inactive');
+        await configManager.saveConfig();
+        notifications.showRestartWarning();
+      }
+    );
+
+    this.serverListElement.querySelectorAll('[data-activate]').forEach(b =>
+      b.onclick = async () => {
+        const name = b.dataset.activate;
+        if (!confirm(`Activate "${name}"?`)) return;
+        configManager.moveServer(name, 'active');
+        await configManager.saveConfig();
+        notifications.showRestartWarning();
+      }
+    );
   }
 }
 
