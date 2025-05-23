@@ -1,0 +1,142 @@
+/* ======================================
+   COMPOSIO MARKETPLACE BUTTON STYLES
+   ====================================== */
+
+/* Enhanced Connect button - primary action */
+#composio-connect-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease-in-out !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#composio-connect-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #004085) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4) !important;
+}
+
+#composio-connect-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3) !important;
+}
+
+/* Add a subtle animation */
+#composio-connect-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+#composio-connect-btn:hover::before {
+  left: 100%;
+}
+
+/* Enhanced OAuth authentication button */
+#composio-oauth-link {
+  background: linear-gradient(135deg, #007bff, #0056b3) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease-in-out !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#composio-oauth-link:hover {
+  background: linear-gradient(135deg, #0056b3, #004085) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4) !important;
+}
+
+#composio-oauth-link:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3) !important;
+}
+
+/* Add a subtle animation */
+#composio-oauth-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+#composio-oauth-link:hover::before {
+  left: 100%;
+}
+
+/* Copy URL button styling to complement primary buttons */
+#composio-copy-url-btn {
+  background: linear-gradient(135deg, #6c757d, #495057) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border: 1px solid #495057 !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease-in-out !important;
+}
+
+#composio-copy-url-btn:hover {
+  background: linear-gradient(135deg, #495057, #343a40) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3) !important;
+}
+
+/* Check and Save button styling */
+#composio-check-status-btn {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.3s ease-in-out !important;
+}
+
+#composio-check-status-btn:hover {
+  background: linear-gradient(135deg, #1e7e34, #155724) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+}
+
+/* Submit API Key button styling */
+#composio-submit-api-key-btn {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.3s ease-in-out !important;
+}
+
+#composio-submit-api-key-btn:hover {
+  background: linear-gradient(135deg, #1e7e34, #155724) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+}
