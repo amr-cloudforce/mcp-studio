@@ -240,6 +240,7 @@ function addToQuickAddTemplates(item, config) {
       
       return {
         name: paramName,
+        displayName: paramName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         type: inputType,
         description: paramDoc,
         required: true,
