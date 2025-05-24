@@ -13,6 +13,14 @@
  *    e.g. add a log that would confirm an assumption before starting to code.
  * 6. When you fix something and the error is not fixed because you made a wrong assumption, you undo 
  *    this yourself without an explicit request from the user.
+ * * 3. Never make a code file larger than 300 lines of code; if it exceeds this, split it as appropriate. 
+ *    THE only exceptions ARE JSON DATA FILES, PACKAGE.JSON OR OTHER FILES THAT ARE NOT MEANT TO BE SPLIT.* 3. Never make a code file larger than 300 lines of code; if it exceeds this, split it as appropriate. 
+ *    THE only exceptions ARE JSON DATA FILES, PACKAGE.JSON OR OTHER FILES THAT ARE NOT MEANT TO BE SPLIT.* 3. Never make a code file larger than 300 lines of code; if it exceeds this, split it as appropriate. 
+ *    THE only exceptions ARE JSON DATA FILES, PACKAGE.JSON OR OTHER FILES THAT ARE NOT MEANT TO BE SPLIT.* 3. Never make a code file larger than 300 lines of code; if it exceeds this, split it as appropriate. 
+ *    THE only exceptions ARE JSON DATA FILES, PACKAGE.JSON OR OTHER FILES THAT ARE NOT MEANT TO BE SPLIT.* 3. Never make a code file larger than 300 lines of code; if it exceeds this, split it as appropriate. 
+ *    THE only exceptions ARE JSON DATA FILES, PACKAGE.JSON OR OTHER FILES THAT ARE NOT MEANT TO BE SPLIT.* 3. Never make a code file larger than 300 lines of code; if it exceeds this, split it as appropriate. 
+ *    THE only exceptions ARE JSON DATA FILES, PACKAGE.JSON OR OTHER FILES THAT ARE NOT MEANT TO BE SPLIT.* 3. Never make a code file larger than 300 lines of code; if it exceeds this, split it as appropriate. 
+ *    THE only exceptions ARE JSON DATA FILES, PACKAGE.JSON OR OTHER FILES THAT ARE NOT MEANT TO BE SPLIT.
  * 
  * WARNING: NOT ADHERING TO THESE LAWS IS CONSIDERED BREAKING THE LAW AND COULD LEAD TO SEVERE DAMAGE.
  */

@@ -135,11 +135,9 @@ async function importServer(item) {
       // Create config from mcpServers data
       const config = {
         config: {
-          [mcpServer.id]: {
-            command: mcpServer.tool,
-            args: mcpServer.params || [],
-            env: mcpServer.env || {}
-          }
+          command: mcpServer.tool,
+          args: mcpServer.params || [],
+          env: mcpServer.env || {}
         }
       };
       
