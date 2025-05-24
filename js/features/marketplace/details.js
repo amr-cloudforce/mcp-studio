@@ -232,10 +232,18 @@ function addToQuickAddTemplates(item, config) {
       let inputType = 'text';
       if (paramType === 'bool' || paramType === 'boolean') {
         inputType = 'checkbox';
-      } else if (paramType === 'number' || paramType === 'int') {
+      } else if (paramType === 'int') {
         inputType = 'number';
-      } else if (paramType === 'password' || paramName.toLowerCase().includes('token') || paramName.toLowerCase().includes('key')) {
+      } else if (paramType === 'number') {
+        inputType = 'number';
+      } else if (paramType === 'url') {
+        inputType = 'url';
+      } else if (paramType === 'path') {
+        inputType = 'file';
+      } else if (paramType === 'password' || paramName.toLowerCase().includes('token') || paramName.toLowerCase().includes('key') || paramName.toLowerCase().includes('secret')) {
         inputType = 'password';
+      } else if (paramType === 'string') {
+        inputType = 'text';
       }
       
       return {

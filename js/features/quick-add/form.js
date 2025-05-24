@@ -153,11 +153,64 @@ function addTemplateInput(input, container) {
         ${input.options.map(opt => `<option value="${opt}" ${opt === input.default ? 'selected' : ''}>${opt}</option>`).join('')}
       </select>
     `;
-  } else {
-    // Create a text input
+  } else if (input.type === 'checkbox') {
+    // Create a checkbox input
+    inputHtml = `
+      <div class="checkbox-group">
+        <input type="checkbox" 
+               id="input-${input.name}" 
+               name="${input.name}" 
+               ${input.default === 'true' || input.default === true ? 'checked' : ''}>
+        <label for="input-${input.name}">${input.displayName}</label>
+      </div>
+    `;
+  } else if (input.type === 'file') {
+    // Create a file input for paths
     inputHtml = `
       <label for="input-${input.name}">${input.displayName}</label>
-      <input type="${input.secret ? 'password' : 'text'}" 
+      <input type="file" 
+             id="input-${input.name}" 
+             name="${input.name}" 
+             ${input.required ? 'required' : ''}>
+    `;
+  } else if (input.type === 'number') {
+    // Create a number input
+    inputHtml = `
+      <label for="input-${input.name}">${input.displayName}</label>
+      <input type="number" 
+             id="input-${input.name}" 
+             name="${input.name}" 
+             placeholder="${input.placeholder || ''}" 
+             value="${input.default || ''}" 
+             ${input.required ? 'required' : ''}>
+    `;
+  } else if (input.type === 'url') {
+    // Create a URL input
+    inputHtml = `
+      <label for="input-${input.name}">${input.displayName}</label>
+      <input type="url" 
+             id="input-${input.name}" 
+             name="${input.name}" 
+             placeholder="${input.placeholder || 'https://example.com'}" 
+             value="${input.default || ''}" 
+             ${input.required ? 'required' : ''}>
+    `;
+  } else if (input.type === 'password') {
+    // Create a password input
+    inputHtml = `
+      <label for="input-${input.name}">${input.displayName}</label>
+      <input type="password" 
+             id="input-${input.name}" 
+             name="${input.name}" 
+             placeholder="${input.placeholder || ''}" 
+             value="${input.default || ''}" 
+             ${input.required ? 'required' : ''}>
+    `;
+  } else {
+    // Create a text input (default)
+    inputHtml = `
+      <label for="input-${input.name}">${input.displayName}</label>
+      <input type="text" 
              id="input-${input.name}" 
              name="${input.name}" 
              placeholder="${input.placeholder || ''}" 
@@ -195,7 +248,16 @@ export async function handleSubmit(e, baseModule) {
   template.userInputs.forEach(input => {
     const element = document.getElementById(`input-${input.name}`);
     if (element) {
-      inputValues[input.name] = element.value;
+      if (input.type === 'checkbox') {
+        // For checkboxes, use the checked property
+        inputValues[input.name] = element.checked ? 'true' : 'false';
+      } else if (input.type === 'file') {
+        // For file inputs, use the file path
+        inputValues[input.name] = element.files && element.files[0] ? element.files[0].path : '';
+      } else {
+        // For all other inputs, use the value
+        inputValues[input.name] = element.value;
+      }
     } else if (input.default) {
       inputValues[input.name] = input.default;
     }
