@@ -4,7 +4,7 @@
  */
 
 import modalManager from '../ui/modal-manager.js';
-const { ipcRenderer } = window.electron || {};
+const { ipcRenderer } = require('electron');
 
 class LogViewer {
   constructor() {
@@ -143,7 +143,7 @@ class LogViewer {
   async loadLogs() {
     try {
       // Call the main process to get logs
-      const logs = await window.api.getLogs();
+      const logs = await ipcRenderer.invoke('get-logs');
       this.logs = logs;
       
       // Populate server list
