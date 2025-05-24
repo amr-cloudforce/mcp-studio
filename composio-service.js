@@ -51,6 +51,9 @@ async function getConnectedAccountsByApp(toolkitSlug) {
 async function deleteConnectedAccount(connectionId) {
   _guard();
   if (!connectionId) throw new Error('deleteConnectedAccount: connectionId required');
+  
+  console.log(`🗑️ Deleting connected account: ${connectionId}`);
+  
   const res = await fetch(
     `https://backend.composio.dev/api/v3/connected_accounts/${connectionId}`,
     { 
@@ -59,17 +62,70 @@ async function deleteConnectedAccount(connectionId) {
     }
   );
   if (!res.ok) throw _httpErr('delete connected account', res);
+  
+  console.log(`✅ Successfully deleted connected account: ${connectionId}`);
+  
+  return res.json();
+}
+
+async function deleteAuthConfig(authConfigId) {
+  _guard();
+  if (!authConfigId) throw new Error('deleteAuthConfig: authConfigId required');
+  
+  console.log(`🗑️ Deleting auth config: ${authConfigId}`);
+  
+  const res = await fetch(
+    `https://backend.composio.dev/api/v3/auth_configs/${authConfigId}`,
+    { 
+      method: 'DELETE',
+      headers: { 'x-api-key': _toolset.apiKey } 
+    }
+  );
+  if (!res.ok) throw _httpErr('delete auth config', res);
+  
+  console.log(`✅ Successfully deleted auth config: ${authConfigId}`);
+  
   return res.json();
 }
 
 async function deleteAllConnectionsForApp(toolkitSlug) {
   _guard();
   if (!toolkitSlug) throw new Error('deleteAllConnectionsForApp: toolkitSlug required');
+  
+  console.log(`🚀 Starting deletion process for app: ${toolkitSlug}`);
+  
   const connections = await getConnectedAccountsByApp(toolkitSlug);
-  const deletePromises = connections.map(conn => 
+  console.log(`📋 Found ${connections.length} connected accounts for ${toolkitSlug}`);
+  
+  // Extract auth_config IDs from connections
+  const authConfigIds = connections.map(conn => conn.auth_config?.id).filter(Boolean);
+  console.log(`📋 Found ${authConfigIds.length} auth configs to delete`);
+  
+  // Log connection details
+  connections.forEach(conn => {
+    console.log(`📝 Connection: ${conn.id} -> Auth Config: ${conn.auth_config?.id || 'none'}`);
+  });
+  
+  // Delete connected accounts first
+  console.log(`🗑️ Deleting ${connections.length} connected accounts...`);
+  const deleteConnectionPromises = connections.map(conn => 
     deleteConnectedAccount(conn.id)
   );
-  return Promise.all(deletePromises);
+  await Promise.all(deleteConnectionPromises);
+  console.log(`✅ Completed deleting ${connections.length} connected accounts`);
+  
+  // Delete related auth configs
+  console.log(`🗑️ Deleting ${authConfigIds.length} auth configs...`);
+  const deleteAuthConfigPromises = authConfigIds.map(id => 
+    deleteAuthConfig(id)
+  );
+  await Promise.all(deleteAuthConfigPromises);
+  console.log(`✅ Completed deleting ${authConfigIds.length} auth configs`);
+  
+  const result = { deletedConnections: connections.length, deletedAuthConfigs: authConfigIds.length };
+  console.log(`🎉 Deletion complete for ${toolkitSlug}:`, result);
+  
+  return result;
 }
 
 async function createAuthConfig(toolkitSlug) {
@@ -268,6 +324,7 @@ module.exports = {
   getConnectedAccounts,
   getConnectedAccountsByApp,
   deleteConnectedAccount,
+  deleteAuthConfig,
   deleteAllConnectionsForApp,
   createAuthConfig,
   createMcpServer,
