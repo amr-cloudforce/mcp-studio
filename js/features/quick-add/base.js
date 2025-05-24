@@ -10,7 +10,6 @@ import quickAddTemplates from '../../quick-add-templates.js';
 import * as ui from './ui.js';
 import * as form from './form.js';
 import * as search from './search.js';
-import * as appSelector from './app-selector.js';
 
 class QuickAddBase {
   constructor() {
@@ -31,7 +30,6 @@ class QuickAddBase {
     ui.init(this);
     form.init(this);
     search.init(this);
-    appSelector.init(this);
     
     // Initialize event listeners
     this.initEventListeners();

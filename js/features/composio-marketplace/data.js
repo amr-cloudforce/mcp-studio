@@ -31,7 +31,6 @@ export async function loadComposioApps() {
   // Fetch fresh data
   try {
     console.log('[DEBUG] Attempting to require composio-service.js');
-    // Use the same approach as in quick-add-connection.js
     const composioService = require('./composio-service.js');
     console.log('[DEBUG] composioService loaded:', !!composioService);
     

@@ -4,49 +4,6 @@
  */
 
 const quickAddTemplates = {
-  "composio-mcp": {
-    "name": "Composio Integration",
-    "description": "Connect to third-party services via Composio",
-    "category": "API Integrations",
-    "documentationUrl": "https://docs.composio.dev",
-    "icon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234A56E2'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E",
-    "userInputs": [
-      {
-        "name": "COMPOSIO_API_KEY",
-        "displayName": "Composio API Key",
-        "description": "Your Composio API key (starts with sk_live_)",
-        "type": "string",
-        "required": true,
-        "secret": true
-      },
-      {
-        "name": "appName",
-        "displayName": "App Name",
-        "description": "The name of the Composio app to connect to (e.g., slack, github)",
-        "type": "app-selector",
-        "required": true
-      },
-      {
-        "name": "initialState",
-        "displayName": "Initial State",
-        "description": "Whether the server should be active or inactive when added",
-        "type": "select",
-        "options": ["active", "inactive"],
-        "default": "active",
-        "advancedOnly": true
-      }
-    ],
-    "config": {
-      "command": "node",
-      "args": [
-        "-e",
-        "const composio = require('./composio-service.js'); (async () => { try { composio.initializeSDK(process.env.COMPOSIO_API_KEY); console.log('Composio SDK initialized'); await composio.verifyApiKey(); console.log('API key verified'); const { connectedAccountId, redirectUrl, connectionStatus } = await composio.initiateConnection('{appName}'); if (redirectUrl) { console.log('Please open this URL in your browser to complete the OAuth flow:'); console.log(redirectUrl); } })().catch(err => console.error(err)); "
-      ],
-      "env": {
-        "COMPOSIO_API_KEY": "{COMPOSIO_API_KEY}"
-      }
-    }
-  },
   "filesystem-server": {
     "name": "Filesystem Server",
     "description": "Access files from specified directories",

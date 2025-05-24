@@ -5,7 +5,6 @@
 
 import * as directory from './directory.js';
 import * as actor from './actor.js';
-import * as appSelector from './app-selector.js';
 
 /**
  * Add a template input field
@@ -59,29 +58,6 @@ export function addTemplateInput(input, container) {
     
     return;
   }
-  
-  if (input.type === 'app-selector') {
-    // Create an app selector input
-    div.innerHTML = `
-      <label for="input-${input.name}">${input.displayName}</label>
-      <input type="hidden" id="input-${input.name}" name="${input.name}" ${input.required ? 'required' : ''}>
-      ${appSelector.generateHtml()}
-    `;
-    
-    if (input.description) {
-      div.innerHTML += `<small>${input.description}</small>`;
-    }
-    
-    container.appendChild(div);
-    
-    // Initialize app selector after a short delay to ensure DOM is ready
-    setTimeout(() => {
-      appSelector.initializeSelector();
-    }, 100);
-    
-    return;
-  }
-  
   
   let inputHtml = '';
   
