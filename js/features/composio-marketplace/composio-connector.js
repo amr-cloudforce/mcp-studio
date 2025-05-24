@@ -41,15 +41,79 @@ export async function initializeService() {
 }
 
 /**
- * Connect to a Composio app
- * @param {Object} item - The Composio app item
- * @returns {Promise<Object>} - The connection result
+ * Check for existing connections to an app
+ * @param {string} appKey - The app key to check
+ * @returns {Promise<Array>} - Array of existing connections
  */
-export async function connectToApp(item) {
+export async function checkExistingConnections(appKey) {
   try {
     // Initialize service if not already initialized
     if (!composioService) {
       await initializeService();
+    }
+    
+    // Get existing connections for this app
+    const existingConnections = await composioService.getConnectedAccountsByApp(appKey);
+    
+    return existingConnections;
+  } catch (error) {
+    console.error('Error checking existing connections:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete all connections for an app
+ * @param {string} appKey - The app key
+ * @returns {Promise<Array>} - Array of deletion results
+ */
+export async function deleteAllConnectionsForApp(appKey) {
+  try {
+    // Initialize service if not already initialized
+    if (!composioService) {
+      await initializeService();
+    }
+    
+    // Delete all connections for this app
+    const deleteResults = await composioService.deleteAllConnectionsForApp(appKey);
+    
+    // Show notification
+    notifications.showSuccess(`Deleted all existing connections for ${appKey}`);
+    
+    return deleteResults;
+  } catch (error) {
+    console.error('Error deleting connections:', error);
+    notifications.showError(`Error deleting connections: ${error.message}`);
+    throw error;
+  }
+}
+
+/**
+ * Connect to a Composio app with existing connection check
+ * @param {Object} item - The Composio app item
+ * @param {boolean} skipExistingCheck - Skip checking for existing connections
+ * @returns {Promise<Object>} - The connection result
+ */
+export async function connectToApp(item, skipExistingCheck = false) {
+  try {
+    // Initialize service if not already initialized
+    if (!composioService) {
+      await initializeService();
+    }
+    
+    // Check for existing connections unless skipped
+    if (!skipExistingCheck) {
+      const existingConnections = await checkExistingConnections(item.app_key);
+      
+      if (existingConnections.length > 0) {
+        // Return existing connections info for UI to handle
+        return {
+          hasExistingConnections: true,
+          existingConnections: existingConnections,
+          appKey: item.app_key,
+          appName: item.repo_name || item.toolkit_name
+        };
+      }
     }
     
     // Initiate connection

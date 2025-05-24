@@ -39,6 +39,39 @@ async function getConnectedAccounts() {
   return items;
 }
 
+async function getConnectedAccountsByApp(toolkitSlug) {
+  _guard();
+  if (!toolkitSlug) throw new Error('getConnectedAccountsByApp: toolkitSlug required');
+  const allConnections = await getConnectedAccounts();
+  return allConnections.filter(conn => 
+    conn.toolkit?.slug === toolkitSlug
+  );
+}
+
+async function deleteConnectedAccount(connectionId) {
+  _guard();
+  if (!connectionId) throw new Error('deleteConnectedAccount: connectionId required');
+  const res = await fetch(
+    `https://backend.composio.dev/api/v3/connected_accounts/${connectionId}`,
+    { 
+      method: 'DELETE',
+      headers: { 'x-api-key': _toolset.apiKey } 
+    }
+  );
+  if (!res.ok) throw _httpErr('delete connected account', res);
+  return res.json();
+}
+
+async function deleteAllConnectionsForApp(toolkitSlug) {
+  _guard();
+  if (!toolkitSlug) throw new Error('deleteAllConnectionsForApp: toolkitSlug required');
+  const connections = await getConnectedAccountsByApp(toolkitSlug);
+  const deletePromises = connections.map(conn => 
+    deleteConnectedAccount(conn.id)
+  );
+  return Promise.all(deletePromises);
+}
+
 async function createAuthConfig(toolkitSlug) {
   _guard();
   if (!toolkitSlug) throw new Error('createAuthConfig: toolkitSlug required');
@@ -233,6 +266,9 @@ module.exports = {
 
   // V3
   getConnectedAccounts,
+  getConnectedAccountsByApp,
+  deleteConnectedAccount,
+  deleteAllConnectionsForApp,
   createAuthConfig,
   createMcpServer,
   listTools,
