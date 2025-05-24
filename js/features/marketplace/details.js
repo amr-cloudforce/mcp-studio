@@ -51,14 +51,29 @@ export function showItemDetails(item) {
         <button id="import-server-btn" class="btn btn-success">Import Server</button>
       </div>
       <div class="details-meta">
-        <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
+        <span class="server-type">${item.server_types ? item.server_types[0].toUpperCase() : (item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN')}</span>
         <span class="stars">⭐ ${item.stars || 0}</span>
         <span class="category">${item.category || 'Uncategorized'}</span>
       </div>
     </div>
     <div class="details-summary">
-      <p>${item.summary_200_words || 'No description available'}</p>
+      <p>${item.summary_50_words || item.summary_200_words || 'No description available'}</p>
     </div>
+    ${item.topics && item.topics.length > 0 ? `
+    <div class="details-topics">
+      <h4>Topics</h4>
+      <div class="topics-list">
+        ${item.topics.map(topic => `<span class="topic-badge">${topic}</span>`).join('')}
+      </div>
+    </div>` : ''}
+    ${item.sample_commands && item.sample_commands.length > 0 ? `
+    <div class="details-commands">
+      <h4>Sample Command</h4>
+      <div class="command-box">
+        <code>${item.sample_commands[0]}</code>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('${item.sample_commands[0].replace(/'/g, "\\'")}')">Copy</button>
+      </div>
+    </div>` : ''}
     <div class="details-links">
       ${item.repo ? `<button class="btn btn-link external-link" onclick="require('electron').ipcRenderer.invoke('open-url', '${item.repo}')">View on GitHub</button>` : ''}
     </div>
@@ -113,9 +128,35 @@ async function importServer(item) {
     importBtn.textContent = 'Importing...';
     importBtn.disabled = true;
     
-    // Check if README URL is available
+    // Try to use mcpServers configuration first
+    if (item.mcpServers && item.mcpServers.length > 0) {
+      const mcpServer = item.mcpServers[0];
+      
+      // Create config from mcpServers data
+      const config = {
+        config: {
+          [mcpServer.id]: {
+            command: mcpServer.tool,
+            args: mcpServer.params || [],
+            env: mcpServer.env || {}
+          }
+        }
+      };
+      
+      // Close the marketplace modal
+      window.modalManager.closeActiveModal();
+      
+      // Add the server to Quick Add templates
+      addToQuickAddTemplates(item, config);
+      
+      // Open Quick Add modal
+      quickAdd.openModal();
+      return;
+    }
+    
+    // Fallback to README parsing if no mcpServers data
     if (!item.readme_url) {
-      alert('No README URL available for this server');
+      alert('No server configuration or README URL available for this server');
       importBtn.textContent = 'Import Server';
       importBtn.disabled = false;
       return;
@@ -163,7 +204,7 @@ function addToQuickAddTemplates(item, config) {
   const formattedName = formatRepoName(item.repo_name);
   
   // Truncate description to ~150 characters
-  let description = item.summary_200_words || 'No description available';
+  let description = item.summary_50_words || item.summary_200_words || 'No description available';
   if (description.length > 150) {
     // Find a good breaking point (end of sentence or space)
     let breakPoint = description.substring(0, 150).lastIndexOf('. ');

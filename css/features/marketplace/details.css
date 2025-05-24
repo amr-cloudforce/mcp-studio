@@ -54,6 +54,75 @@
   border: 1px solid var(--border);
 }
 
+.details-topics {
+  margin-bottom: 20px;
+}
+
+.details-topics h4 {
+  margin: 0 0 10px 0;
+  color: var(--primary-dark);
+  font-size: 1rem;
+}
+
+.topics-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topic-badge {
+  background: var(--primary);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.details-commands {
+  margin-bottom: 20px;
+}
+
+.details-commands h4 {
+  margin: 0 0 10px 0;
+  color: var(--primary-dark);
+  font-size: 1rem;
+}
+
+.command-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.command-box code {
+  flex: 1;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.copy-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--primary-dark);
+}
+
 .details-links {
   margin-bottom: 20px;
 }

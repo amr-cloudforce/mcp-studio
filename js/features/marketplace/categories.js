@@ -109,14 +109,17 @@ export function filterCategories(query, allItems, categoriesContainer, showSearc
   // Search across all items for the current query only
   const matchingItems = allItems.filter(item => {
     const itemName = item.repo_name.toLowerCase();
-    const itemDesc = (item.summary_200_words || '').toLowerCase();
-    const itemType = (item.server_type || '').toLowerCase();
+    const itemDesc = (item.summary_50_words || item.summary_200_words || '').toLowerCase();
+    const itemTypes = item.server_types || (item.server_type ? [item.server_type] : []);
+    const itemTypeStr = itemTypes.join(' ').toLowerCase();
     const itemCategory = (item.category || 'Uncategorized').toLowerCase();
+    const itemTopics = (item.topics || []).join(' ').toLowerCase();
     
     return itemName.includes(query) || 
            itemDesc.includes(query) || 
-           itemType.includes(query) ||
-           itemCategory.includes(query);
+           itemTypeStr.includes(query) ||
+           itemCategory.includes(query) ||
+           itemTopics.includes(query);
   });
   
   // For short queries (1-2 characters), just filter categories

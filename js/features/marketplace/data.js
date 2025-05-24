@@ -9,13 +9,15 @@
  */
 export async function loadMarketplaceData() {
   try {
+    console.log('[MARKETPLACE DEBUG] Loading marketplace data...');
     // Try to load from the default location (marketplace.json)
     const data = await require('electron').ipcRenderer.invoke('read-marketplace-data');
-    return JSON.parse(data);
+    const parsedData = JSON.parse(data);
+    console.log('[MARKETPLACE DEBUG] Loaded marketplace data:', parsedData);
+    console.log('[MARKETPLACE DEBUG] Number of items:', parsedData.length);
+    return parsedData;
   } catch (error) {
-
-    
-    console.error('Failed to load fucken marketplace data:', error);
+    console.error('[MARKETPLACE DEBUG] Failed to load marketplace data:', error);
     return [];
   }
 }
@@ -27,23 +29,17 @@ export async function loadMarketplaceData() {
  * @returns {Array} - Filtered marketplace items with availability flag
  */
 export function filterByPrerequisites(items, prerequisites) {
-  return items.map(item => {
-    let available = true;
-    let reason = '';
-    
-    // Check if the required prerequisites are installed
-    if (item.server_type === 'npx' && !prerequisites.nodejs) {
-      available = false;
-      reason = 'Node.js is required but not installed';
-    } else if (item.server_type === 'docker' && !prerequisites.docker) {
-      available = false;
-      reason = 'Docker is required but not installed';
-    }
+  console.log('[MARKETPLACE DEBUG] filterByPrerequisites called - SHOWING ALL ITEMS (no filtering)');
+  console.log('[MARKETPLACE DEBUG] Total items:', items.length);
+  
+  // NO FILTERING - mark ALL items as available
+  return items.map((item, index) => {
+    console.log(`[MARKETPLACE DEBUG] Item ${index} (${item.repo_name}) - FORCED AVAILABLE`);
     
     return {
       ...item,
-      available,
-      unavailableReason: reason
+      available: true,
+      unavailableReason: ''
     };
   });
 }

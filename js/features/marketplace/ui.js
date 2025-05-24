@@ -88,19 +88,29 @@ export function populateMarketplace(items) {
  * @param {Array} items - Marketplace items
  */
 export function openModal(items) {
-  // Populate marketplace with categories
-  populateMarketplace(items);
+  console.log('[MARKETPLACE DEBUG] Opening modal with items:', items);
+  console.log('[MARKETPLACE DEBUG] Number of items received:', items.length);
+  
+  // Store all items for later use
+  itemsModule.setAllItems(items);
+  console.log('[MARKETPLACE DEBUG] Items stored in module');
+  
+  // Display all items directly
+  console.log('[MARKETPLACE DEBUG] Calling showAllItems()');
+  itemsModule.showAllItems();
   
   // Initialize search functionality with the populated items
   searchModule.initSearch(
     itemsModule.getAllItems(),
-    categoriesContainer,
+    document.getElementById('marketplace-items-container'),
     itemsModule.showSearchResults
   );
   
-  // Show categories view
-  showCategoriesView();
+  // Show items view directly
+  console.log('[MARKETPLACE DEBUG] Showing items view');
+  showItemsView();
   
   // Show modal
+  console.log('[MARKETPLACE DEBUG] Showing modal');
   modalModule.showModal(marketplaceModal);
 }

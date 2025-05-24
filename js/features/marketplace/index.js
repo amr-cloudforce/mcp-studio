@@ -36,16 +36,25 @@ export function initialize() {
  */
 export async function openModal() {
   try {
+    console.log('[MARKETPLACE DEBUG] Opening marketplace modal...');
+    console.log('[MARKETPLACE DEBUG] Prerequisites:', prerequisites);
+    
     // Load marketplace data
+    console.log('[MARKETPLACE DEBUG] Loading marketplace data...');
     const items = await data.loadMarketplaceData();
+    console.log('[MARKETPLACE DEBUG] Raw items loaded:', items);
     
     // Filter items based on prerequisites
+    console.log('[MARKETPLACE DEBUG] Filtering items by prerequisites...');
     const filteredItems = data.filterByPrerequisites(items, prerequisites);
+    console.log('[MARKETPLACE DEBUG] Filtered items:', filteredItems);
+    console.log('[MARKETPLACE DEBUG] Available items count:', filteredItems.filter(item => item.available).length);
     
     // Open the marketplace modal
+    console.log('[MARKETPLACE DEBUG] Opening UI modal...');
     ui.openModal(filteredItems);
   } catch (error) {
-    console.error('Failed to open marketplace:', error);
+    console.error('[MARKETPLACE DEBUG] Failed to open marketplace:', error);
     alert('Failed to load marketplace data. Please try again later.' + error);
   }
 }

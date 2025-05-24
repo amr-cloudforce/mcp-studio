@@ -34,18 +34,15 @@ export function initSearch(allItems, categoriesContainer, showSearchResults) {
  * Handle search input
  * @param {string} query - Search query
  * @param {Array} allItems - All marketplace items (initial value, may be stale)
- * @param {HTMLElement} categoriesContainer - The categories container element
+ * @param {HTMLElement} itemsContainer - The items container element
  * @param {Function} showSearchResults - Function to show search results
  */
-function handleSearch(query, allItems, categoriesContainer, showSearchResults) {
+function handleSearch(query, allItems, itemsContainer, showSearchResults) {
   // Always use the latest items from the items module
   const latestItems = getAllItems();
   
-  if (document.getElementById('marketplace-categories-view').style.display !== 'none') {
-    filterCategories(query, latestItems, categoriesContainer, showSearchResults);
-  } else {
-    filterItems(query);
-  }
+  // Since we're always in items view now, just filter items directly
+  filterItems(query);
 }
 
 /**

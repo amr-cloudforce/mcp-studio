@@ -69,11 +69,11 @@ export function createItemElement(item, showCategory = false) {
   // Create item content
   itemElement.innerHTML = `
     <div class="item-header">
-      <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
+      <span class="server-type">${item.server_types && item.server_types[0] ? item.server_types[0].toUpperCase() : (item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN')}</span>
       ${showCategory ? `<span class="item-category" style="background: ${categoryColor}">${item.category || 'Uncategorized'}</span>` : ''}
     </div>
     <h3>${formattedName}</h3>
-    <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
+    <p>${item.summary_50_words || item.summary_200_words ? (item.summary_50_words || item.summary_200_words).substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
     </div>
@@ -93,6 +93,66 @@ export function createItemElement(item, showCategory = false) {
   wrapper.appendChild(itemElement);
   
   return wrapper;
+}
+
+/**
+ * Show all items without category filtering
+ */
+export function showAllItems() {
+  console.log('[MARKETPLACE DEBUG] showAllItems() called');
+  console.log('[MARKETPLACE DEBUG] allItems:', allItems);
+  console.log('[MARKETPLACE DEBUG] allItems.length:', allItems.length);
+  
+  setCurrentCategory(null);
+  
+  // Get the items container
+  const itemsContainer = document.getElementById('marketplace-items-container');
+  console.log('[MARKETPLACE DEBUG] itemsContainer:', itemsContainer);
+  
+  if (!itemsContainer) {
+    console.error('[MARKETPLACE DEBUG] Items container not found!');
+    return;
+  }
+  
+  // Clear items container
+  itemsContainer.innerHTML = '';
+  console.log('[MARKETPLACE DEBUG] Cleared items container');
+  
+  // Filter for available items only
+  const availableItems = allItems.filter(item => item.available);
+  console.log('[MARKETPLACE DEBUG] availableItems:', availableItems);
+  console.log('[MARKETPLACE DEBUG] availableItems.length:', availableItems.length);
+  
+  // Create items
+  if (availableItems.length > 0) {
+    console.log('[MARKETPLACE DEBUG] Creating items...');
+    availableItems.forEach((item, index) => {
+      console.log(`[MARKETPLACE DEBUG] Creating item ${index}:`, item);
+      const itemElement = createItemElement(item, true); // Show category labels since we're showing all items
+      console.log(`[MARKETPLACE DEBUG] Created element for item ${index}:`, itemElement);
+      itemsContainer.appendChild(itemElement);
+      console.log(`[MARKETPLACE DEBUG] Appended item ${index} to container`);
+    });
+    console.log('[MARKETPLACE DEBUG] All items created and appended');
+  } else {
+    console.log('[MARKETPLACE DEBUG] No available items, showing no items message');
+    // Show no items message
+    const noItems = document.createElement('div');
+    noItems.className = 'no-items';
+    noItems.textContent = 'No available items';
+    itemsContainer.appendChild(noItems);
+  }
+  
+  // Update search placeholder
+  const searchInput = document.getElementById('marketplace-search-input');
+  if (searchInput) {
+    searchInput.placeholder = 'Search all tools...';
+    console.log('[MARKETPLACE DEBUG] Updated search placeholder');
+  } else {
+    console.error('[MARKETPLACE DEBUG] Search input not found!');
+  }
+  
+  console.log('[MARKETPLACE DEBUG] showAllItems() completed');
 }
 
 /**
@@ -265,14 +325,17 @@ export function filterItems(query) {
   // Filter items based on query
   const filteredItems = categoryItems.filter(item => {
     const itemName = item.repo_name.toLowerCase();
-    const itemDesc = (item.summary_200_words || '').toLowerCase();
-    const itemType = (item.server_type || '').toLowerCase();
+    const itemDesc = (item.summary_50_words || item.summary_200_words || '').toLowerCase();
+    const itemTypes = item.server_types || (item.server_type ? [item.server_type] : []);
+    const itemTypeStr = itemTypes.join(' ').toLowerCase();
     const itemCategory = (item.category || 'Uncategorized').toLowerCase();
+    const itemTopics = (item.topics || []).join(' ').toLowerCase();
     
     return itemName.includes(query) || 
            itemDesc.includes(query) || 
-           itemType.includes(query) ||
-           itemCategory.includes(query);
+           itemTypeStr.includes(query) ||
+           itemCategory.includes(query) ||
+           itemTopics.includes(query);
   });
   
   // Clear the container
