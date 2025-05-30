@@ -210,43 +210,7 @@
   border: 1px solid var(--border-color);
 }
 
-/* Toggle Button Styles */
-.server-list-toggle-container {
-  margin-left: auto;
-}
 
-.btn-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-}
-
-.btn-toggle:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.btn-toggle.enhanced {
-  background: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
-
-.btn-toggle.enhanced:hover {
-  background: var(--accent-hover);
-}
-
-.btn-toggle i {
-  font-size: 1.1rem;
-}
 
 .content-header {
   display: flex;
