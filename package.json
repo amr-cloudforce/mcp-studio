@@ -14,7 +14,10 @@
         "obfuscate": "node obfuscate.js",
         "build:obfuscated:mac": "npm run obfuscate && cd dist-obfuscated && npm run build:mac-universal",
         "build:obfuscated:windows": "npm run obfuscate && cd dist-obfuscated && npm run build:windows",
-        "build:obfuscated:all": "npm run obfuscate && cd dist-obfuscated && npm run dist"
+        "build:obfuscated:all": "npm run obfuscate && cd dist-obfuscated && npm run dist",
+        "test": "playwright test",
+        "test:headed": "playwright test --headed",
+        "test:debug": "playwright test --debug"
     },
     "build": {
         "appId": "com.yourdomain.mcpstudio",
@@ -51,6 +54,7 @@
         }
     },
     "devDependencies": {
+        "@playwright/test": "^1.52.0",
         "electron": "^25.0.0",
         "electron-builder": "^26.0.12",
         "javascript-obfuscator": "^4.1.1"
