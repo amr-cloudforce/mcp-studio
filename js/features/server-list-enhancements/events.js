@@ -45,11 +45,30 @@ export class ServerListEvents {
       this.ui.refreshEnhancedList();
     });
 
-    document.getElementById('favorites-filter').addEventListener('click', () => {
+    document.getElementById('favorites-filter').addEventListener('click', (e) => {
+      e.preventDefault();
       this.core.activeFilters.favorites = !this.core.activeFilters.favorites;
-      document.getElementById('favorites-filter').classList.toggle('active', this.core.activeFilters.favorites);
+      const favBtn = document.getElementById('favorites-filter');
+      favBtn.classList.toggle('active', this.core.activeFilters.favorites);
+      
+      // Update button appearance
+      const icon = favBtn.querySelector('i');
+      if (this.core.activeFilters.favorites) {
+        icon.className = 'fas fa-star';
+        favBtn.style.background = '#007bff';
+        favBtn.style.color = 'white';
+        favBtn.style.borderColor = '#007bff';
+      } else {
+        icon.className = 'fas fa-star';
+        favBtn.style.background = '';
+        favBtn.style.color = '';
+        favBtn.style.borderColor = '';
+      }
+      
       this.core.currentPage = 1;
       this.ui.refreshEnhancedList();
+      
+      console.log('Favorites filter toggled:', this.core.activeFilters.favorites);
     });
 
     // Sorting
