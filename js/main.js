@@ -7,6 +7,7 @@
 import configManager from './config/config-manager.js';
 import modalManager from './ui/modal-manager.js';
 import serverList from './ui/server-list.js';
+import serverListToggle from './features/server-list-toggle.js';
 import serverForm from './ui/server-form/index.js';
 import jsonEditor from './ui/json-editor.js';
 import pasteModal from './ui/paste-modal.js';
@@ -41,6 +42,7 @@ async function initializeApp() {
     modalManager;
     serverForm.initialize();
     serverList.initialize();
+    serverListToggle.initialize();
     jsonEditor.initialize();
     pasteModal.initialize();
     aboutModal.initialize();

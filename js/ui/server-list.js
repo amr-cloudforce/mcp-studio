@@ -31,6 +31,7 @@
 import configManager from '../config/config-manager.js';
 import notifications from './notifications.js';
 import serverForm from './server-form/index.js';
+import serverListEnhancements from '../features/server-list-enhancements.js';
 
 class ServerList {
   constructor() {
@@ -46,6 +47,15 @@ class ServerList {
    */
   initialize() {
     this.serverListElement = document.getElementById('server-list');
+    
+    // Initialize enhancements
+    serverListEnhancements.initialize();
+    
+    // Forward edit events from enhancements to this module
+    serverListEnhancements.on('edit', (data) => {
+      this.trigger('edit', data);
+    });
+    
     return this;
   }
 
@@ -80,6 +90,20 @@ class ServerList {
   refreshList() {
     if (!this.serverListElement) return;
     
+    // Use enhanced list if available, otherwise fall back to basic list
+    if (serverListEnhancements && typeof serverListEnhancements.refreshEnhancedList === 'function') {
+      serverListEnhancements.refreshEnhancedList();
+    } else {
+      this.renderBasicList();
+    }
+    
+    return this;
+  }
+
+  /**
+   * Render the basic server list (fallback)
+   */
+  renderBasicList() {
     this.serverListElement.innerHTML = '';
     const mcpConfig = configManager.getConfig();
 
@@ -119,7 +143,6 @@ class ServerList {
     });
 
     this.wireEventHandlers();
-    return this;
   }
 
   /**
