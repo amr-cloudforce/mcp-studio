@@ -1,0 +1,124 @@
+/**
+ * @file responsive.css
+ * @description Responsive styles, animations, and dark mode
+ */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .server-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-container {
+    min-width: auto;
+  }
+
+  .filter-container,
+  .view-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .bulk-actions {
+    justify-content: center;
+  }
+
+  .server-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .enhanced-server-header {
+    padding: 0.75rem;
+  }
+
+  .server-controls {
+    gap: 0.75rem;
+  }
+
+  .filter-select,
+  .sort-select,
+  .group-select {
+    min-width: auto;
+    flex: 1;
+  }
+
+  .view-mode-toggle {
+    width: 100%;
+  }
+
+  .view-btn {
+    flex: 1;
+  }
+
+  .server-table.compact-view {
+    font-size: 0.8rem;
+  }
+
+  .server-category-tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .search-input,
+  .filter-select,
+  .sort-select,
+  .group-select,
+  .items-select {
+    background: var(--bg-tertiary);
+    border-color: var(--border-dark);
+  }
+
+  .filter-btn,
+  .sort-btn,
+  .view-btn,
+  .bulk-btn,
+  .btn-icon,
+  .page-btn {
+    background: var(--bg-tertiary);
+    border-color: var(--border-dark);
+  }
+
+  .server-stats span {
+    background: var(--bg-tertiary);
+    border-color: var(--border-dark);
+  }
+
+  .group-header {
+    background: var(--bg-tertiary);
+  }
+}
+
+/* Animation for smooth transitions */
+.server-row,
+.bulk-actions,
+.pagination-container {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
