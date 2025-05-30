@@ -24,7 +24,7 @@
 <body>
   <div class="app-container">
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <img src="assets/icon.png" alt="MCP Studio" />
         <div class="sidebar-title">
@@ -98,6 +98,11 @@
           </li>
         </ul>
       </div>
+      
+      <!-- Sidebar Toggle -->
+      <div class="sidebar-toggle" id="sidebar-toggle">
+        <i class="fas fa-chevron-left"></i>
+      </div>
     </div>
     
     <!-- Main Content -->
@@ -125,7 +130,7 @@
         <h2>MCP Servers</h2>
       </div>
 
-      <table>
+      <table id="basic-table" style="display: none;">
         <thead>
           <tr><th>Name</th><th>Command</th><th>Status</th><th>Actions</th></tr>
         </thead>

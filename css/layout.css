@@ -16,6 +16,23 @@
   flex-shrink: 0;
   box-shadow: var(--shadow-md);
   z-index: 10;
+  position: relative;
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar.collapsed .sidebar-title,
+.sidebar.collapsed .sidebar-section h3,
+.sidebar.collapsed .sidebar-btn span:not(.sidebar-icon) {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-btn {
+  justify-content: center;
+  padding: 0.75rem;
 }
 
 .sidebar-header {
@@ -104,21 +121,56 @@
   font-size: 1.1rem;
 }
 
+.sidebar-toggle {
+  position: absolute;
+  bottom: 20px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.sidebar-toggle:hover {
+  background: var(--hover);
+}
+
+.sidebar.collapsed .sidebar-toggle i {
+  transform: rotate(180deg);
+}
+
 /* Main content area */
 .main-content {
   flex: 1;
   padding: 40px; /* Increased padding */
   overflow-y: auto;
   background: var(--bg);
+  transition: margin-left 0.3s ease;
 }
 
 .content-header {
   margin-bottom: 30px; /* Increased bottom margin */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .content-header h2 {
   margin: 0;
   color: var(--primary-dark);
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .container {
@@ -147,4 +199,48 @@
   height: 48px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Status dots for the new layout */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.status-dot.active {
+  background-color: var(--success);
+}
+
+.status-dot.inactive {
+  background-color: var(--text-light);
+}
+
+.status-column {
+  text-align: center;
+  width: 60px;
+}
+
+/* Enhanced table for compact view */
+.server-table.compact-view {
+  font-size: 0.9rem;
+}
+
+.server-table.compact-view th:nth-child(1) {
+  width: 35%;
+}
+
+.server-table.compact-view th:nth-child(2) {
+  width: 35%;
+}
+
+.server-table.compact-view th:nth-child(3) {
+  width: 20%;
+}
+
+.server-table.compact-view th:nth-child(4) {
+  width: 10%;
+  text-align: center;
 }

@@ -18,8 +18,15 @@ export class ServerListEvents {
    * Wire up event handlers for enhanced functionality
    */
   wireEventHandlers() {
+    // Check if elements exist before adding listeners
+    const serverSearch = document.getElementById('server-search');
+    if (!serverSearch) {
+      console.warn('Enhanced UI elements not found, skipping event handlers');
+      return;
+    }
+    
     // Search
-    document.getElementById('server-search').addEventListener('input', (e) => {
+    serverSearch.addEventListener('input', (e) => {
       this.core.searchTerm = e.target.value.toLowerCase();
       this.core.currentPage = 1;
       this.ui.refreshEnhancedList();
@@ -64,14 +71,21 @@ export class ServerListEvents {
       this.ui.refreshEnhancedList();
     });
 
-    // View mode
-    document.getElementById('detailed-view').addEventListener('click', () => {
-      this.ui.setViewMode('detailed');
-    });
-
-    document.getElementById('compact-view').addEventListener('click', () => {
-      this.ui.setViewMode('compact');
-    });
+    // View mode (skip if elements don't exist)
+    const detailedView = document.getElementById('detailed-view');
+    const compactView = document.getElementById('compact-view');
+    
+    if (detailedView) {
+      detailedView.addEventListener('click', () => {
+        this.ui.setViewMode('detailed');
+      });
+    }
+    
+    if (compactView) {
+      compactView.addEventListener('click', () => {
+        this.ui.setViewMode('compact');
+      });
+    }
 
     // Pagination
     document.getElementById('prev-page').addEventListener('click', () => {

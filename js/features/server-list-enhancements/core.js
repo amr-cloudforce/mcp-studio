@@ -10,7 +10,7 @@ export class ServerListCore {
     this.storage = storage;
     this.searchTerm = '';
     this.activeFilters = {
-      status: 'all',
+      status: 'active',
       category: 'all',
       favorites: false
     };
@@ -18,7 +18,7 @@ export class ServerListCore {
     this.sortOrder = 'asc';
     this.currentPage = 1;
     this.itemsPerPage = 20;
-    this.viewMode = 'detailed';
+    this.viewMode = 'compact';
     this.groupBy = 'none';
   }
 

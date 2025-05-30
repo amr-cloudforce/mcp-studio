@@ -8,6 +8,7 @@ import configManager from './config/config-manager.js';
 import modalManager from './ui/modal-manager.js';
 import serverList from './ui/server-list.js';
 import serverListToggle from './features/server-list-toggle.js';
+import serverListEnhancements from './features/server-list-enhancements.js';
 import serverForm from './ui/server-form/index.js';
 import jsonEditor from './ui/json-editor.js';
 import pasteModal from './ui/paste-modal.js';
@@ -27,6 +28,9 @@ window.modalManager = modalManager;
 
 // DOM elements
 const addServerBtn = document.getElementById('add-server-btn');
+
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebar = document.getElementById('sidebar');
 const localMarketplaceBtn = document.getElementById('local-marketplace-btn');
 const composioMarketplaceBtn = document.getElementById('composio-marketplace-btn');
 const apifyMarketplaceBtn = document.getElementById('apify-marketplace-btn');
@@ -43,6 +47,9 @@ async function initializeApp() {
     serverForm.initialize();
     serverList.initialize();
     serverListToggle.initialize();
+    
+    // Initialize enhanced server list after basic components
+    serverListEnhancements.initialize();
     jsonEditor.initialize();
     pasteModal.initialize();
     aboutModal.initialize();
@@ -57,8 +64,20 @@ async function initializeApp() {
       serverForm.openModal(name);
     });
     
+    serverListEnhancements.on('edit', ({ name, section }) => {
+      serverForm.openModal(name);
+    });
+    
     // Set up event listeners
     addServerBtn.addEventListener('click', () => addServerModal.openModal());
+
+    
+    // Sidebar toggle
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+      });
+    }
     localMarketplaceBtn.addEventListener('click', () => marketplace.openModal());
     composioMarketplaceBtn.addEventListener('click', () => composioMarketplace.openModal());
     apifyMarketplaceBtn.addEventListener('click', () => apifyMarketplace.openModal());
@@ -72,6 +91,17 @@ async function initializeApp() {
     
     // Refresh server list
     serverList.refreshList();
+    
+    // Hide basic table and show enhanced view by default
+    const basicTable = document.getElementById('basic-table');
+    if (basicTable) {
+      basicTable.style.display = 'none';
+    }
+    
+    // Refresh enhanced list after all initialization is complete
+    setTimeout(() => {
+      serverListEnhancements.refreshEnhancedList();
+    }, 100);
     
     // Show add server dialog if no servers are configured
     if (!configManager.hasServers()) {
