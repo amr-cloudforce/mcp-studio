@@ -21,6 +21,7 @@ import addServerModal from './ui/add-server-modal.js';
 import marketplace from './features/marketplace/index.js';
 import composioMarketplace from './features/composio-marketplace/index.js';
 import apifyMarketplace from './features/apify-marketplace/index.js';
+import elementDebugger from './utils/element-debugger.js';
 
 // Make global objects available
 window.quickAddTemplates = quickAddTemplates;
