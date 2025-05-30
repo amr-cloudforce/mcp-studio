@@ -26,7 +26,8 @@
 
 .sidebar.collapsed .sidebar-title,
 .sidebar.collapsed .sidebar-section h3,
-.sidebar.collapsed .sidebar-btn span:not(.sidebar-icon) {
+.sidebar.collapsed .sidebar-btn span:not(.sidebar-icon),
+.sidebar.collapsed .sidebar-header img {
   display: none;
 }
 
