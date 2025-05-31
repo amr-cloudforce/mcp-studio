@@ -21,6 +21,7 @@ import addServerModal from './ui/add-server-modal.js';
 import marketplace from './features/marketplace/index.js';
 import composioMarketplace from './features/composio-marketplace/index.js';
 import apifyMarketplace from './features/apify-marketplace/index.js';
+import smitheryMarketplace from './features/smithery-marketplace/index.js';
 import elementDebugger from './utils/element-debugger.js';
 import modalLoader from './utils/modal-loader.js';
 
@@ -37,6 +38,7 @@ const sidebar = document.getElementById('sidebar');
 const localMarketplaceBtn = document.getElementById('local-marketplace-btn');
 const composioMarketplaceBtn = document.getElementById('composio-marketplace-btn');
 const apifyMarketplaceBtn = document.getElementById('apify-marketplace-btn');
+const smitheryMarketplaceBtn = document.getElementById('smithery-marketplace-btn');
 const exportBtn = document.getElementById('export-json-btn');
 const revealBtn = document.getElementById('reveal-btn');
 const aboutBtn = document.getElementById('about-btn');
@@ -64,6 +66,7 @@ async function initializeApp() {
     marketplace.initialize();
     composioMarketplace.initialize();
     apifyMarketplace.initialize();
+    smitheryMarketplace.initialize();
     
     // Initialize Quick Add after modals are loaded
     quickAdd.initialize();
@@ -91,6 +94,7 @@ async function initializeApp() {
     localMarketplaceBtn.addEventListener('click', () => marketplace.openModal());
     composioMarketplaceBtn.addEventListener('click', () => composioMarketplace.openModal());
     apifyMarketplaceBtn.addEventListener('click', () => apifyMarketplace.openModal());
+    smitheryMarketplaceBtn.addEventListener('click', () => smitheryMarketplace.openModal());
     exportBtn.addEventListener('click', () => jsonEditor.openModal());
     revealBtn.addEventListener('click', () => require('electron').ipcRenderer.invoke('reveal-config'));
     aboutBtn.addEventListener('click', () => aboutModal.openModal());

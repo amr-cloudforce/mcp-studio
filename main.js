@@ -170,9 +170,29 @@ function saveApifyData() {
   fsSync.writeFileSync(apifyDataPath, JSON.stringify(apifyData, null, 2), 'utf8');
 }
 
+// Storage for Smithery data
+let smitheryData = {};
+const smitheryDataPath = path.join(app.getPath('userData'), 'smithery.json');
+
+// Load smithery data on startup
+function loadSmitheryData() {
+  try {
+    const data = fsSync.readFileSync(smitheryDataPath, 'utf8');
+    smitheryData = JSON.parse(data);
+  } catch {
+    smitheryData = {};
+  }
+}
+
+// Save smithery data
+function saveSmitheryData() {
+  fsSync.writeFileSync(smitheryDataPath, JSON.stringify(smitheryData, null, 2), 'utf8');
+}
+
 // Load data on startup
 loadComposioData();
 loadApifyData();
+loadSmitheryData();
 
 // IPC handlers for Composio storage
 ipcMain.handle('composio-get-api-key', () => {
@@ -210,6 +230,25 @@ ipcMain.handle('apify-get-actors-cache', () => {
 ipcMain.handle('apify-set-actors-cache', (_, cache) => {
   apifyData.actorsCache = cache;
   saveApifyData();
+});
+
+// IPC handlers for Smithery storage
+ipcMain.handle('smithery-get-credentials', () => {
+  return smitheryData.credentials || null;
+});
+
+ipcMain.handle('smithery-set-credentials', (_, credentials) => {
+  smitheryData.credentials = credentials;
+  saveSmitheryData();
+});
+
+ipcMain.handle('smithery-get-servers-cache', () => {
+  return smitheryData.serversCache || null;
+});
+
+ipcMain.handle('smithery-set-servers-cache', (_, cache) => {
+  smitheryData.serversCache = cache;
+  saveSmitheryData();
 });
 
 // IPC handlers
