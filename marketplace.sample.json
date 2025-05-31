@@ -1,0 +1,89 @@
+[
+  {
+    "repo": "https://github.com/0xDAEF0F/job-searchoor",
+    "repo_name": "job-searchoor",
+    "readme_url": "https://raw.githubusercontent.com/0xDAEF0F/job-searchoor/master/README.md",
+    "supports_smithery": false,
+    "mcpServers": [
+      {
+        "id": "job-search",
+        "tool": "npx",
+        "pkg": "job-searchoor",
+        "version": null,
+        "params": [
+          "-y",
+          "job-searchoor"
+        ],
+        "env": {},
+        "toolFlags": [
+          "-y"
+        ],
+        "raw": "npx -y job-searchoor",
+        "exists": true,
+        "parameter_types": {},
+        "parameter_docs": {}
+      }
+    ],
+    "server_types": [
+      "npx"
+    ],
+    "sample_commands": [
+      "npx -y job-searchoor"
+    ],
+    "summary_50_words": "An MCP server providing job search functionality with filtering options for keywords, remote work, and time frames.",
+    "category": "Search & Extraction",
+    "stars": 16,
+    "domain": null,
+    "favicon": null,
+    "topics": [
+      "ai-tooling",
+      "mcp",
+      "mcp-server",
+      "vibe-coding"
+    ],
+    "repo_type": "nodejs",
+    "uncertain": false
+  },
+  {
+    "repo": "https://github.com/13bm/GhidraMCP",
+    "repo_name": "GhidraMCP",
+    "readme_url": "https://raw.githubusercontent.com/13bm/GhidraMCP/master/README.md",
+    "supports_smithery": false,
+    "mcpServers": [
+      {
+        "id": "ghidra",
+        "tool": "uvx",
+        "pkg": "ghidra_server.py",
+        "version": null,
+        "params": [
+          "PATH-TO-REPO/GhidraMCP/ghidra_server.py"
+        ],
+        "env": {},
+        "toolFlags": [],
+        "raw": "uvx PATH-TO-REPO/GhidraMCP/ghidra_server.py",
+        "exists": false,
+        "parameter_types": {},
+        "parameter_docs": {}
+      }
+    ],
+    "server_types": [
+      "uvx"
+    ],
+    "sample_commands": [
+      "uvx PATH-TO-REPO/GhidraMCP/ghidra_server.py"
+    ],
+    "summary_50_words": "GhidraMCP is a Ghidra plugin enabling AI-assisted binary analysis via the Model Context Protocol, providing natural language queries, deep code insights, and security analysis through a socket-based architecture.",
+    "category": "Security & Privacy",
+    "stars": 48,
+    "domain": null,
+    "favicon": null,
+    "topics": [],
+    "repo_type": "unknown",
+    "uncertain": false
+  },
+  {
+    "repo": "https://github.com/21st-dev/magic-mcp",
+    "repo_name": "magic-mcp",
+    "readme_url": "https://raw.githubusercontent.com/21st-dev/magic-mcp/main/README.md",
+    "supports_smithery": true,
+    "mcpServers": [
