@@ -89,6 +89,15 @@ function renderServerDetails(server) {
           ` : ''}
         </div>
         
+        <div class="http-config" style="display: ${defaultConnectionType === 'http' ? 'block' : 'none'};">
+          <div class="config-warning">
+            <h5>⚠️ Configuration Required</h5>
+            <p>Before installing, please configure any required parameters (API keys, etc.) on the Smithery website:</p>
+            <p><a href="https://smithery.ai/server/${escapeHtml(server.qualifiedName)}" target="_blank" class="smithery-link">https://smithery.ai/server/${escapeHtml(server.qualifiedName)}</a></p>
+            <p><small>Click the link above to configure the server parameters, then return here to install.</small></p>
+          </div>
+        </div>
+        
         <div class="stdio-config" style="display: none;">
           <h5>Configuration Parameters</h5>
           <div id="stdio-params"></div>
@@ -144,12 +153,23 @@ function setupDetailsEventListeners(server) {
  */
 function handleConnectionTypeChange(server, connectionType) {
   const stdioConfig = document.querySelector('.stdio-config');
+  const httpConfig = document.querySelector('.http-config');
   
-  if (connectionType === 'stdio' && stdioConfig) {
-    stdioConfig.style.display = 'block';
-    renderStdioParams(server);
-  } else if (stdioConfig) {
-    stdioConfig.style.display = 'none';
+  if (connectionType === 'stdio') {
+    if (stdioConfig) {
+      stdioConfig.style.display = 'block';
+      renderStdioParams(server);
+    }
+    if (httpConfig) {
+      httpConfig.style.display = 'none';
+    }
+  } else {
+    if (stdioConfig) {
+      stdioConfig.style.display = 'none';
+    }
+    if (httpConfig) {
+      httpConfig.style.display = 'block';
+    }
   }
 }
 
@@ -246,17 +266,24 @@ function collectStdioParams() {
  * @param {string} content - Modal content HTML
  */
 function showDetailsModal(title, content) {
-  // Implementation depends on existing modal system
-  // This is a placeholder - should integrate with existing modal manager
-  console.log('Show details modal:', title, content);
+  // Hide items view, show details view (same pattern as Composio)
+  document.getElementById('smithery-marketplace-items-view').style.display = 'none';
+  document.getElementById('smithery-marketplace-details-view').style.display = 'block';
+  
+  // Get the details container
+  const detailsContainer = document.getElementById('smithery-marketplace-details-container');
+  
+  // Set the content
+  detailsContainer.innerHTML = content;
 }
 
 /**
  * Close details modal
  */
 function closeDetailsModal() {
-  // Implementation depends on existing modal system
-  console.log('Close details modal');
+  // Show items view, hide details view (same pattern as Composio)
+  document.getElementById('smithery-marketplace-items-view').style.display = 'block';
+  document.getElementById('smithery-marketplace-details-view').style.display = 'none';
 }
 
 /**

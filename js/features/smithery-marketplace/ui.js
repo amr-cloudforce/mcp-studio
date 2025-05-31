@@ -46,6 +46,14 @@ function setupEventListeners() {
     });
   }
   
+  // Back to marketplace button (from details view)
+  const backToMarketplaceButton = document.getElementById('smithery-back-to-marketplace');
+  if (backToMarketplaceButton) {
+    backToMarketplaceButton.addEventListener('click', () => {
+      showItemsView();
+    });
+  }
+  
   // API Key Settings button
   const apiKeySettingsButton = document.getElementById('smithery-api-key-settings');
   if (apiKeySettingsButton) {
