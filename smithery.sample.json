@@ -345,3 +345,34 @@ curl --location --request GET 'https://registry.smithery.ai/servers?q=owner:mem0
         "totalCount": 1
     }
 }
+
+
+
+
+# searching
+
+https://registry.smithery.ai/servers?q=owner:mem0ai%20is:verified%20memory&page=1&pageSize=10
+
+
+https://registry.smithery.ai/servers?q=openai
+
+{
+    "servers": [
+        {
+            "qualifiedName": "@cyanheads/filesystem-mcp-server",
+            "displayName": "Filesystem MCP Server",
+            "description": "Empower your AI agents with robust, platform-agnostic file system capabilities. Interact securely with the local filesystem to read, write, and manage files and directories effortlessly. Enhance your AI workflows with advanced file operations and targeted updates.",
+            "createdAt": "2025-04-13T22:00:39.100Z",
+            "useCount": 7167,
+            "homepage": "https://smithery.ai/server/@cyanheads/filesystem-mcp-server"
+        },
+        {
+            "qualifiedName": "@wonderwhy-er/desktop-commander",
+            "displayName": "Desktop Commander",
+            "description": "Execute terminal commands and manage files with diff editing capabilities. Coding, shell and terminal, task automation",
+            "createdAt": "2025-01-10T06:39:31.942Z",
+            "useCount": 836176,
+            "homepage": "https:/
+
+
+
