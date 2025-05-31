@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Element Debugger Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .section h3 {
+            color: #34495e;
+            margin-bottom: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .demo-container {
+            border: 2px dashed #e74c3c;
+            padding: 2rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            background: #fdf2f2;
+            position: relative;
+        }
+
+        .demo-app {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+
+        .demo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .demo-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .demo-button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .demo-button.debug-active {
+            background: #e74c3c;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .demo-element {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: #34495e;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .demo-element:hover {
+            background: #4a6741;
+        }
+
+        .demo-element.highlighted {
+            outline: 2px solid #ff0000;
+            outline-offset: 2px;
+        }
+
+        .demo-element.flashed {
+            background: #f1c40f !important;
+            animation: flash 0.6s ease;
+        }
+
+        @keyframes flash {
+            0% { background: #f1c40f; }
+            100% { background: #34495e; }
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .code-block .comment {
+            color: #95a5a6;
+        }
+
+        .code-block .keyword {
+            color: #3498db;
+        }
+
+        .code-block .string {
+            color: #2ecc71;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .output-example {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            white-space: pre-line;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-weight: bold;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .benefit {
+            background: #e8f5e8;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .benefit h4 {
+            color: #27ae60;
+            margin-bottom: 0.5rem;
+        }
+
+        .toggle-demo {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .demo-status {
+            font-weight: bold;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .demo-status.active {
+            background: #ffe6e6;
+            color: #c0392b;
+        }
+
+        .demo-status.inactive {
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+
+        .cursor-crosshair {
+            cursor: crosshair !important;
+        }
+
+        .cursor-crosshair * {
+            cursor: crosshair !important;
+        }
+    </style>
+</head>
+<body>
+   
+        <div class="section">
+            <h2>Element Debugger Demo</h2>
+            <p>
+                Quickly get info about any element in the demo app.<br>
+                <b>F12</b>: Single element mode<br>
+                <b>F10</b>: Start recording multiple elements<br>
+                <b>F11</b>: Stop recording and copy all info
+            </p>
+            <div class="toggle-demo">
+                <button id="toggleDebug" class="demo-button">Press F12 to Toggle Debug Mode</button>
+                <button id="startRecord" class="demo-button" style="margin-left:10px;">F10: Start Recording</button>
+                <button id="stopRecord" class="demo-button" style="margin-left:10px;">F11: Stop Recording</button>
+                <div id="demoStatus" class="demo-status inactive">Debug Mode: OFF</div>
+                <div id="recordStatus" class="demo-status inactive" style="display:none;">Recording: OFF</div>
+            </div>
+
+            <div class="demo-container">
+                <div class="demo-app">
+                    <div class="demo-header">
+                        <span>🚀 Sample Application</span>
+                        <button id="demoBtn1" class="demo-button">Add Item</button>
+                    </div>
+                    <div id="searchContainer" class="demo-element">
+                        🔍 Search: <input type="text" placeholder="Type here..." style="margin-left: 0.5rem; padding: 0.25rem;">
+                    </div>
+                    <div id="menuItem1" class="demo-element">📋 Dashboard</div>
+                    <div id="menuItem2" class="demo-element">⚙️ Settings</div>
+                    <div id="statusBar" class="demo-element">Status: Ready | Users: 42 | Version: 1.2.3</div>
+                </div>
+            </div>
+
+            <div id="outputDisplay" class="output-example" style="display: none;">
+                Click an element above to see its debug information here...
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Sample Output</h2>
+            <p>When a user clicks an element, they get detailed information like this:</p>
+            
+            <div class="output-example">Window: MCP Studio
+Page: Main Application
+Element: button#add-server-btn.sidebar-btn
+ID: add-server-btn
+Classes: sidebar-btn
+Selector: #add-server-btn
+Text: Add Server
+Parent: li</div>
+
+            <p>This gives developers everything they need:</p>
+            <ul style="margin: 1rem 0; padding-left: 2rem;">
+                <li><strong>Window context</strong> - Which application window</li>
+                <li><strong>Unique identifier</strong> - Exact CSS selector</li>
+                <li><strong>Element details</strong> - ID, classes, text content</li>
+                <li><strong>Hierarchy info</strong> - Parent element context</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Implementation</h2>
+            <p>The complete implementation is surprisingly lightweight - just 172 lines of JavaScript:</p>
+
+            <div class="code-block">
+<span class="comment">// element-debugger.js</span>
+<span class="keyword">class</span> ElementDebugger {
+  <span class="keyword">constructor</span>() {
+    <span class="keyword">this</span>.isActive = <span class="keyword">false</span>;
+    <span class="keyword">this</span>.init();
+  }
+
+  init() {
+    <span class="comment">// Listen for F12 to toggle debug mode</span>
+    document.addEventListener(<span class="string">'keydown'</span>, (e) => {
+      <span class="keyword">if</span> (e.key === <span class="string">'F12'</span>) {
+        e.preventDefault();
+        <span class="keyword">this</span>.toggle();
+      }
+    });
+
+    <span class="comment">// Handle element clicks in debug mode</span>
+    document.addEventListener(<span class="string">'click'</span>, (e) => {
+      <span class="keyword">if</span> (<span class="keyword">this</span>.isActive) {
+        e.preventDefault();
+        e.stopPropagation();
+        <span class="keyword">this</span>.selectElement(e.target);
+      }
+    }, <span class="keyword">true</span>);
+  }
+
+  selectElement(element) {
+    <span class="keyword">const</span> info = <span class="keyword">this</span>.getElementInfo(element);
+    <span class="keyword">this</span>.copyToClipboard(info);
+    <span class="keyword">this</span>.flashElement(element);
+    <span class="keyword">this</span>.toggle(); <span class="comment">// Turn off debug mode</span>
+  }
+
+  getElementInfo(element) {
+    <span class="keyword">return</span> <span class="string">`Window: ${document.title}
+Page: Main Application
+Element: ${element.tagName.toLowerCase()}${element.id ? '#' + element.id : ''}
+ID: ${element.id || 'none'}
+Classes: ${element.className || 'none'}
+Selector: ${element.id ? '#' + element.id : element.tagName.toLowerCase()}
+Text: ${element.textContent?.trim().substring(0, 50) || 'none'}
+Parent: ${element.parentElement?.tagName.toLowerCase() || 'none'}`</span>;
+  }
+}
+
+<span class="comment">// Initialize the debugger</span>
+<span class="keyword">new</span> ElementDebugger();
+            </div>
+        </div>
+
+       
+
+    <div id="notification" class="notification">
+        Debug mode activated! Click any element to copy its info.
+    </div>
+
+    <script>
+        class DemoDebugger {
+            constructor() {
+                this.isActive = false;
+                this.isRecording = false;
+                this.recordedElements = [];
+                this.init();
+            }
+
+            init() {
+                // F12, F10, F11 key listeners
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'F12') {
+                        e.preventDefault();
+                        this.toggle();
+                    } else if (e.key === 'F10') {
+                        e.preventDefault();
+                        this.startRecording();
+                    } else if (e.key === 'F11') {
+                        e.preventDefault();
+                        this.stopRecording();
+                    }
+                });
+
+                // Button click listeners
+                document.getElementById('toggleDebug').addEventListener('click', () => {
+                    this.toggle();
+                });
+                document.getElementById('startRecord').addEventListener('click', () => {
+                    this.startRecording();
+                });
+                document.getElementById('stopRecord').addEventListener('click', () => {
+                    this.stopRecording();
+                });
+
+                // Demo element click listeners
+                document.addEventListener('click', (e) => {
+                    if (this.isActive && e.target.closest('.demo-app')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.selectElement(e.target);
+                    } else if (this.isRecording && e.target.closest('.demo-app')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.recordElement(e.target);
+                    }
+                }, true);
+
+                // Hover effects
+                document.addEventListener('mouseover', (e) => {
+                    if ((this.isActive || this.isRecording) && e.target.closest('.demo-app')) {
+                        e.target.classList.add('highlighted');
+                    }
+                });
+
+                document.addEventListener('mouseout', (e) => {
+                    if ((this.isActive || this.isRecording) && e.target.closest('.demo-app')) {
+                        e.target.classList.remove('highlighted');
+                    }
+                });
+            }
+
+            toggle() {
+                this.isActive = !this.isActive;
+                if (this.isActive && this.isRecording) this.stopRecording();
+                const button = document.getElementById('toggleDebug');
+                const status = document.getElementById('demoStatus');
+                const notification = document.getElementById('notification');
+                const recordStatus = document.getElementById('recordStatus');
+
+                if (this.isActive) {
+                    button.textContent = 'Debug Mode ON - Click any element below';
+                    button.classList.add('debug-active');
+                    status.textContent = 'Debug Mode: ON';
+                    status.className = 'demo-status active';
+                    document.body.classList.add('cursor-crosshair');
+                    
+                    notification.textContent = 'Debug mode ON - Click any element to copy its info';
+                    notification.classList.add('show');
+                } else {
+                    button.textContent = 'Press F12 to Toggle Debug Mode';
+                    button.classList.remove('debug-active');
+                    status.textContent = 'Debug Mode: OFF';
+                    status.className = 'demo-status inactive';
+                    document.body.classList.remove('cursor-crosshair');
+                    
+                    notification.textContent = 'Debug mode OFF';
+                    notification.classList.add('show');
+                }
+                recordStatus.style.display = 'none';
+
+                // Hide notification after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            startRecording() {
+                if (this.isActive) this.toggle();
+                this.isRecording = true;
+                this.recordedElements = [];
+                const recordStatus = document.getElementById('recordStatus');
+                recordStatus.style.display = 'block';
+                recordStatus.textContent = 'Recording: ON (0 elements)';
+                recordStatus.className = 'demo-status active';
+                document.body.classList.add('cursor-crosshair');
+                const notification = document.getElementById('notification');
+                notification.textContent = 'Recording ON - Click elements to record (F11 to stop)';
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            stopRecording() {
+                if (!this.isRecording) return;
+                this.isRecording = false;
+                document.body.classList.remove('cursor-crosshair');
+                const recordStatus = document.getElementById('recordStatus');
+                recordStatus.textContent = 'Recording: OFF';
+                recordStatus.className = 'demo-status inactive';
+                setTimeout(() => {
+                    recordStatus.style.display = 'none';
+                }, 2000);
+                const notification = document.getElementById('notification');
+                if (this.recordedElements.length > 0) {
+                    const batchInfo = this.recordedElements.join('\n\n');
+                    this.displayOutput(batchInfo);
+                    this.copyToClipboard(batchInfo);
+                    notification.textContent = `Recording OFF - ${this.recordedElements.length} elements copied to clipboard`;
+                } else {
+                    notification.textContent = 'Recording OFF - No elements recorded';
+                }
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            recordElement(element) {
+                const info = this.getElementInfo(element);
+                this.recordedElements.push(info);
+                this.flashElement(element);
+                const recordStatus = document.getElementById('recordStatus');
+                recordStatus.textContent = `Recording: ON (${this.recordedElements.length} elements)`;
+                this.displayOutput(this.recordedElements.join('\n\n'));
+            }
+
+            selectElement(element) {
+                const info = this.getElementInfo(element);
+                this.displayOutput(info);
+                this.flashElement(element);
+                this.toggle();
+            }
+
+            getElementInfo(element) {
+                const tag = element.tagName.toLowerCase();
+                const id = element.id ? `#${element.id}` : '';
+                const classes = element.className ? `.${element.className.split(' ').join('.')}` : '';
+                const text = element.textContent ? element.textContent.trim().substring(0, 50) : '';
+                
+                return `Window: ${document.title}
+Page: Interactive Demo
+Element: ${tag}${id}${classes}
+ID: ${element.id || 'none'}
+Classes: ${element.className || 'none'}
+Selector: ${element.id ? '#' + element.id : tag + classes}
+Text: ${text || 'none'}
+Parent: ${element.parentElement ? element.parentElement.tagName.toLowerCase() : 'none'}`;
+            }
+
+            displayOutput(info) {
+                const output = document.getElementById('outputDisplay');
+                output.textContent = info;
+                output.style.display = 'block';
+                output.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            flashElement(element) {
+                element.classList.add('flashed');
+                setTimeout(() => {
+                    element.classList.remove('flashed');
+                }, 600);
+            }
+
+            async copyToClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                } catch (err) {
+                    // fallback
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+            }
+        }
+
+        // Initialize the demo debugger
+        new DemoDebugger();
+
+        // Update button text to show F12 functionality
+        document.getElementById('toggleDebug').textContent = 'Click here OR press F12 to toggle';
+    </script>
+</body>
+</html>
