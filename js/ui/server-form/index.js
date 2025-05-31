@@ -22,16 +22,12 @@
  * Main entry point for the server form module
  */
 
-import configManager from '../../config/config-manager.js';
 import modalManager from '../modal-manager.js';
-import notifications from '../notifications.js';
 import * as utils from './utils.js';
 import * as formFields from './form-fields.js';
 import * as viewModes from './view-modes.js';
-import * as tavilyHandler from './template-handlers/tavily.js';
-import * as filesystemHandler from './template-handlers/filesystem.js';
-import * as apifyHandler from './template-handlers/apify.js';
-import * as composioHandler from './template-handlers/composio.js';
+import * as modalOperations from './modal-operations.js';
+import * as formSubmission from './form-submission.js';
 
 class ServerForm {
   constructor() {
@@ -108,7 +104,7 @@ class ServerForm {
     this.initializeDOMElements();
     
     // Set up form submission handler
-    this.form.addEventListener('submit', this.handleSubmit.bind(this));
+    this.form.addEventListener('submit', (e) => formSubmission.handleSubmit(e, this));
     
     // Set up cancel button
     this.cancelBtn.addEventListener('click', () => modalManager.closeActiveModal());
@@ -139,19 +135,7 @@ class ServerForm {
    * @param {string} name - Server name (optional, for editing)
    */
   openModal(name = null) {
-    if (name) {
-      const server = configManager.getServer(name);
-      if (server) {
-        this.fillForm(name, server.config, true);
-      } else {
-        console.error(`Server "${name}" not found`);
-        return;
-      }
-    } else {
-      this.fillForm('', { command: '', args: [], env: {} }, false);
-    }
-    
-    modalManager.showModal(this.modal);
+    return modalOperations.openModal(this, name);
   }
   
   /**
@@ -161,13 +145,7 @@ class ServerForm {
    * @param {object} config.config - Server configuration
    */
   openModalWithConfig(config) {
-    if (!config || !config.config) {
-      console.error('Invalid configuration object');
-      return;
-    }
-    
-    this.fillForm(config.name || '', config.config, false);
-    modalManager.showModal(this.modal);
+    return modalOperations.openModalWithConfig(this, config);
   }
 
   /**
@@ -177,259 +155,7 @@ class ServerForm {
    * @param {boolean} isExisting - Whether this is an existing server
    */
   fillForm(name, config, isExisting) {
-    this.currentServer = isExisting ? name : null;
-    this.modalTitle.textContent = isExisting ? 'Edit Server' : 'Add Server';
-    
-    // Reset form
-    this.form.reset();
-    
-    // Clear dynamic containers
-    [this.genericArgs, this.genericEnv, this.npxArgs, this.npxEnv, 
-     this.dockerPorts, this.dockerVolumes, this.dockerEnv, this.quickInputs, 
-     this.quickAdvancedOptions].forEach(c => c.innerHTML = '');
-    
-    // Add one blank row each
-    utils.addGenericArg(this.genericArgs, '');
-    utils.addGenericEnv(this.genericEnv, '', '');
-    utils.addNpxArg(this.npxArgs, '');
-    utils.addNpxEnv(this.npxEnv, '', '');
-    utils.addDockerPort(this.dockerPorts, '');
-    utils.addDockerVolume(this.dockerVolumes, '');
-    utils.addDockerEnv(this.dockerEnv, '', '');
-    
-    // Set name
-    this.nameInput.value = name || '';
-    
-    // Check if this is a Quick Add server
-    const templateId = config.metadata && config.metadata.quickAddTemplate;
-    if (templateId) {
-      // This is a Quick Add server, show the quick view
-      this.setupQuickView(config, templateId);
-      return;
-    }
-    
-    // Hide view toggle for non-Quick Add servers
-    this.viewToggleContainer.style.display = 'none';
-    this.typeSelector.style.display = 'block';
-    
-    // Detect type
-    const type = config.command === 'npx' ? 'npx'
-               : config.command === 'docker' ? 'docker'
-               : 'generic';
-    
-    // Set type radio
-    document.querySelector(`input[name="type"][value="${type}"]`).checked = true;
-    const selectedRadio = document.querySelector(`input[name="type"][value="${type}"]`);
-    selectedRadio.checked = true;
-    selectedRadio.dispatchEvent(new Event('change'));
-    
-    // Fill type-specific fields
-    if (type === 'generic') {
-      formFields.setupGenericForm(config, this.cmdInput, this.genericArgs, this.genericEnv, this.genericDis);
-    }
-    
-    if (type === 'npx') {
-      formFields.setupNpxForm(config, this.npxRepo, this.npxFlags, this.npxArgs, this.npxEnv, this.npxDis);
-    }
-    
-    if (type === 'docker') {
-      formFields.setupDockerForm(config, this.dockerImage, this.dockerFlags, this.dockerPorts, this.dockerVolumes, this.dockerEnv, this.dockerDis);
-    }
-  }
-
-  /**
-   * Handle form submission
-   * @param {Event} e - Form submit event
-   */
-  async handleSubmit(e) {
-    e.preventDefault();
-    
-    const name = this.nameInput.value.trim();
-    
-    if (!name) {
-      alert('Name is required');
-      return;
-    }
-    
-    let config = { command: '', args: [] };
-    
-    // Check if quick view is active
-    const isQuickViewActive = document.querySelector('input[name="view-mode"][value="quick"]')?.checked;
-    
-    if (isQuickViewActive) {
-      // Handle quick view form submission
-      const templateId = this.quickTemplateName.dataset.templateId;
-      
-      // Get the original config to preserve metadata
-      const originalConfig = this.currentServer ? configManager.getServer(this.currentServer)?.config : null;
-      if (originalConfig && originalConfig.metadata) {
-        config.metadata = originalConfig.metadata;
-      }
-      
-      // Handle based on template type
-      switch (templateId) {
-        case 'tavily-mcp':
-          config = tavilyHandler.handleSubmit(config);
-          break;
-        case 'filesystem-server':
-          config = filesystemHandler.handleSubmit(config);
-          break;
-        case 'apify-web-adapter':
-          config = apifyHandler.handleSubmit(config);
-          break;
-        case 'composio-mcp':
-          config = composioHandler.handleSubmit(config);
-          break;
-        default:
-          // For unknown templates, use the advanced view
-          const type = document.querySelector('input[name="type"]:checked').value;
-          config = this.handleAdvancedSubmit(config, type);
-          break;
-      }
-      
-      // If config is null, validation failed
-      if (!config) return;
-    } else {
-      // Handle advanced view form submission
-      const type = document.querySelector('input[name="type"]:checked').value;
-      config = this.handleAdvancedSubmit(config, type);
-      
-      // If config is null, validation failed
-      if (!config) return;
-    }
-    
-    // Update configuration
-    configManager.updateServer(name, this.currentServer, config, config.disabled);
-    await configManager.saveConfig();
-    
-    // Show restart warning
-    notifications.showRestartWarning();
-    
-    // Close modal
-    modalManager.closeActiveModal();
-  }
-  
-  /**
-   * Handle advanced form submission
-   * @param {object} config - Server configuration
-   * @param {string} type - Server type
-   * @returns {object} - Updated server configuration
-   */
-  handleAdvancedSubmit(config, type) {
-    return formFields.handleAdvancedSubmit(
-      type, config,
-      this.cmdInput, this.genericArgs, this.genericEnv, this.genericDis,
-      this.npxRepo, this.npxFlags, this.npxArgs, this.npxEnv, this.npxDis,
-      this.dockerImage, this.dockerFlags, this.dockerPorts, this.dockerVolumes, this.dockerEnv, this.dockerDis
-    );
-  }
-  
-  /**
-   * Set up the quick view for a Quick Add server
-   * @param {object} config - Server configuration
-   * @param {string} templateId - Template ID
-   */
-  setupQuickView(config, templateId) {
-    // Set up view mode
-    viewModes.setupViewMode(config, this.viewToggleContainer, this.quickSection, this.typeSelector, templateId);
-    
-    // Set template info
-    this.quickTemplateName.textContent = config.metadata.templateName || 'Template';
-    this.quickTemplateName.dataset.templateId = templateId;
-    this.quickTemplateDesc.textContent = utils.getTemplateDescription(templateId);
-    
-    // Also set up the advanced view
-    this.setupAdvancedView(config);
-    
-    // Generate quick view form based on template type
-    this.generateQuickViewForm(config, templateId);
-  }
-  
-  /**
-   * Set up the advanced view for a Quick Add server
-   * @param {object} config - Server configuration
-   */
-  setupAdvancedView(config) {
-    // Detect type
-    const type = config.command === 'npx' ? 'npx'
-               : config.command === 'docker' ? 'docker'
-               : 'generic';
-    
-    // Set type radio
-    document.querySelector(`input[name="type"][value="${type}"]`).checked = true;
-    
-    // Fill type-specific fields
-    if (type === 'generic') {
-      formFields.setupGenericForm(config, this.cmdInput, this.genericArgs, this.genericEnv, this.genericDis);
-    }
-    
-    if (type === 'npx') {
-      formFields.setupNpxForm(config, this.npxRepo, this.npxFlags, this.npxArgs, this.npxEnv, this.npxDis);
-    }
-    
-    if (type === 'docker') {
-      formFields.setupDockerForm(config, this.dockerImage, this.dockerFlags, this.dockerPorts, this.dockerVolumes, this.dockerEnv, this.dockerDis);
-    }
-  }
-  
-  /**
-   * Generate the quick view form based on template type
-   * @param {object} config - Server configuration
-   * @param {string} templateId - Template ID
-   */
-  generateQuickViewForm(config, templateId) {
-    // Clear quick view containers
-    this.quickInputs.innerHTML = '';
-    this.quickAdvancedOptions.innerHTML = '';
-    
-    // Generate form based on template type
-    switch (templateId) {
-      case 'tavily-mcp':
-        this.quickInputs.innerHTML = tavilyHandler.generateForm(config);
-        break;
-      case 'filesystem-server':
-        this.quickInputs.innerHTML = filesystemHandler.generateForm(config);
-        // Initialize directory rows
-        const directories = config.args.slice(2) || [];
-        filesystemHandler.initDirectoryRows(directories);
-        break;
-      case 'apify-web-adapter':
-        this.quickInputs.innerHTML = apifyHandler.generateForm(config);
-        // Parse existing actors from config
-        const actorsString = config.args && config.args.length > 3 ? config.args[3] : '';
-        const actors = actorsString ? actorsString.split(',') : [];
-        console.log('Initializing Apify actors:', actors);
-        // Initialize actor rows with a slight delay to ensure DOM is ready
-        setTimeout(() => {
-          apifyHandler.initActorRows(actors);
-          // Make sure the add button is visible
-          const addBtn = document.getElementById('apify-add-actor-btn');
-          if (addBtn) {
-            addBtn.style.display = 'block';
-            addBtn.style.marginTop = '10px';
-            addBtn.style.marginBottom = '10px';
-          }
-        }, 100);
-        break;
-      case 'composio-mcp':
-        this.quickInputs.innerHTML = composioHandler.generateForm(config);
-        break;
-      default:
-        // For unknown templates, just show a message
-        this.quickInputs.innerHTML = `
-          <div class="form-group">
-            <p>This server was created with a Quick Add template that is no longer available.</p>
-            <p>You can still edit it using the Advanced View.</p>
-          </div>
-        `;
-        
-        // Switch to advanced view
-        document.querySelector('input[name="view-mode"][value="advanced"]').checked = true;
-        this.quickSection.classList.remove('active');
-        const selectedType = document.querySelector('input[name="type"]:checked').value;
-        document.getElementById(`section-${selectedType}`).classList.add('active');
-        this.typeSelector.style.display = 'block';
-    }
+    return modalOperations.fillForm(this, name, config, isExisting);
   }
 }
 
