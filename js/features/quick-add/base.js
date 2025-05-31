@@ -14,6 +14,12 @@ import * as search from './search.js';
 class QuickAddBase {
   constructor() {
     this.currentTemplate = null;
+    this.initialized = false;
+  }
+  
+  // Initialize the component after DOM elements are available
+  initialize() {
+    if (this.initialized) return;
     
     // DOM elements
     this.modal = document.getElementById('quick-add-modal');
@@ -33,6 +39,8 @@ class QuickAddBase {
     
     // Initialize event listeners
     this.initEventListeners();
+    
+    this.initialized = true;
   }
   
   // Initialize event listeners

@@ -1,0 +1,37 @@
+<!-- About Modal -->
+<div id="about-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="close" id="about-close">&times;</span>
+      <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+      <h2>About MCP Studio</h2>
+    </div>
+    <div class="about-content">
+      <p><strong>Version:</strong> <span id="about-version"></span></p>
+      <p><strong>Created by:</strong> Claude / MCP Team</p>
+      
+      <h3>System Information</h3>
+      <div class="status-container">
+        <div>
+          <span class="status-dot" id="docker-status-dot"></span>
+          <span>Docker: <span id="docker-status">Checking...</span></span>
+        </div>
+        <div>
+          <span class="status-dot" id="nodejs-status-dot"></span>
+          <span>Node.js: <span id="nodejs-status">Checking...</span></span>
+        </div>
+      </div>
+      
+      <h3>Installation Links</h3>
+      <p>
+        <a href="#" id="docker-install-link">Install Docker</a> - Required for Docker-based MCP servers
+      </p>
+      <p>
+        <a href="#" id="nodejs-install-link">Install Node.js</a> - Required for NPX-based MCP servers
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button id="about-close-btn" class="btn btn-reveal">Close</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+<!-- Paste JSON Modal -->
+<div id="paste-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="close" id="paste-close">&times;</span>
+      <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
+      <h2>Paste Server JSON</h2>
+    </div>
+    <p>Drop in a snippet containing exactly one server entry under <code>mcpServers</code>:</p>
+    <textarea id="paste-json" placeholder='{
+  "mcpServers": {
+    "github": {
+      "command":"npx",
+      "args":["-y","@modelcontextprotocol/server-github"],
+      "env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"<YOUR_TOKEN>"}
+    }
+  }
+}'></textarea>
+    <div class="modal-footer">
+      <button id="paste-cancel-btn" class="btn btn-reveal">Cancel</button>
+      <button id="paste-load-btn"   class="btn btn-success">Load</button>
+    </div>
+  </div>
+</div>

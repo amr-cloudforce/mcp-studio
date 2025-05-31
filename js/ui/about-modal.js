@@ -7,6 +7,13 @@ import modalManager from './modal-manager.js';
 
 class AboutModal {
   constructor() {
+    this.initialized = false;
+  }
+  
+  // Initialize DOM elements after modals are loaded
+  initializeDOMElements() {
+    if (this.initialized) return;
+    
     // DOM elements
     this.modal = document.getElementById('about-modal');
     this.closeBtn = document.getElementById('about-close');
@@ -18,12 +25,17 @@ class AboutModal {
     this.nodejsStatusDot = document.getElementById('nodejs-status-dot');
     this.dockerInstLink = document.getElementById('docker-install-link');
     this.nodejsInstLink = document.getElementById('nodejs-install-link');
+    
+    this.initialized = true;
   }
 
   /**
    * Initialize the about modal
    */
   initialize() {
+    // Initialize DOM elements first
+    this.initializeDOMElements();
+    
     // Set up event listeners
     this.closeBtn.addEventListener('click', () => modalManager.closeActiveModal());
     this.closeBtnFooter.addEventListener('click', () => modalManager.closeActiveModal());

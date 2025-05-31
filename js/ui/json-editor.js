@@ -9,19 +9,30 @@ import notifications from './notifications.js';
 
 class JsonEditor {
   constructor() {
+    // ACE editor instance
+    this.editor = null;
+    this.initialized = false;
+  }
+  
+  // Initialize DOM elements after modals are loaded
+  initializeDOMElements() {
+    if (this.initialized) return;
+    
     // DOM elements
     this.modal = document.getElementById('json-modal');
     this.downloadBtn = document.getElementById('download-json');
     this.cancelBtn = document.getElementById('json-cancel');
     
-    // ACE editor instance
-    this.editor = null;
+    this.initialized = true;
   }
 
   /**
    * Initialize the JSON editor
    */
   initialize() {
+    // Initialize DOM elements first
+    this.initializeDOMElements();
+    
     // Initialize ACE editor
     this.editor = ace.edit('json-editor');
     this.editor.setTheme('ace/theme/monokai');

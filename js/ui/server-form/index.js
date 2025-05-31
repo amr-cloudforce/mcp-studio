@@ -35,6 +35,15 @@ import * as composioHandler from './template-handlers/composio.js';
 
 class ServerForm {
   constructor() {
+    // Current server being edited
+    this.currentServer = null;
+    this.initialized = false;
+  }
+  
+  // Initialize DOM elements and event listeners after modals are loaded
+  initializeDOMElements() {
+    if (this.initialized) return;
+    
     // Form elements
     this.form = document.getElementById('server-form');
     this.modal = document.getElementById('server-modal');
@@ -88,14 +97,16 @@ class ServerForm {
     // Cancel button
     this.cancelBtn = document.getElementById('cancel-btn');
     
-    // Current server being edited
-    this.currentServer = null;
+    this.initialized = true;
   }
 
   /**
    * Initialize the server form
    */
   initialize() {
+    // Initialize DOM elements first
+    this.initializeDOMElements();
+    
     // Set up form submission handler
     this.form.addEventListener('submit', this.handleSubmit.bind(this));
     

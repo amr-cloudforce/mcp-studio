@@ -10,18 +10,30 @@ import notifications from './notifications.js';
 
 class PasteModal {
   constructor() {
+    this.initialized = false;
+  }
+  
+  // Initialize DOM elements after modals are loaded
+  initializeDOMElements() {
+    if (this.initialized) return;
+    
     // DOM elements
     this.modal = document.getElementById('paste-modal');
     this.textarea = document.getElementById('paste-json');
     this.loadBtn = document.getElementById('paste-load-btn');
     this.cancelBtn = document.getElementById('paste-cancel-btn');
     this.closeBtn = document.getElementById('paste-close');
+    
+    this.initialized = true;
   }
 
   /**
    * Initialize the paste modal
    */
   initialize() {
+    // Initialize DOM elements first
+    this.initializeDOMElements();
+    
     // Set up event listeners
     this.loadBtn.addEventListener('click', this.handleLoad.bind(this));
     this.cancelBtn.addEventListener('click', () => modalManager.closeActiveModal());

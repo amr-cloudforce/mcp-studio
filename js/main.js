@@ -22,6 +22,7 @@ import marketplace from './features/marketplace/index.js';
 import composioMarketplace from './features/composio-marketplace/index.js';
 import apifyMarketplace from './features/apify-marketplace/index.js';
 import elementDebugger from './utils/element-debugger.js';
+import modalLoader from './utils/modal-loader.js';
 
 // Make global objects available
 window.quickAddTemplates = quickAddTemplates;
@@ -29,6 +30,7 @@ window.modalManager = modalManager;
 
 // DOM elements
 const addServerBtn = document.getElementById('add-server-btn');
+const quickAddBtn = document.getElementById('quick-add-btn');
 
 const sidebarToggle = document.getElementById('sidebar-toggle');
 const sidebar = document.getElementById('sidebar');
@@ -43,6 +45,9 @@ const logsBtn = document.getElementById('logs-btn');
 // Initialize application
 async function initializeApp() {
   try {
+    // Load modal HTML files first
+    await modalLoader.loadModals();
+    
     // Initialize UI components
     modalManager;
     serverForm.initialize();
@@ -60,6 +65,9 @@ async function initializeApp() {
     composioMarketplace.initialize();
     apifyMarketplace.initialize();
     
+    // Initialize Quick Add after modals are loaded
+    quickAdd.initialize();
+    
     // Register event handlers
     serverList.on('edit', ({ name, section }) => {
       serverForm.openModal(name);
@@ -71,6 +79,7 @@ async function initializeApp() {
     
     // Set up event listeners
     addServerBtn.addEventListener('click', () => addServerModal.openModal());
+    quickAddBtn.addEventListener('click', () => quickAdd.openModal());
 
     
     // Sidebar toggle
