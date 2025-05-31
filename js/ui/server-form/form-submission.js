@@ -11,6 +11,7 @@ import * as tavilyHandler from './template-handlers/tavily.js';
 import * as filesystemHandler from './template-handlers/filesystem.js';
 import * as apifyHandler from './template-handlers/apify.js';
 import * as composioHandler from './template-handlers/composio.js';
+import * as zapierHandler from './template-handlers/zapier.js';
 
 /**
  * Handle form submission
@@ -56,6 +57,9 @@ export async function handleSubmit(e, serverForm) {
       case 'composio-mcp':
         config = composioHandler.handleSubmit(config);
         break;
+      case 'zapier-mcp':
+        config = zapierHandler.handleSubmit(config);
+        break;
       default:
         // For unknown templates, use the advanced view
         const type = document.querySelector('input[name="type"]:checked').value;
@@ -74,8 +78,15 @@ export async function handleSubmit(e, serverForm) {
     if (!config) return;
   }
   
-  // Update configuration
-  configManager.updateServer(name, serverForm.currentServer, config, config.disabled);
+  // Add or update configuration
+  if (serverForm.currentServer) {
+    // Editing existing server
+    configManager.updateServer(name, serverForm.currentServer, config, config.disabled);
+  } else {
+    // Adding new server
+    const state = config.disabled ? 'inactive' : 'active';
+    configManager.addServer(name, config, state);
+  }
   await configManager.saveConfig();
   
   // Show restart warning

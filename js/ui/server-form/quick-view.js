@@ -10,6 +10,7 @@ import * as tavilyHandler from './template-handlers/tavily.js';
 import * as filesystemHandler from './template-handlers/filesystem.js';
 import * as apifyHandler from './template-handlers/apify.js';
 import * as composioHandler from './template-handlers/composio.js';
+import * as zapierHandler from './template-handlers/zapier.js';
 
 /**
  * Set up the quick view for a Quick Add server
@@ -103,6 +104,9 @@ export function generateQuickViewForm(serverForm, config, templateId) {
       break;
     case 'composio-mcp':
       serverForm.quickInputs.innerHTML = composioHandler.generateForm(config);
+      break;
+    case 'zapier-mcp':
+      serverForm.quickInputs.innerHTML = zapierHandler.generateForm(config);
       break;
     default:
       // For unknown templates, just show a message

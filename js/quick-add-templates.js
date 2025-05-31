@@ -117,6 +117,40 @@ const quickAddTemplates = {
         "TAVILY_API_KEY": "{TAVILY_API_KEY}"
       }
     }
+  },
+  "zapier-mcp": {
+    "name": "Zapier Actions",
+    "description": "Connect to Zapier actions and automations",
+    "category": "Automation",
+    "documentationUrl": "https://zapier.com/developer/documentation/v2/mcp",
+    "icon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF4A00'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E",
+    "userInputs": [
+      {
+        "name": "zapierUrl",
+        "displayName": "Zapier MCP URL",
+        "description": "Your Zapier MCP URL (e.g., https://actions.zapier.com/mcp/sk-ak-xxxx/sse)",
+        "type": "string",
+        "required": true,
+        "placeholder": "https://actions.zapier.com/mcp/sk-ak-xxxx/sse"
+      },
+      {
+        "name": "initialState",
+        "displayName": "Initial State",
+        "description": "Whether the server should be active or inactive when added",
+        "type": "select",
+        "options": ["active", "inactive"],
+        "default": "active",
+        "advancedOnly": true
+      }
+    ],
+    "config": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "{zapierUrl}"
+      ]
+    }
   }
 };
 
