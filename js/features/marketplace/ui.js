@@ -4,6 +4,7 @@
  */
 
 import { groupByCategory } from './data.js';
+import { filterByNPX, getFilterStats } from './filters.js';
 
 // Import modular components
 import * as modalModule from './modal.js';
@@ -16,6 +17,8 @@ let marketplaceModal;
 let categoriesContainer;
 let backButton;
 let backToCategoriesButton;
+let allItems = [];
+let showExperimental = false;
 
 /**
  * Initialize the marketplace UI
@@ -54,6 +57,14 @@ function setupEventListeners() {
   backButton.addEventListener('click', () => {
     showItemsView();
   });
+  
+  // Filter toggle
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'show-experimental') {
+      showExperimental = e.target.checked;
+      applyFilter();
+    }
+  });
 }
 
 /**
@@ -84,6 +95,45 @@ export function populateMarketplace(items) {
 }
 
 /**
+ * Apply current filter to items
+ */
+function applyFilter() {
+  const filteredItems = filterByNPX(allItems, showExperimental);
+  
+  // Update items module with filtered items
+  itemsModule.setAllItems(filteredItems);
+  
+  // Refresh the display
+  itemsModule.showAllItems();
+  
+  // Update search with filtered items
+  searchModule.initSearch(
+    filteredItems,
+    document.getElementById('marketplace-items-container'),
+    itemsModule.showSearchResults
+  );
+  
+  // Update filter stats
+  updateFilterStats();
+}
+
+/**
+ * Update filter statistics display
+ */
+function updateFilterStats() {
+  const stats = getFilterStats(allItems);
+  const statsElement = document.getElementById('filter-stats');
+  
+  if (statsElement) {
+    if (showExperimental) {
+      statsElement.textContent = `(${stats.total} total)`;
+    } else {
+      statsElement.textContent = `(${stats.npx} NPX, ${stats.experimental} experimental)`;
+    }
+  }
+}
+
+/**
  * Open the marketplace modal
  * @param {Array} items - Marketplace items
  */
@@ -91,20 +141,36 @@ export function openModal(items) {
   console.log('[MARKETPLACE DEBUG] Opening modal with items:', items);
   console.log('[MARKETPLACE DEBUG] Number of items received:', items.length);
   
-  // Store all items for later use
-  itemsModule.setAllItems(items);
+  // Store all items
+  allItems = items;
+  
+  // Reset filter state
+  showExperimental = false;
+  const filterCheckbox = document.getElementById('show-experimental');
+  if (filterCheckbox) {
+    filterCheckbox.checked = false;
+  }
+  
+  // Apply initial filter (NPX only)
+  const filteredItems = filterByNPX(allItems, showExperimental);
+  
+  // Store filtered items for later use
+  itemsModule.setAllItems(filteredItems);
   console.log('[MARKETPLACE DEBUG] Items stored in module');
   
-  // Display all items directly
+  // Display filtered items
   console.log('[MARKETPLACE DEBUG] Calling showAllItems()');
   itemsModule.showAllItems();
   
-  // Initialize search functionality with the populated items
+  // Initialize search functionality with filtered items
   searchModule.initSearch(
-    itemsModule.getAllItems(),
+    filteredItems,
     document.getElementById('marketplace-items-container'),
     itemsModule.showSearchResults
   );
+  
+  // Update filter stats
+  updateFilterStats();
   
   // Show items view directly
   console.log('[MARKETPLACE DEBUG] Showing items view');

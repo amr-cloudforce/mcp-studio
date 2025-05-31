@@ -26,6 +26,13 @@ export function createModal() {
             <span class="close" id="marketplace-close">&times;</span>
             <span class="modal-esc-hint">Press <span class="kbd">ESC</span> to close</span>
             <h2>MCP Server Marketplace</h2>
+            <div class="marketplace-filters">
+              <label class="filter-toggle">
+                <input type="checkbox" id="show-experimental" />
+                <span class="filter-label">Show Experimental</span>
+                <span class="filter-stats" id="filter-stats"></span>
+              </label>
+            </div>
           </div>
       <div class="marketplace-container">
         <div class="marketplace-search">

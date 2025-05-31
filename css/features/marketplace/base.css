@@ -88,6 +88,36 @@
   font-style: italic;
 }
 
+/* Filter Toggle Styles */
+.marketplace-filters {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.filter-toggle input[type="checkbox"] {
+  margin: 0;
+}
+
+.filter-label {
+  font-weight: 500;
+}
+
+.filter-stats {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marketplace-modal-content {
