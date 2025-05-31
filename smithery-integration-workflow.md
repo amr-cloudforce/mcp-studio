@@ -267,43 +267,51 @@ sequenceDiagram
 
 ## Implementation Plan
 
-### Phase 1: Core Service Layer
-1. Create `smithery-service.js` with API wrapper functions
-2. Implement credential validation and storage
-3. Add server listing and search functionality
-4. Add server details fetching
+### Modular Architecture (300-Line Limit Compliance)
 
-### Phase 2: Connection Handlers
-1. Create `smithery-connector.js` for installation logic
-2. Implement stdio connection handler with config evaluation
-3. Implement http connection handler with cli generation
-4. Add config generation utilities
+**Core Requirements:**
+- Default to HTTP servers (hosted via @smithery/cli)
+- Fetch first 100 servers initially
+- Real-time search functionality
+- Reuse existing marketplace UI/caching
+- Show tools in server details
+- Each file strictly under 300 lines
 
-### Phase 3: UI Integration
-1. Create marketplace UI components following existing pattern
-2. Add server browsing and search interface
-3. Implement server details modal with connection options
-4. Add installation flow with parameter collection
+### Phase 1: Micro-Service Layer
+1. `smithery-service.js` (~50 lines) - API key storage, basic fetch wrapper
+2. `smithery-api.js` (~80 lines) - listServers(), getServerDetails(), search()
+3. `smithery-config.js` (~60 lines) - generateHttpConfig(), generateStdioConfig()
+4. `smithery-connector.js` (~90 lines) - installServer(), connection handling
 
-### Phase 4: Configuration Integration
-1. Integrate with existing config manager
-2. Add proper error handling and validation
-3. Implement installation status feedback
-4. Add server management capabilities
+### Phase 2: UI Layer (Extending Existing)
+1. Extend `js/features/marketplace/data.js` with Smithery adapter
+2. Extend `js/features/marketplace/search.js` for Smithery API
+3. Add tool display to `js/features/marketplace/details.js`
+4. `smithery-ui.js` (~120 lines) - Smithery-specific rendering
+5. `smithery-details.js` (~100 lines) - Details modal, installation flow
 
-### File Structure
+### Phase 3: Integration
+1. Add Smithery tab to existing marketplace modal
+2. Integrate with existing config manager
+3. Reuse existing caching/pagination infrastructure
+
+### File Structure (Micro-Modules)
 ```
 js/features/smithery-marketplace/
-├── index.js              # Main entry point
-├── smithery-service.js   # API service layer
-├── smithery-connector.js # Installation logic
-├── data.js              # Data fetching utilities
-├── ui.js                # UI rendering
-├── search.js            # Search functionality
-├── details.js           # Server details modal
-├── items.js             # Server list items
-└── modal.js             # Main marketplace modal
+├── index.js              # Entry point (~30 lines)
+├── smithery-service.js   # API credentials (~50 lines)
+├── smithery-api.js       # API calls (~80 lines)
+├── smithery-config.js    # Config generation (~60 lines)
+├── smithery-connector.js # Installation logic (~90 lines)
+├── smithery-ui.js        # UI rendering (~120 lines)
+└── smithery-details.js   # Details modal (~100 lines)
 ```
+
+### Reuse Strategy
+- **Extend** existing marketplace/data.js instead of duplicating
+- **Import** shared utilities from marketplace/utils.js
+- **Inherit** UI patterns from marketplace/ui.js
+- **Leverage** existing modal/search/caching infrastructure
 
 ### Configuration Examples
 
