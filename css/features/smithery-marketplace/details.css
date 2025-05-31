@@ -133,12 +133,13 @@
 }
 
 .connection-type .badge {
-  background: var(--accent-color);
-  color: white;
+  background: var(--accent-color) !important;
+  color: white !important;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.7rem;
   margin-left: 0.5rem;
+  box-shadow: none;
 }
 
 /* Stdio configuration */

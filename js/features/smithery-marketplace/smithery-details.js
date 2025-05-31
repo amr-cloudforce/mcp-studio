@@ -24,8 +24,7 @@ export async function showServerDetails(qualifiedName) {
     const title = server.displayName || server.qualifiedName;
     const content = renderServerDetails(server);
     
-    showDetailsModal(title, content);
-    setupDetailsEventListeners(server);
+    showDetailsModal(title, content, server);
   } catch (error) {
     console.error('Failed to load server details:', error);
     showDetailsModal('Error', `<div class="error">Failed to load server details: ${error.message}</div>`);
@@ -95,8 +94,13 @@ function handleConnectionTypeChange(server, connectionType) {
  * @param {Object} server - Server details
  */
 async function handleInstallServer(server) {
+  console.log('[DEBUG] Install button clicked! Server:', server);
+  
   const serverName = document.getElementById('server-name')?.value.trim();
   const connectionType = document.querySelector('input[name="connection-type"]:checked')?.value;
+  
+  console.log('[DEBUG] Server name:', serverName);
+  console.log('[DEBUG] Connection type:', connectionType);
   
   if (!serverName) {
     alert('Please enter a server name');
@@ -109,21 +113,45 @@ async function handleInstallServer(server) {
   }
   
   try {
+    console.log('[DEBUG] Starting installation...');
+    
+    // Show loading state
+    const installBtn = document.getElementById('install-server');
+    if (installBtn) {
+      installBtn.textContent = 'Installing...';
+      installBtn.disabled = true;
+    }
+    
     let success = false;
     
     if (connectionType === 'stdio') {
+      console.log('[DEBUG] Installing stdio server...');
       const userConfig = collectStdioParams();
       success = await connector.installStdioServer(serverName, server, userConfig);
     } else {
+      console.log('[DEBUG] Installing HTTP server...');
       success = await connector.installHttpServer(serverName, server);
     }
     
+    console.log('[DEBUG] Installation result:', success);
+    
     if (success) {
+      console.log('[DEBUG] Installation successful, closing modal');
       closeDetailsModal();
+    } else {
+      console.log('[DEBUG] Installation failed');
+      alert('Installation failed. Please try again.');
     }
   } catch (error) {
-    console.error('Installation failed:', error);
+    console.error('[DEBUG] Installation error:', error);
     alert(`Installation failed: ${error.message}`);
+  } finally {
+    // Reset button state
+    const installBtn = document.getElementById('install-server');
+    if (installBtn) {
+      installBtn.textContent = 'Install Server';
+      installBtn.disabled = false;
+    }
   }
 }
 
@@ -150,8 +178,9 @@ function collectStdioParams() {
  * Show details modal
  * @param {string} title - Modal title
  * @param {string} content - Modal content HTML
+ * @param {Object} server - Server object (optional, for event listeners)
  */
-function showDetailsModal(title, content) {
+function showDetailsModal(title, content, server = null) {
   // Hide items view, show details view (same pattern as Composio)
   document.getElementById('smithery-marketplace-items-view').style.display = 'none';
   document.getElementById('smithery-marketplace-details-view').style.display = 'block';
@@ -161,6 +190,25 @@ function showDetailsModal(title, content) {
   
   // Set the content
   detailsContainer.innerHTML = content;
+  
+  // Set up event listeners after DOM is updated (only if server is provided)
+  if (server) {
+    // Use setTimeout to ensure DOM is fully updated
+    setTimeout(() => {
+      console.log('[DEBUG] Setting up event listeners for server:', server.qualifiedName);
+      
+      // Check if buttons exist
+      const installBtn = document.getElementById('install-server');
+      const closeBtn = document.getElementById('close-details');
+      const radioButtons = document.querySelectorAll('input[name="connection-type"]');
+      
+      console.log('[DEBUG] Install button found:', !!installBtn);
+      console.log('[DEBUG] Close button found:', !!closeBtn);
+      console.log('[DEBUG] Radio buttons found:', radioButtons.length);
+      
+      setupDetailsEventListeners(server);
+    }, 0);
+  }
 }
 
 /**
