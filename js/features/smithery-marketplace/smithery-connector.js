@@ -4,8 +4,8 @@
  */
 
 import { generateHttpConfig, generateStdioConfig, getDefaultConnectionType } from './smithery-config.js';
+import { getCredentials } from './smithery-service.js';
 import configManager from '../../config/config-manager.js';
-import * as notifications from '../../ui/notifications.js';
 
 /**
  * Install a Smithery server with HTTP connection (default)
@@ -19,17 +19,23 @@ export async function installHttpServer(serverName, server) {
   }
   
   try {
-    const config = generateHttpConfig(server);
+    // Get credentials
+    const credentials = await getCredentials();
+    if (!credentials) {
+      throw new Error('No credentials found. Please set API key and profile.');
+    }
+    
+    const config = generateHttpConfig(server, credentials);
     
     // Add server to configuration
     configManager.addServer(serverName, config, 'active');
     await configManager.saveConfig();
     
-    notifications.showSuccess(`Added Smithery server "${serverName}" (HTTP) to configuration`);
+    alert(`Successfully added Smithery server "${serverName}" (HTTP) to configuration`);
     return true;
   } catch (error) {
     console.error('Error installing HTTP server:', error);
-    notifications.showError(`Failed to install server: ${error.message}`);
+    alert(`Failed to install server: ${error.message}`);
     return false;
   }
 }
@@ -53,11 +59,11 @@ export async function installStdioServer(serverName, server, userConfig = {}) {
     configManager.addServer(serverName, config, 'active');
     await configManager.saveConfig();
     
-    notifications.showSuccess(`Added Smithery server "${serverName}" (stdio) to configuration`);
+    alert(`Successfully added Smithery server "${serverName}" (stdio) to configuration`);
     return true;
   } catch (error) {
     console.error('Error installing stdio server:', error);
-    notifications.showError(`Failed to install server: ${error.message}`);
+    alert(`Failed to install server: ${error.message}`);
     return false;
   }
 }

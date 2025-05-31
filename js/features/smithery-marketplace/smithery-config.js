@@ -8,15 +8,15 @@ import { getCredentials } from './smithery-service.js';
 /**
  * Generate HTTP configuration using @smithery/cli
  * @param {Object} server - Server details from API
+ * @param {Object} credentials - Credentials object with apiKey and profile
  * @returns {Object} MCP server configuration
  */
-export function generateHttpConfig(server) {
+export function generateHttpConfig(server, credentials) {
   if (!server?.qualifiedName) {
     throw new Error('generateHttpConfig: server.qualifiedName required');
   }
   
-  const { apiKey, profile } = getCredentials();
-  if (!apiKey || !profile) {
+  if (!credentials?.apiKey || !credentials?.profile) {
     throw new Error('generateHttpConfig: credentials not initialized');
   }
   
@@ -28,9 +28,9 @@ export function generateHttpConfig(server) {
       'run',
       server.qualifiedName,
       '--key',
-      apiKey,
+      credentials.apiKey,
       '--profile',
-      profile
+      credentials.profile
     ]
   };
 }
