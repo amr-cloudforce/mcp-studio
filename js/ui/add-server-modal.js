@@ -17,7 +17,6 @@ class AddServerModal {
     // DOM elements
     this.modal = document.getElementById('add-server-modal');
     this.closeBtn = document.getElementById('add-server-close');
-    this.templatesBtn = document.getElementById('templates-option');
     this.manualBtn = document.getElementById('manual-option');
     this.importBtn = document.getElementById('import-option');
     this.urlInput = document.getElementById('url-import-input');
@@ -52,12 +51,6 @@ class AddServerModal {
           <p>How would you like to add a server?</p>
           
           <div class="option-grid">
-            <div class="option-card" id="templates-option">
-              <div class="option-icon">⚡</div>
-              <h3>Templates</h3>
-              <p>Quick setup with pre-configured options</p>
-            </div>
-            
             <div class="option-card" id="manual-option">
               <div class="option-icon">⚙️</div>
               <h3>Manual</h3>
@@ -119,7 +112,7 @@ class AddServerModal {
     style.textContent = `
       .option-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 20px;
         margin-top: 20px;
       }
@@ -191,12 +184,6 @@ class AddServerModal {
       if (e.key === 'Escape' && this.modal.classList.contains('open')) {
         this.closeModal();
       }
-    });
-    
-    // Templates option
-    this.templatesBtn.addEventListener('click', () => {
-      this.closeModal();
-      quickAdd.openModal();
     });
     
     // Manual option
