@@ -6,6 +6,8 @@
 class ElementDebugger {
   constructor() {
     this.isActive = false;
+    this.isRecording = false;
+    this.recordedElements = [];
     this.originalCursor = '';
     this.init();
   }
@@ -16,6 +18,12 @@ class ElementDebugger {
       if (e.key === 'F12') {
         e.preventDefault();
         this.toggle();
+      } else if (e.key === 'F10') {
+        e.preventDefault();
+        this.startRecording();
+      } else if (e.key === 'F11') {
+        e.preventDefault();
+        this.stopRecording();
       }
     });
 
@@ -25,6 +33,10 @@ class ElementDebugger {
         e.preventDefault();
         e.stopPropagation();
         this.selectElement(e.target);
+      } else if (this.isRecording) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.recordElement(e.target);
       }
     }, true);
 
@@ -131,6 +143,36 @@ Parent: ${element.parentElement ? element.parentElement.tagName.toLowerCase() : 
         element.style.transition = '';
       }, 300);
     }, 200);
+  }
+
+  startRecording() {
+    this.isRecording = true;
+    this.recordedElements = [];
+    this.originalCursor = document.body.style.cursor;
+    document.body.style.cursor = 'crosshair';
+    this.showNotification('Recording ON - Click elements to record (F11 to stop)');
+  }
+
+  stopRecording() {
+    if (!this.isRecording) return;
+    
+    this.isRecording = false;
+    document.body.style.cursor = this.originalCursor;
+    
+    if (this.recordedElements.length > 0) {
+      const batchInfo = this.recordedElements.join('\n\n');
+      this.copyToClipboard(batchInfo);
+      this.showNotification(`Recording OFF - ${this.recordedElements.length} elements copied to clipboard`);
+    } else {
+      this.showNotification('Recording OFF - No elements recorded');
+    }
+  }
+
+  recordElement(element) {
+    const info = this.getElementInfo(element);
+    this.recordedElements.push(info);
+    this.flashElement(element);
+    this.showNotification(`Recording... (${this.recordedElements.length} elements)`);
   }
 
   showNotification(message) {

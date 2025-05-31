@@ -69,18 +69,25 @@ export class ServerListCore {
         }
       }
 
-      // Status filter
+      // If favorites filter is on, ignore status filter and show all favorite servers
+      if (this.activeFilters.favorites) {
+        if (!server.isFavorite) {
+          return false;
+        }
+        // Still apply category filter if needed
+        if (this.activeFilters.category !== 'all' && server.category !== this.activeFilters.category) {
+          return false;
+        }
+        return true;
+      }
+
+      // Status filter (only applied when favorites filter is off)
       if (this.activeFilters.status !== 'all' && server.status !== this.activeFilters.status) {
         return false;
       }
 
       // Category filter
       if (this.activeFilters.category !== 'all' && server.category !== this.activeFilters.category) {
-        return false;
-      }
-
-      // Favorites filter
-      if (this.activeFilters.favorites && !server.isFavorite) {
         return false;
       }
 
