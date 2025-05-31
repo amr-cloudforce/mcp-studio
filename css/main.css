@@ -9,5 +9,8 @@
 @import 'features/quick-add.css';
 @import 'features/log-viewer.css';
 @import 'features/directory.css';
+@import 'features/smithery-marketplace/base.css';
+@import 'features/smithery-marketplace/details.css';
+@import 'features/smithery-marketplace/forms.css';
 @import 'utilities.css';
 @import 'responsive.css';
