@@ -88,20 +88,14 @@ async function captureLogs(outputFile) {
         });
         
         ws.on('message', (data) => {
-            try {
-                const message = JSON.parse(data);
-                
-                if (message.method === 'Runtime.consoleAPICalled') {
-                    const { type, args, timestamp } = message.params;
-                    const time = new Date(timestamp).toISOString();
-                    const values = args.map(arg => arg.value || arg.description || '[object]').join(' ');
-                    writeLog(`${type.toUpperCase()}: ${values}`);
-                } else if (message.method === 'Runtime.exceptionThrown') {
-                    const { exceptionDetails } = message.params;
-                    writeLog(`ERROR: ${exceptionDetails.text} at ${exceptionDetails.url}:${exceptionDetails.lineNumber}`);
-                }
-            } catch (e) {
-                writeLog(`Failed to parse message: ${data.toString()}`);
+            // Output ALL Chrome DevTools messages immediately as raw data
+            const timestamp = new Date().toISOString();
+            const logEntry = `[${timestamp}] RAW: ${data.toString()}\n`;
+            
+            // Write immediately to console and file - force real-time output
+            process.stdout.write(logEntry);
+            if (logFile) {
+                fs.appendFileSync(logFile, logEntry);
             }
         });
         
