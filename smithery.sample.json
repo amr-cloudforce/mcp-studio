@@ -1,3 +1,31 @@
+example user url
+
+npx -y @smithery/cli@latest install @arjunkmrm/perplexity-search --client claude --profile legitimate-firefly-bSrBxD --key 12e10550-7b53-40d0-8ac3-XXX
+
+https://server.smithery.ai/@arjunkmrm/perplexity-search/mcp?profile=legitimate-firefly-bSrBxD&api_key=12e10550-7b53-40d0-8ac3-xxx
+
+
+
+RESULT IN THIS
+  "perplexity-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@arjunkmrm/perplexity-search",
+        "--key",
+        "12e10550-7b53-40d0-8ac3-xxx",
+        "--profile",
+        "legitimate-firefly-bSrBxD"
+      ]
+    }
+  },
+
+
+
+
+
 curl --location --request GET 'https://registry.smithery.ai/servers/@jlia0/servers' \
 --header 'Authorization: Bearer 10da516b-38e5-41d8-8ba9-xxxx'
 
