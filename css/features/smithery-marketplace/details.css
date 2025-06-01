@@ -13,11 +13,11 @@
 }
 
 .server-details {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .server-info {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .server-description {
@@ -54,7 +54,7 @@
 
 /* Collapsible sections */
 .collapsible {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .collapsible-header {
@@ -97,7 +97,7 @@
 
 /* Tools section */
 .server-tools {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .server-tools h4 {
@@ -153,7 +153,6 @@
 .connection-type {
   border: 2px solid var(--border-color);
   border-radius: 6px;
-  padding: 1rem;
   transition: border-color 0.2s ease;
 }
 
@@ -205,8 +204,7 @@
 .http-config {
   background: var(--bg-tertiary);
   border-radius: 6px;
-  padding: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .config-warning {
