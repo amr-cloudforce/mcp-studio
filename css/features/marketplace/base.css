@@ -35,6 +35,12 @@
   flex-direction: column;
 }
 
+/* Hide search when details view is active */
+.marketplace-container:has(#smithery-marketplace-details-view[style*="display: block"]) .marketplace-search,
+.marketplace-container:has(#marketplace-details-view[style*="display: block"]) .marketplace-search {
+  display: none;
+}
+
 /* Search */
 .marketplace-search {
   padding: 15px;
@@ -117,6 +123,18 @@
   font-size: 0.8rem;
   color: var(--text-muted);
   font-weight: normal;
+}
+
+/* Installed Badge */
+.installed-badge {
+  background: #28a745;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+  display: inline-block;
 }
 
 /* Responsive adjustments */

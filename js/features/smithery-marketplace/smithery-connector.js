@@ -27,6 +27,13 @@ export async function installHttpServer(serverName, server) {
     
     const config = generateHttpConfig(server, credentials);
     
+    // Add Smithery metadata
+    config.smithery = {
+      qualifiedName: server.qualifiedName,
+      source: 'smithery',
+      connectionType: 'http'
+    };
+    
     // Add server to configuration
     configManager.addServer(serverName, config, 'active');
     await configManager.saveConfig();
@@ -54,6 +61,13 @@ export async function installStdioServer(serverName, server, userConfig = {}) {
   
   try {
     const config = generateStdioConfig(server, userConfig);
+    
+    // Add Smithery metadata
+    config.smithery = {
+      qualifiedName: server.qualifiedName,
+      source: 'smithery',
+      connectionType: 'stdio'
+    };
     
     // Add server to configuration
     configManager.addServer(serverName, config, 'active');
@@ -93,6 +107,33 @@ export async function installServer(serverName, server, userConfig = {}) {
 export function isServerNameTaken(serverName) {
   const config = configManager.getConfig();
   return config && config.mcpServers && serverName in config.mcpServers;
+}
+
+/**
+ * Check if a Smithery server is already installed
+ * @param {string} qualifiedName - Server qualified name
+ * @returns {boolean} True if server is installed
+ */
+export function isSmitheryServerInstalled(qualifiedName) {
+  const config = configManager.getConfig();
+  if (!config || !config.mcpServers) return false;
+  
+  return Object.values(config.mcpServers).some(server => 
+    server.smithery && server.smithery.qualifiedName === qualifiedName
+  );
+}
+
+/**
+ * Get all installed Smithery servers
+ * @returns {Array} Array of installed Smithery server qualified names
+ */
+export function getInstalledSmitheryServers() {
+  const config = configManager.getConfig();
+  if (!config || !config.mcpServers) return [];
+  
+  return Object.values(config.mcpServers)
+    .filter(server => server.smithery && server.smithery.source === 'smithery')
+    .map(server => server.smithery.qualifiedName);
 }
 
 /**

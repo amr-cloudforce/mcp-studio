@@ -3,7 +3,11 @@
  * Handles rendering and managing marketplace items
  */
 
+import * as connector from './smithery-connector.js';
+
 let allItems = [];
+let filteredItems = [];
+let showOnlyInstalled = false;
 
 /**
  * Set all items for the marketplace
@@ -32,6 +36,32 @@ export function showAllItems() {
   }
   
   renderItems(allItems, container);
+}
+
+/**
+ * Set filter for installed servers
+ * @param {boolean} showInstalled - Whether to show only installed servers
+ */
+export function setInstalledFilter(showInstalled) {
+  showOnlyInstalled = showInstalled;
+  applyFilters();
+}
+
+/**
+ * Apply current filters to the items
+ */
+function applyFilters() {
+  let items = allItems;
+  
+  if (showOnlyInstalled) {
+    const installedServers = connector.getInstalledSmitheryServers();
+    items = items.filter(item => 
+      installedServers.includes(item.qualifiedName || item.name)
+    );
+  }
+  
+  filteredItems = items;
+  showSearchResults(filteredItems);
 }
 
 /**
@@ -79,10 +109,14 @@ function createItemElement(item) {
   
   const useCount = item.useCount ? `${item.useCount.toLocaleString()} uses` : '';
   const createdDate = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '';
+  const isInstalled = connector.isSmitheryServerInstalled(item.qualifiedName || item.name);
   
   element.innerHTML = `
     <div class="marketplace-item-header">
-      <h3 class="marketplace-item-title">${escapeHtml(item.displayName || item.qualifiedName || item.name)}</h3>
+      <h3 class="marketplace-item-title">
+        ${escapeHtml(item.displayName || item.qualifiedName || item.name)}
+        ${isInstalled ? '<span class="installed-badge">✓ Installed</span>' : ''}
+      </h3>
       <div class="marketplace-item-meta">
         ${useCount ? `<span class="use-count">${useCount}</span>` : ''}
         ${createdDate ? `<span class="created-date">${createdDate}</span>` : ''}
@@ -93,9 +127,10 @@ function createItemElement(item) {
       <button class="btn btn-primary view-details-btn" data-server="${escapeHtml(item.qualifiedName || item.name)}">
         View Details
       </button>
-      <button class="btn btn-secondary quick-install-btn" data-server="${escapeHtml(item.qualifiedName || item.name)}">
-        Quick Install
-      </button>
+      ${isInstalled ? 
+        '<button class="btn btn-secondary" disabled>Already Installed</button>' :
+        `<button class="btn btn-secondary quick-install-btn" data-server="${escapeHtml(item.qualifiedName || item.name)}">Quick Install</button>`
+      }
     </div>
   `;
   

@@ -61,6 +61,14 @@ function setupEventListeners() {
       modalModule.showApiKeyForm();
     });
   }
+  
+  // Filter checkbox
+  const filterCheckbox = document.getElementById('smithery-filter-installed');
+  if (filterCheckbox) {
+    filterCheckbox.addEventListener('change', () => {
+      itemsModule.setInstalledFilter(filterCheckbox.checked);
+    });
+  }
 }
 
 /**
