@@ -55,6 +55,13 @@ function setupDetailsEventListeners(server) {
     closeDetailsModal();
   });
   
+  // Collapsible sections
+  document.querySelectorAll('.collapsible-header').forEach(header => {
+    header.addEventListener('click', () => {
+      toggleCollapsible(header);
+    });
+  });
+  
   // Initialize with default connection type
   const defaultType = getDefaultConnectionType(server);
   handleConnectionTypeChange(server, defaultType);
@@ -96,7 +103,7 @@ function handleConnectionTypeChange(server, connectionType) {
 async function handleInstallServer(server) {
   console.log('[DEBUG] Install button clicked! Server:', server);
   
-  const serverName = document.getElementById('server-name')?.value.trim();
+  const serverName = document.getElementById('smithery-server-name')?.value.trim();
   const connectionType = document.querySelector('input[name="connection-type"]:checked')?.value;
   
   console.log('[DEBUG] Server name:', serverName);
@@ -218,6 +225,26 @@ function closeDetailsModal() {
   // Show items view, hide details view (same pattern as Composio)
   document.getElementById('smithery-marketplace-items-view').style.display = 'block';
   document.getElementById('smithery-marketplace-details-view').style.display = 'none';
+}
+
+/**
+ * Toggle collapsible section
+ * @param {HTMLElement} header - The header element that was clicked
+ */
+function toggleCollapsible(header) {
+  const targetId = header.getAttribute('data-target');
+  const content = document.getElementById(targetId);
+  const icon = header.querySelector('.collapse-icon');
+  
+  if (!content || !icon) return;
+  
+  if (content.classList.contains('collapsed')) {
+    content.classList.remove('collapsed');
+    icon.textContent = '▼';
+  } else {
+    content.classList.add('collapsed');
+    icon.textContent = '▶';
+  }
 }
 
 /**

@@ -30,22 +30,31 @@ export function renderServerDetails(server) {
   
   const htmlContent = `
     <div class="server-details">
-      <div class="server-info">
-        <p class="server-description">${escapeHtml(server.description || 'No description available')}</p>
-        
-        <div class="server-meta">
-          <div class="meta-item">
-            <strong>Qualified Name:</strong> ${escapeHtml(server.qualifiedName)}
+      <div class="server-info collapsible">
+        <h4 class="collapsible-header" data-target="server-description-content">
+          <span class="collapse-icon">▶</span> Description
+        </h4>
+        <div id="server-description-content" class="collapsible-content collapsed">
+          <p class="server-description">${escapeHtml(server.description || 'No description available')}</p>
+          
+          <div class="server-meta">
+            <div class="meta-item">
+              <strong>Qualified Name:</strong> ${escapeHtml(server.qualifiedName)}
+            </div>
+            ${server.useCount ? `<div class="meta-item"><strong>Usage:</strong> ${server.useCount.toLocaleString()} uses</div>` : ''}
+            ${server.createdAt ? `<div class="meta-item"><strong>Created:</strong> ${new Date(server.createdAt).toLocaleDateString()}</div>` : ''}
+            ${server.homepage ? `<div class="meta-item"><strong>Homepage:</strong> <a href="${escapeHtml(server.homepage)}" target="_blank">View</a></div>` : ''}
           </div>
-          ${server.useCount ? `<div class="meta-item"><strong>Usage:</strong> ${server.useCount.toLocaleString()} uses</div>` : ''}
-          ${server.createdAt ? `<div class="meta-item"><strong>Created:</strong> ${new Date(server.createdAt).toLocaleDateString()}</div>` : ''}
-          ${server.homepage ? `<div class="meta-item"><strong>Homepage:</strong> <a href="${escapeHtml(server.homepage)}" target="_blank">View</a></div>` : ''}
         </div>
       </div>
       
-      <div class="server-tools">
-        <h4>Available Tools</h4>
-        <ul class="tools-list">${toolsList}</ul>
+      <div class="server-tools collapsible">
+        <h4 class="collapsible-header" data-target="server-tools-content">
+          <span class="collapse-icon">▶</span> Available Tools
+        </h4>
+        <div id="server-tools-content" class="collapsible-content collapsed">
+          <ul class="tools-list">${toolsList}</ul>
+        </div>
       </div>
       
       <div class="connection-options">
@@ -89,8 +98,8 @@ export function renderServerDetails(server) {
       
       <div class="installation-form">
         <div class="form-group">
-          <label for="server-name">Server Name:</label>
-          <input type="text" id="server-name" value="${escapeHtml(connector.generateUniqueServerName(server.qualifiedName))}" placeholder="Enter server name">
+          <label for="smithery-server-name">Server Name:</label>
+          <input type="text" id="smithery-server-name" value="${escapeHtml(connector.generateUniqueServerName(server.qualifiedName))}" placeholder="Enter server name">
         </div>
         
         <div class="form-actions">

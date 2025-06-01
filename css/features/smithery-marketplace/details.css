@@ -50,6 +50,49 @@
   text-decoration: underline;
 }
 
+/* Collapsible sections */
+.collapsible {
+  margin-bottom: 1.5rem;
+}
+
+.collapsible-header {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.collapsible-header:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.collapse-icon {
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+
+.collapsible-content {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.collapsible-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.collapsible-content:not(.collapsed) {
+  max-height: 500px;
+  opacity: 1;
+}
+
 /* Tools section */
 .server-tools {
   margin-bottom: 1.5rem;
