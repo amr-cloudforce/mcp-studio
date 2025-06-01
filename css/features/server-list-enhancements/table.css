@@ -81,6 +81,41 @@
   flex-wrap: wrap;
 }
 
+/* Source badges */
+.source-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.source-badge:hover {
+  opacity: 0.8;
+}
+
+.smithery-badge {
+  background: #4a90e2;
+  color: white;
+}
+
+.composio-badge {
+  background: #ff6b35;
+  color: white;
+}
+
+.apify-badge {
+  background: #0f172a;
+  color: white;
+}
+
+.manual-badge {
+  background: #6b7280;
+  color: white;
+}
+
 .server-command-compact {
   font-family: var(--font-mono);
   font-size: 0.8rem;

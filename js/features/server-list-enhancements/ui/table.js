@@ -19,6 +19,7 @@ export class ServerTableRenderer {
     tr.dataset.serverStatus = server.status;
 
     const favoriteIcon = server.isFavorite ? 'fas fa-star favorite' : 'far fa-star';
+    const sourceBadge = this.getSourceBadge(server);
 
     // Always use compact view
     tr.innerHTML = `
@@ -27,6 +28,7 @@ export class ServerTableRenderer {
           <input type="checkbox" class="server-checkbox">
           <i class="${favoriteIcon}" data-favorite="${server.name}"></i>
           <span class="server-name">${server.name}</span>
+          ${sourceBadge}
           <span class="server-category">${server.category}</span>
         </div>
       </td>
@@ -88,6 +90,24 @@ export class ServerTableRenderer {
     if (events) {
       events.wireServerRowHandlers();
     }
+  }
+
+  /**
+   * Get source badge for a server
+   * @param {Object} server - Server configuration
+   * @returns {string} HTML for source badge
+   */
+  getSourceBadge(server) {
+    if (server.config.smithery && server.config.smithery.source === 'smithery') {
+      return '<span class="source-badge smithery-badge" title="Installed from Smithery Registry">🏪 Smithery</span>';
+    }
+    if (server.config.composio && server.config.composio.source === 'composio') {
+      return '<span class="source-badge composio-badge" title="Installed from Composio Marketplace">🔗 Composio</span>';
+    }
+    if (server.config.apify && server.config.apify.source === 'apify') {
+      return '<span class="source-badge apify-badge" title="Installed from Apify Marketplace">🕷️ Apify</span>';
+    }
+    return '<span class="source-badge manual-badge" title="Manually added server">✋ Manual</span>';
   }
 
   /**

@@ -251,7 +251,13 @@ export async function addMcpServerToConfig(name, mcpServer) {
         'start',
         '--url',
         url
-      ]
+      ],
+      composio: {
+        source: 'composio',
+        appKey: mcpServer.app_key || 'unknown',
+        connectionId: mcpServer.connection_id || currentConnectionRequest?.connectedAccountId,
+        mcpServerId: mcpServer.id
+      }
     };
     
     // Add server to configuration

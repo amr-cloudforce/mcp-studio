@@ -31,6 +31,10 @@ export async function addActor(actorId) {
         args: ["-y", "@apify/actors-mcp-server", "--actors", actorId],
         env: {
           "APIFY_TOKEN": apiKey
+        },
+        apify: {
+          source: 'apify',
+          actors: [actorId]
         }
       };
     } else {
@@ -52,6 +56,17 @@ export async function addActor(actorId) {
         if (!actorsList.includes(actorId)) {
           actorsList.push(actorId);
           args[actorsIndex + 1] = actorsList.join(',');
+          
+          // Update apify metadata
+          if (!config.mcpServers[serverName].apify) {
+            config.mcpServers[serverName].apify = {
+              source: 'apify',
+              actors: []
+            };
+          }
+          if (!config.mcpServers[serverName].apify.actors.includes(actorId)) {
+            config.mcpServers[serverName].apify.actors.push(actorId);
+          }
         }
       }
       
