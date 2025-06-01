@@ -30,11 +30,15 @@ export function renderServerDetails(server) {
   
   const htmlContent = `
     <div class="server-details">
+      <div class="server-header">
+        <h2 class="server-name">${escapeHtml(server.displayName || server.qualifiedName)}</h2>
+      </div>
+      
       <div class="server-info collapsible">
         <h4 class="collapsible-header" data-target="server-description-content">
-          <span class="collapse-icon">▶</span> Description
+          <span class="collapse-icon">▼</span> Description
         </h4>
-        <div id="server-description-content" class="collapsible-content collapsed">
+        <div id="server-description-content" class="collapsible-content">
           <p class="server-description">${escapeHtml(server.description || 'No description available')}</p>
           
           <div class="server-meta">

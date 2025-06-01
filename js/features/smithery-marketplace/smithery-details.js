@@ -11,14 +11,20 @@ import { renderServerDetails, renderStdioParams } from './smithery-details-rende
 /**
  * Show server details modal
  * @param {string} qualifiedName - Server qualified name
+ * @param {Object} originalItem - Original item from list (optional, contains description)
  */
-export async function showServerDetails(qualifiedName) {
+export async function showServerDetails(qualifiedName, originalItem = null) {
   try {
     // Show loading state
     showDetailsModal('Loading...', '<div class="loading">Loading server details...</div>');
     
     // Fetch server details
     const server = await api.getServerDetails(qualifiedName);
+    
+    // Merge original item description if available
+    if (originalItem && originalItem.description && !server.description) {
+      server.description = originalItem.description;
+    }
     
     // Render details
     const title = server.displayName || server.qualifiedName;

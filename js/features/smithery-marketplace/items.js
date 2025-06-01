@@ -126,7 +126,7 @@ async function showItemDetails(item) {
   try {
     // Import details module dynamically
     const details = await import('./smithery-details.js');
-    await details.showServerDetails(item.qualifiedName || item.name);
+    await details.showServerDetails(item.qualifiedName || item.name, item);
   } catch (error) {
     console.error('Failed to show item details:', error);
     alert('Failed to load item details: ' + error.message);
