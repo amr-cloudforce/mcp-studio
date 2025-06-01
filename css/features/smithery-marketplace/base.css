@@ -119,3 +119,53 @@
   padding: 2rem;
   color: var(--text-secondary);
 }
+
+/* Compact Smithery marketplace items - consistent with Composio */
+#smithery-marketplace-modal .marketplace-items-container {
+  padding: 10px;
+  gap: 12px;
+}
+
+#smithery-marketplace-modal .marketplace-item {
+  padding: 8px;
+  min-height: 140px;
+}
+
+#smithery-marketplace-modal .marketplace-item h3 {
+  font-size: 0.95rem;
+  margin-bottom: 3px;
+}
+
+#smithery-marketplace-modal .marketplace-item p {
+  font-size: 0.8rem;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+#smithery-marketplace-modal .marketplace-item-header {
+  margin-bottom: 4px;
+}
+
+#smithery-marketplace-modal .marketplace-item-actions {
+  padding-top: 4px;
+  gap: 6px;
+}
+
+#smithery-marketplace-modal .marketplace-item-meta {
+  font-size: 0.75rem;
+  gap: 6px;
+}
+
+#smithery-marketplace-modal .use-count,
+#smithery-marketplace-modal .created-date {
+  font-size: 0.75rem;
+}
+
+#smithery-marketplace-modal .marketplace-item-title {
+  font-size: 0.95rem;
+}
+
+#smithery-marketplace-modal .marketplace-item-description {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
