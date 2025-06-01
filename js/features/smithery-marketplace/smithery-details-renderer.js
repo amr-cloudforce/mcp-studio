@@ -31,7 +31,7 @@ export function renderServerDetails(server) {
   const htmlContent = `
     <div class="server-details">
       <div class="server-header">
-        <h2 class="server-name">${escapeHtml(server.displayName || server.qualifiedName)}</h2>
+        <h2 class="smithery-server-title">${escapeHtml(server.displayName || server.qualifiedName)}</h2>
       </div>
       
       <div class="server-info collapsible">

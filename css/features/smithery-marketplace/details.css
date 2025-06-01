@@ -3,6 +3,8 @@
  * Styling for server details and installation forms
  */
 
+@import './header.css';
+
 /* Server details modal */
 .smithery-details-modal {
   max-width: 600px;
