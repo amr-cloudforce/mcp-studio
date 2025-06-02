@@ -6,10 +6,13 @@
 import { getCategoryColor } from '../marketplace/colors.js';
 import { getCategoryIcon } from '../marketplace/icons.js';
 import { showDetailsView } from './modal.js';
+import * as connector from './composio-connector.js';
 
 // State variables
 let currentCategory = null;
 let allItems = [];
+let filteredItems = [];
+let showOnlyInstalled = false;
 
 /**
  * Set all items
@@ -49,6 +52,61 @@ export function getCurrentCategory() {
 }
 
 /**
+ * Set filter for installed apps
+ * @param {boolean} showInstalled - Whether to show only installed apps
+ */
+export function setInstalledFilter(showInstalled) {
+  showOnlyInstalled = showInstalled;
+  applyFilters();
+}
+
+/**
+ * Apply current filters to the items
+ */
+function applyFilters() {
+  let items = allItems;
+  
+  if (showOnlyInstalled) {
+    const installedApps = connector.getInstalledComposioServers();
+    items = items.filter(item => 
+      installedApps.includes(item.app_key)
+    );
+  }
+  
+  filteredItems = items;
+  showFilteredItems(filteredItems);
+}
+
+/**
+ * Show filtered items
+ * @param {Array} items - Filtered items to display
+ */
+function showFilteredItems(items) {
+  const itemsContainer = document.getElementById('composio-marketplace-items-container');
+  if (!itemsContainer) return;
+  
+  // Clear items container
+  itemsContainer.innerHTML = '';
+  
+  // Filter for available items only
+  const availableItems = items.filter(item => item.available);
+  
+  // Create items
+  if (availableItems.length > 0) {
+    availableItems.forEach(item => {
+      const itemElement = createItemElement(item);
+      itemsContainer.appendChild(itemElement);
+    });
+  } else {
+    // Show no items message
+    const noItems = document.createElement('div');
+    noItems.className = 'no-items';
+    noItems.textContent = showOnlyInstalled ? 'No installed Composio apps found' : 'No available Composio apps';
+    itemsContainer.appendChild(noItems);
+  }
+}
+
+/**
  * Create an item element
  * @param {Object} item - Composio marketplace item
  * @param {boolean} showCategory - Whether to show the category label
@@ -66,6 +124,7 @@ export function createItemElement(item, showCategory = false) {
   
   // Get category color for the label
   const categoryColor = getCategoryColor(item.category || 'Uncategorized');
+  const isInstalled = connector.isComposioServerInstalled(item.app_key);
   
   // Create toolkit logo HTML
   const logoHtml = item.toolkit_logo ? 
@@ -80,7 +139,10 @@ export function createItemElement(item, showCategory = false) {
     </div>
     <div class="item-title-row">
       ${logoHtml}
-      <h3>${item.repo_name}</h3>
+      <h3>
+        ${item.repo_name}
+        ${isInstalled ? '<span class="installed-badge">✓ Installed</span>' : ''}
+      </h3>
     </div>
     <p>${item.summary_200_words ? item.summary_200_words.substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">

@@ -3,7 +3,9 @@
 # Debug Session Script for MCP Studio
 # Starts Electron app with remote debugging and captures logs to file
 
-LOG_FILE="debug-session-$(date +%Y%m%d-%H%M%S).txt"
+cd ..
+
+LOG_FILE="/tmp/debug-session-$(date +%Y%m%d-%H%M%S).txt"
 ELECTRON_PID=""
 CAPTURE_PID=""
 
@@ -84,7 +86,7 @@ done
 
 # Start log capture
 echo -e "${YELLOW}Starting log capture...${NC}"
-node capture-logs-continuous.js "$LOG_FILE" &
+node debugging/capture-logs-continuous.js "$LOG_FILE" &
 CAPTURE_PID=$!
 
 echo "Log capture PID: $CAPTURE_PID"

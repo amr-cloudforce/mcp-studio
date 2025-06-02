@@ -51,9 +51,13 @@ export function createModal() {
           
           <div class="marketplace-container">
             <div class="marketplace-search">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <input type="text" id="composio-marketplace-search-input" placeholder="Search Composio apps...">
-                <button id="composio-api-key-settings" class="btn btn-reveal" style="margin-left: 10px; white-space: nowrap;">API Key Settings</button>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                <input type="text" id="composio-marketplace-search-input" placeholder="Search Composio apps..." style="flex: 1;">
+                <label class="filter-toggle" style="white-space: nowrap; font-size: 0.85rem;">
+                  <input type="checkbox" id="composio-filter-installed">
+                  <span class="filter-label">Installed only</span>
+                </label>
+                <button id="composio-api-key-settings" class="btn btn-reveal" style="white-space: nowrap;">API Key Settings</button>
               </div>
             </div>
             <div id="composio-marketplace-items-view">

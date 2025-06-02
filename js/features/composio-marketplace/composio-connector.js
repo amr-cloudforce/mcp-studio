@@ -286,6 +286,33 @@ export function getCurrentConnection() {
 }
 
 /**
+ * Check if a Composio app is already installed
+ * @param {string} appKey - App key to check
+ * @returns {boolean} True if app is installed
+ */
+export function isComposioServerInstalled(appKey) {
+  const config = configManager.getConfig();
+  if (!config || !config.mcpServers) return false;
+  
+  return Object.values(config.mcpServers).some(server => 
+    server.composio && server.composio.source === 'composio' && server.composio.appKey === appKey
+  );
+}
+
+/**
+ * Get all installed Composio servers
+ * @returns {Array} Array of installed Composio app keys
+ */
+export function getInstalledComposioServers() {
+  const config = configManager.getConfig();
+  if (!config || !config.mcpServers) return [];
+  
+  return Object.values(config.mcpServers)
+    .filter(server => server.composio && server.composio.source === 'composio')
+    .map(server => server.composio.appKey);
+}
+
+/**
  * Get the Composio service
  * @returns {Object} - The Composio service
  */

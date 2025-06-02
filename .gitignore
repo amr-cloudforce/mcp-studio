@@ -9,3 +9,6 @@ marketplace.json
 .env
 repomix-output.txt
 debug-session*txt
+tests/test-results/
+docs/
+landing-page/

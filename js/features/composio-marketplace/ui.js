@@ -55,6 +55,14 @@ function setupEventListeners() {
       modalModule.showApiKeyForm();
     });
   }
+  
+  // Filter checkbox
+  const filterCheckbox = document.getElementById('composio-filter-installed');
+  if (filterCheckbox) {
+    filterCheckbox.addEventListener('change', () => {
+      itemsModule.setInstalledFilter(filterCheckbox.checked);
+    });
+  }
 }
 
 
