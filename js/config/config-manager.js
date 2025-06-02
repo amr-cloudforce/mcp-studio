@@ -72,6 +72,19 @@ class ConfigManager {
   async saveConfig() {
     try {
       await require('electron').ipcRenderer.invoke('write-config', JSON.stringify(this.config, null, 2));
+      
+      // Auto-sync to enabled clients if auto-sync is enabled
+      try {
+        const clientSync = require('./client-sync');
+        if (clientSync.isAutoSyncEnabled()) {
+          console.log('[CONFIG-MANAGER] Auto-syncing to enabled clients');
+          const activeServers = this.config.mcpServers || {};
+          clientSync.syncAll(activeServers);
+        }
+      } catch (syncError) {
+        console.warn('[CONFIG-MANAGER] Client sync not available:', syncError.message);
+      }
+      
       this.notifyChangeListeners();
       return true;
     } catch (err) {

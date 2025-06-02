@@ -63,6 +63,9 @@ import serverForm from './ui/server-form/index.js';
 import serverList from './ui/server-list.js';
 import modalHandlers from './ui/modal-handlers.js';
 import apifyMarketplace from './features/apify-marketplace/index.js';
+import clientsTab from './ui/clients-tab.js';
+console.log('[DEBUG] clientsTab imported:', clientsTab);
+console.log('[DEBUG] clientsTab.initialized:', clientsTab.initialized);
 
 window.addEventListener('DOMContentLoaded', async () => {
   // ACE JSON editor setup
@@ -101,9 +104,55 @@ window.addEventListener('DOMContentLoaded', async () => {
     quickAdd.closeModal();
   });
 
+  // View switching function
+  function showView(viewName) {
+    console.log('[DEBUG] showView called with:', viewName);
+    // Hide all views
+    const serverTable = document.getElementById('basic-table');
+    const clientsContainer = document.getElementById('clients-container');
+    const mainTitle = document.querySelector('.main-content h2');
+    
+    console.log('[DEBUG] Elements found - serverTable:', !!serverTable, 'clientsContainer:', !!clientsContainer, 'mainTitle:', !!mainTitle);
+    
+    serverTable.style.display = 'none';
+    clientsContainer.style.display = 'none';
+    
+    // Show selected view
+    if (viewName === 'clients') {
+      console.log('[DEBUG] Switching to clients view');
+      mainTitle.textContent = 'Client Synchronization';
+      clientsContainer.style.display = 'block';
+      
+      // Initialize clients tab if not already done
+      console.log('[DEBUG] clientsTab.initialized:', clientsTab.initialized);
+      if (!clientsTab.initialized) {
+        console.log('[DEBUG] Initializing clients tab');
+        clientsTab.init(clientsContainer);
+      } else {
+        console.log('[DEBUG] Refreshing clients tab');
+        clientsTab.refresh();
+      }
+    } else {
+      // Default to servers view
+      console.log('[DEBUG] Switching to servers view');
+      mainTitle.textContent = 'MCP Servers';
+      serverTable.style.display = 'block';
+    }
+  }
+
   // Event listeners
-  document.getElementById('add-server-btn').onclick = () => serverForm.openModal();
-  document.getElementById('quick-add-btn').onclick = () => quickAdd.openModal();
+  document.getElementById('add-server-btn').onclick = () => {
+    showView('servers');
+    serverForm.openModal();
+  };
+  document.getElementById('quick-add-btn').onclick = () => {
+    showView('servers');
+    quickAdd.openModal();
+  };
+  document.getElementById('clients-btn').onclick = () => {
+    console.log('[DEBUG] Clients button clicked!');
+    showView('clients');
+  };
   document.getElementById('export-json-btn').onclick = () => modalHandlers.openJsonModal();
   document.getElementById('reveal-btn').onclick = () => ipcRenderer.invoke('reveal-config');
   document.getElementById('paste-btn').onclick = () => modalManager.showModal(document.getElementById('paste-modal'));
