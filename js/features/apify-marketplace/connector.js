@@ -16,7 +16,7 @@ export async function addActor(actorId) {
     
     // Get current configuration
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'actors-mcp-server';
+    const serverName = 'apify-actors';
     
     // Get API key
     const apiKey = await ipcRenderer.invoke('apify-get-api-key');
@@ -102,7 +102,7 @@ export async function removeActor(actorId) {
     
     // Get current configuration
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'actors-mcp-server';
+    const serverName = 'apify-actors';
     
     if (!config.mcpServers[serverName]) {
       console.log('[DEBUG] No Apify server found, nothing to remove');
@@ -152,7 +152,7 @@ export async function removeActor(actorId) {
 export async function getConfiguredActors() {
   try {
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'actors-mcp-server';
+    const serverName = 'apify-actors';
     
     if (!config.mcpServers[serverName]) {
       return [];
@@ -191,7 +191,7 @@ export async function isActorConfigured(actorId) {
 export async function updateApiKey(apiKey) {
   try {
     const config = await ipcRenderer.invoke('get-config');
-    const serverName = 'actors-mcp-server';
+    const serverName = 'apify-actors';
     
     if (config.mcpServers[serverName]) {
       config.mcpServers[serverName].env = {

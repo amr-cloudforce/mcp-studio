@@ -134,7 +134,7 @@ export async function loadApifyActors() {
 export async function getSelectedActors() {
   try {
     const config = await ipcRenderer.invoke('get-config');
-    const apifyServer = config.mcpServers['actors-mcp-server'];
+    const apifyServer = config.mcpServers['apify-actors'];
     
     if (!apifyServer || !apifyServer.args) {
       return [];
