@@ -23,7 +23,6 @@
 .form-group input[type="text"] {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--border-color);
   border-radius: 4px;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -32,7 +31,6 @@
 
 .form-group input[type="text"]:focus {
   outline: none;
-  border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
 }
 
