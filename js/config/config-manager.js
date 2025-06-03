@@ -149,6 +149,8 @@ class ConfigManager {
       }
     }
     
+    // Use serverConfig as-is, no managed flag in MCP Studio internal config
+    
     // Determine where to save the server based on the disabled flag
     if (disabled) {
       // Save to inactive section

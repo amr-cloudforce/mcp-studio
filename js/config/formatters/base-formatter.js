@@ -41,20 +41,23 @@ class BaseFormatter {
   }
 
   /**
-   * Extract only the command, args, and env from server config
+   * Extract command, args, env and add managed flag for client config
+   * Removes metadata like apify, composio, smithery but keeps managed flag
    * @param {Object} serverConfig - Full server configuration
-   * @returns {Object} Cleaned server configuration
+   * @returns {Object} Cleaned server configuration with managed flag
    */
   static cleanServerConfig(serverConfig) {
     const cleaned = {
       command: serverConfig.command,
-      args: serverConfig.args || []
+      args: serverConfig.args || [],
+      managed: true  // Add managed flag to identify our servers in client config
     };
 
     if (serverConfig.env && Object.keys(serverConfig.env).length > 0) {
       cleaned.env = serverConfig.env;
     }
 
+    // Exclude metadata: apify, composio, smithery, but KEEP managed flag
     return cleaned;
   }
 

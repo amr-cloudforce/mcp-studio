@@ -22,6 +22,7 @@ class ClaudeFormatter extends BaseFormatter {
 
   /**
    * Merge MCP servers section into existing Claude configuration
+   * Uses selective merge to preserve external servers and only manage servers with managed: true
    * @param {Object|string} existing - Existing Claude configuration
    * @param {Object} servers - Server configurations to merge
    * @returns {Object} Updated Claude configuration
@@ -38,9 +39,30 @@ class ClaudeFormatter extends BaseFormatter {
       config = {};
     }
 
-    // Replace the mcpServers section entirely
-    config.mcpServers = this.formatServers(servers);
+    // Ensure mcpServers exists
+    if (!config.mcpServers) {
+      config.mcpServers = {};
+    }
 
+    // Selective merge: preserve external servers, update only managed ones
+    const existingServers = config.mcpServers;
+    const newMcpServers = {};
+
+    // Step 1: Keep external servers (those without managed: true)
+    for (const [name, serverConfig] of Object.entries(existingServers)) {
+      if (serverConfig.managed !== true) {
+        newMcpServers[name] = serverConfig;
+      }
+      // Skip servers with managed: true - they will be replaced by our new ones
+    }
+
+    // Step 2: Add our managed servers (cleaned of metadata)
+    const cleanedServers = this.formatServers(servers);
+    for (const [name, serverConfig] of Object.entries(cleanedServers)) {
+      newMcpServers[name] = serverConfig;
+    }
+
+    config.mcpServers = newMcpServers;
     return config;
   }
 

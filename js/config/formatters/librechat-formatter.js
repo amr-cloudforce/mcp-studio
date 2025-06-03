@@ -14,27 +14,8 @@ class LibreChatFormatter extends BaseFormatter {
     const formatted = {};
     
     for (const [name, serverConfig] of Object.entries(servers)) {
-      // Start with basic server config
-      const server = this.cleanServerConfig(serverConfig);
-      
-      // Add metadata if available (for Composio, Apify, etc.)
-      if (serverConfig.metadata) {
-        // Merge metadata into the server config
-        Object.assign(server, serverConfig.metadata);
-      }
-      
-      // Handle specific metadata types
-      if (serverConfig.composio) {
-        server.composio = serverConfig.composio;
-      }
-      if (serverConfig.apify) {
-        server.apify = serverConfig.apify;
-      }
-      if (serverConfig.smithery) {
-        server.smithery = serverConfig.smithery;
-      }
-      
-      formatted[name] = server;
+      // Use cleanServerConfig to remove ALL metadata including managed, apify, composio, smithery
+      formatted[name] = this.cleanServerConfig(serverConfig);
     }
     
     return formatted;
@@ -61,8 +42,30 @@ class LibreChatFormatter extends BaseFormatter {
         config = {};
       }
 
-      // Replace the mcpServers section entirely
-      config.mcpServers = this.formatServers(servers);
+      // Ensure mcpServers exists
+      if (!config.mcpServers) {
+        config.mcpServers = {};
+      }
+
+      // Selective merge: preserve external servers, update only managed ones
+      const existingServers = config.mcpServers;
+      const newMcpServers = {};
+
+      // Step 1: Keep external servers (those without managed: true)
+      for (const [name, serverConfig] of Object.entries(existingServers)) {
+        if (serverConfig.managed !== true) {
+          newMcpServers[name] = serverConfig;
+        }
+        // Skip servers with managed: true - they will be replaced by our new ones
+      }
+
+      // Step 2: Add our managed servers (cleaned of metadata)
+      const cleanedServers = this.formatServers(servers);
+      for (const [name, serverConfig] of Object.entries(cleanedServers)) {
+        newMcpServers[name] = serverConfig;
+      }
+
+      config.mcpServers = newMcpServers;
 
       // Convert back to YAML string
       return this.stringifyConfig(config);
@@ -82,7 +85,29 @@ class LibreChatFormatter extends BaseFormatter {
         config = {};
       }
       
-      config.mcpServers = this.formatServers(servers);
+      // Ensure mcpServers exists
+      if (!config.mcpServers) {
+        config.mcpServers = {};
+      }
+      
+      // Selective merge for JSON fallback
+      const existingServers = config.mcpServers;
+      const newMcpServers = {};
+      
+      // Keep external servers
+      for (const [name, serverConfig] of Object.entries(existingServers)) {
+        if (serverConfig.managed !== true) {
+          newMcpServers[name] = serverConfig;
+        }
+      }
+      
+      // Add our managed servers
+      const cleanedServers = this.formatServers(servers);
+      for (const [name, serverConfig] of Object.entries(cleanedServers)) {
+        newMcpServers[name] = serverConfig;
+      }
+      
+      config.mcpServers = newMcpServers;
       return JSON.stringify(config, null, 2);
     }
   }
