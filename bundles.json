@@ -1,0 +1,37 @@
+{
+  "bundles": [
+    {
+      "id": "research-assistant",
+      "name": "Research Assistant Bundle",
+      "description": "AI-powered research with web search and email integration",
+      "icon": "🔍",
+      "category": "productivity",
+      "tools": [
+        {
+          "type": "smithery",
+          "qualifiedName": "@tavily-ai/tavily-mcp",
+          "displayName": "Tavily AI Search",
+          "required": true
+        },
+        {
+          "type": "composio",
+          "app_key": "gmail",
+          "displayName": "Gmail Integration",
+          "required": true
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Research and Email Summary",
+          "description": "Search for information and email a summary",
+          "content": "Use Tavily to research [TOPIC] and then send a summary email via Gmail to [EMAIL]"
+        },
+        {
+          "name": "Quick Fact Check",
+          "description": "Quickly verify facts using web search",
+          "content": "Use Tavily to fact-check: [CLAIM]. Provide sources and verification status."
+        }
+      ]
+    }
+  ]
+}

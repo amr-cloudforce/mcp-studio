@@ -21,6 +21,7 @@ import marketplace from './features/marketplace/index.js';
 import composioMarketplace from './features/composio-marketplace/index.js';
 import apifyMarketplace from './features/apify-marketplace/index.js';
 import smitheryMarketplace from './features/smithery-marketplace/index.js';
+import * as bundles from './features/bundles/index.js';
 import elementDebugger from './utils/element-debugger.js';
 import modalLoader from './utils/modal-loader.js';
 import { initializeViewSwitching } from './view-manager.js';
@@ -92,6 +93,7 @@ async function initializeApp() {
     composioMarketplace.initialize();
     apifyMarketplace.initialize();
     smitheryMarketplace.initialize();
+    bundles.initialize();
     console.timeEnd('🛒 Marketplace Initialization');
     
     updateLoadingProgress(65, 'Loading templates...', 'Quick Add server templates');

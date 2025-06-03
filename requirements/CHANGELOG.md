@@ -53,3 +53,14 @@ All notable changes to this project will be documented in this file.
 - Updated preload.js to properly expose window.api object
 - Added all required IPC methods: selectDirectory, openUrl, fetchUrl, etc.
 - Browse buttons in Quick Add and server forms now work correctly
+
+## MCP Bundles System
+- Added comprehensive bundles feature for curated tool collections
+- Created bundles.json with Research Assistant bundle (Tavily AI + Gmail)
+- Implemented bundle listing view with search functionality
+- Added bundle configuration modal with tool status tracking
+- Integrated with existing marketplace systems (Smithery, Composio, Apify)
+- Added installation status detection for bundle tools
+- Created dedicated CSS styling for bundles interface
+- Added bundles section to sidebar navigation
+- Supports sequential tool installation workflow

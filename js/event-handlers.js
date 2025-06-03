@@ -10,6 +10,7 @@ import marketplace from './features/marketplace/index.js';
 import composioMarketplace from './features/composio-marketplace/index.js';
 import apifyMarketplace from './features/apify-marketplace/index.js';
 import smitheryMarketplace from './features/smithery-marketplace/index.js';
+import * as bundles from './features/bundles/index.js';
 import jsonEditor from './ui/json-editor.js';
 import notifications from './ui/notifications.js';
 
@@ -26,6 +27,7 @@ export function setupEventListeners() {
   const composioMarketplaceBtn = document.getElementById('composio-marketplace-btn');
   const apifyMarketplaceBtn = document.getElementById('apify-marketplace-btn');
   const smitheryMarketplaceBtn = document.getElementById('smithery-marketplace-btn');
+  const bundlesBtn = document.getElementById('bundles-btn');
   const exportBtn = document.getElementById('export-json-btn');
   const revealBtn = document.getElementById('reveal-btn');
   const aboutBtn = document.getElementById('about-btn');
@@ -49,6 +51,7 @@ export function setupEventListeners() {
   composioMarketplaceBtn.addEventListener('click', () => composioMarketplace.openModal());
   apifyMarketplaceBtn.addEventListener('click', () => apifyMarketplace.openModal());
   smitheryMarketplaceBtn.addEventListener('click', () => smitheryMarketplace.openModal());
+  bundlesBtn.addEventListener('click', () => bundles.openModal());
   exportBtn.addEventListener('click', () => jsonEditor.openModal());
   revealBtn.addEventListener('click', () => require('electron').ipcRenderer.invoke('reveal-config'));
   aboutBtn.addEventListener('click', () => aboutModal.openModal());
