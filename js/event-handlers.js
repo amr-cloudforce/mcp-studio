@@ -11,6 +11,7 @@ import composioMarketplace from './features/composio-marketplace/index.js';
 import apifyMarketplace from './features/apify-marketplace/index.js';
 import smitheryMarketplace from './features/smithery-marketplace/index.js';
 import jsonEditor from './ui/json-editor.js';
+import notifications from './ui/notifications.js';
 
 /**
  * Set up all event listeners for the main application
@@ -31,6 +32,7 @@ export function setupEventListeners() {
   const logsBtn = document.getElementById('logs-btn');
   const clientsBtn = document.getElementById('clients-btn');
   const showAllServersBtn = document.getElementById('show-all-servers-btn');
+  const restartAllClientsBtn = document.getElementById('restart-all-clients-btn');
 
   // Set up event listeners
   addServerBtn.addEventListener('click', () => addServerModal.openModal());
@@ -53,4 +55,11 @@ export function setupEventListeners() {
   logsBtn.addEventListener('click', () => logViewer.openModal());
   clientsBtn.addEventListener('click', () => showView('clients'));
   showAllServersBtn.addEventListener('click', () => showAllServers());
+  
+  // Restart All Clients button
+  if (restartAllClientsBtn) {
+    restartAllClientsBtn.addEventListener('click', () => {
+      notifications.handleRestartAllClients();
+    });
+  }
 }

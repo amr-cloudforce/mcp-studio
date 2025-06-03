@@ -32,8 +32,14 @@ export function createItemElement(item, showCategory = false) {
     `<img src="${item.toolkit_logo}" alt="${item.toolkit_name || 'Toolkit'} logo" class="toolkit-logo" onerror="this.style.display='none'">` : 
     '';
   
+  // Create documentation URL for Composio
+  const docUrl = `https://mcp.composio.dev/${item.toolkit_slug || item.app_key}/`;
+  
   // Create item content with toolkit logo
   itemElement.innerHTML = `
+    <div class="doc-link" data-url="${docUrl}">
+      📖 Documentation ↗️
+    </div>
     <div class="item-header">
       <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN'}</span>
       ${showCategory ? `<span class="item-category" style="background: ${categoryColor}">${item.category || 'Uncategorized'}</span>` : ''}
@@ -69,6 +75,18 @@ export function createItemElement(item, showCategory = false) {
         showItemDetails(item);
       });
     }
+  }
+  
+  // Add click event for documentation link
+  const docLink = itemElement.querySelector('.doc-link');
+  if (docLink) {
+    docLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = docLink.dataset.url;
+      if (url) {
+        require('electron').ipcRenderer.invoke('open-url', url);
+      }
+    });
   }
   
   // Add the item to the wrapper

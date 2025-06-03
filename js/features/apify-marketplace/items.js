@@ -68,8 +68,14 @@ export function createItemElement(item, showCategory = false) {
   itemElement.className = `marketplace-item ${!item.available ? 'unavailable' : ''} ${isSelected ? 'selected' : ''}`;
   itemElement.dataset.actorId = item.actor_id;
   
+  // Create documentation URL for Apify
+  const docUrl = `https://apify.com/${item.actor_id}`;
+  
   // Create item content
   itemElement.innerHTML = `
+    <div class="doc-link" data-url="${docUrl}">
+      📖 Documentation ↗️
+    </div>
     <div class="item-header">
       <span class="server-type">${item.server_type ? item.server_type.toUpperCase() : 'APIFY'}</span>
       ${showCategory ? `<span class="item-category">${item.category || 'Apify Actors'}</span>` : ''}
@@ -114,6 +120,18 @@ export function createItemElement(item, showCategory = false) {
         await toggleActor(item.actor_id, addRemoveBtn);
       });
     }
+  }
+  
+  // Add click event for documentation link
+  const docLink = itemElement.querySelector('.doc-link');
+  if (docLink) {
+    docLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = docLink.dataset.url;
+      if (url) {
+        require('electron').ipcRenderer.invoke('open-url', url);
+      }
+    });
   }
   
   // Add the item to the wrapper

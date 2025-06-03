@@ -27,3 +27,15 @@ All notable changes to this project will be documented in this file.
 - Updated functionality to restart all clients with valid restart commands
 - Added support for restarting multiple clients simultaneously
 - Shows summary of restart results for all clients
+
+## Documentation Links in Marketplaces
+- Added documentation links at top of each marketplace item
+- Consistent design with 📖 icon across all marketplaces
+- Links open in external browser, not in-app
+- URL patterns: Smithery (smithery.ai), Composio (mcp.composio.dev), Apify (apify.com)
+
+## Restart All Clients Button
+- Added "Restart All Clients" button to main MCP Servers view
+- Restarts all configured MCP clients (Claude, LibreChat, etc.)
+- Uses existing restart clients functionality
+- Positioned in header of servers table view

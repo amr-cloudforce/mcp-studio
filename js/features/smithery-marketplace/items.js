@@ -111,7 +111,13 @@ function createItemElement(item) {
   const createdDate = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '';
   const isInstalled = connector.isSmitheryServerInstalled(item.qualifiedName || item.name);
   
+  // Create documentation URL for Smithery
+  const docUrl = item.url || `https://smithery.ai/server/${item.qualifiedName || item.name}`;
+  
   element.innerHTML = `
+    <div class="doc-link" data-url="${escapeHtml(docUrl)}">
+      📖 Documentation ↗️
+    </div>
     <div class="marketplace-item-header">
       <h3 class="marketplace-item-title">
         ${escapeHtml(item.displayName || item.qualifiedName || item.name)}
@@ -137,6 +143,7 @@ function createItemElement(item) {
   // Add event listeners
   const viewDetailsBtn = element.querySelector('.view-details-btn');
   const quickInstallBtn = element.querySelector('.quick-install-btn');
+  const docLink = element.querySelector('.doc-link');
   
   if (viewDetailsBtn) {
     viewDetailsBtn.addEventListener('click', () => {
@@ -147,6 +154,16 @@ function createItemElement(item) {
   if (quickInstallBtn) {
     quickInstallBtn.addEventListener('click', () => {
       quickInstallItem(item);
+    });
+  }
+  
+  if (docLink) {
+    docLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = docLink.dataset.url;
+      if (url) {
+        require('electron').ipcRenderer.invoke('open-url', url);
+      }
     });
   }
   
