@@ -1,0 +1,181 @@
+PROBLEM: 
+compsio stil lnot is see this badget in the server list  
+
+Window: MCP Studio
+Page: Main Application
+Element: span.source-badge.composio-badge
+ID: none
+Classes: source-badge composio-badge
+Selector: span.source-badge.composio-badge
+Text: 🔗 Composio
+Parent: div
+
+
+but in the comnpsio list when is elect instaleld only i see this
+
+No installed Composio apps found
+
+
+TRIALS SO FAR: 
+
+THIS APPROACH DID NOT WORK.
+I can see the issue! The Composio filter is working (Apify now works), but there's a mismatch between:
+
+1. __Server list shows__: `🔗 Composio` badge (indicating Composio servers exist)
+2. __Composio marketplace shows__: "No installed Composio apps found" when "Installed only" is checked
+
+This means the `getInstalledComposioServers()` function in the Composio connector is not correctly identifying installed Composio servers.
+
+## Root Cause Analysis
+
+The problem is in the `getInstalledComposioServers()` function in `js/features/composio-marketplace/composio-connector.js`. It's looking for servers with:
+
+```javascript
+server.composio && server.composio.source === 'composio' && server.composio.appKey
+```
+
+But the actual server configuration might have different metadata structure or the `appKey` field might be named differently.
+
+## Investigation Plan
+
+I need to:
+
+1. __Check the actual server configuration structure__ - see how Composio servers are stored in the config
+2. __Compare with the detection logic__ - verify what fields the `getInstalledComposioServers()` function is looking for
+3. __Fix the mismatch__ - update the detection logic to match the actual server structure
+
+## Verification Method
+
+Add console logs to see:
+
+```javascript
+// In getInstalledComposioServers():
+console.log('[DEBUG] All servers in config:', Object.entries(config.mcpServers));
+console.log('[DEBUG] Composio servers found:', composioServers);
+```
+
+The issue is that the server detection logic doesn't match how Composio servers are actually stored in the configuration.
+
+Would you like me to toggle to
+
+Act Mode (⌘⇧A) to investigate and fix this mismatch?
+
+YOU WILL FUCKEN FIND OUT BY FUCNE CHREADIN GHTE CODE AND FINDING THE CAUSE AND DONT UCKN ASK ME FOR ACT BEFORE YOUF UCKEN HAVE FOUDN THE REAL CAUSE. FAILINYG OT BE HONST FINDING THE REAL PORBOLEM I WILL FUCKEN FIRE YOU. AND YOU FUCKNE TELL ME HOW TO VERIFY THE FUCEKN ASSUMPTION YOU DO E,G. BY CONSOLE LOGS EPXECTED OR WHATEVER
+
+**Checkpoint
+
+Compare
+
+Restore
+
+API Request$0.0365
+
+Let me examine the Composio connector code to find the exact issue:
+
+Cline wants to read this file:
+
+js/features/composio-marketplace/composio-connector.js‎
+
+**Checkpoint
+
+Compare
+
+Restore
+
+API Request$0.0452
+
+Now let me check how the server list detects Composio servers to understand the mismatch:
+
+Cline wants to search this directory for `composio.*badge|source.*composio`:
+
+js/(*.js)‎
+
+**Checkpoint
+
+Compare
+
+Restore
+
+API Request Cancelled$0.0361
+
+Found the exact issue! There's a __data structure mismatch__ between how the server list detects Composio servers vs how the marketplace filter detects them:
+
+## Root Cause Analysis
+
+__Server List Detection__ (in `js/features/server-list-enhancements/ui/table.js`):
+
+```javascript
+if (server.config.composio && server.config.composio.source === 'composio') {
+  return '<span class="source-badge composio-badge">🔗 Composio</span>';
+}
+```
+
+- Looks for: `server.config.composio.source === 'composio'`
+
+__Marketplace Filter Detection__ (in `js/features/composio-marketplace/composio-connector.js`):
+
+```javascript
+return Object.values(config.mcpServers).some(server => 
+  server.composio && server.composio.source === 'composio' && server.composio.appKey === appKey
+);
+```
+
+- Looks for: `server.composio.source === 'composio'`
+
+## The Problem
+
+The server list checks `server.config.composio` but the marketplace filter checks `server.composio` (missing `.config`).
+
+## Verification Method
+
+Add these console logs to confirm:
+
+__In `getInstalledComposioServers()`:__
+
+```javascript
+console.log('[DEBUG] All servers:', Object.entries(config.mcpServers));
+console.log('[DEBUG] Checking server structures:');
+Object.values(config.mcpServers).forEach(server => {
+  console.log('[DEBUG] Server:', server);
+  console.log('[DEBUG] Has server.composio:', !!server.composio);
+  console.log('[DEBUG] Has server.config.
+```
+
+API Request$0.0531
+
+I found the exact issue! There's a data structure mismatch between how the server list detects Composio servers vs how the marketplace filter detects them. Let me fix this:
+
+__Problem__:
+
+- Server list checks: `server.config.composio.source === 'composio'`
+- Marketplace filter checks: `server.composio.source === 'composio'` (missing `.config`)
+
+Let me fix the Composio connector functions:
+
+Cline wants to edit this file:
+
+js/features/composio-marketplace/composio-connector.js‎
+
+**Checkpoint
+
+Compare
+
+Restore
+
+API Request$0.0567
+
+Now let me also add debug logs to the `getInstalledComposioServers()` function:
+
+Cline wants to edit this file:
+
+js/features/composio-marketplace/composio-connector.js‎
+
+**Checkpoint
+
+Compare
+
+Restore
+
+API Request$0.0516
+
+Now let me check the line count of all modified files to ensure they don't exceed 300 lines:

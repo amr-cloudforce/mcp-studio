@@ -294,9 +294,14 @@ export function isComposioServerInstalled(appKey) {
   const config = configManager.getConfig();
   if (!config || !config.mcpServers) return false;
   
-  return Object.values(config.mcpServers).some(server => 
-    server.composio && server.composio.source === 'composio' && server.composio.appKey === appKey
-  );
+  console.log('[DEBUG] Checking if Composio app is installed:', appKey);
+  console.log('[DEBUG] All servers:', Object.keys(config.mcpServers));
+  
+  return Object.values(config.mcpServers).some(server => {
+    const hasComposio = server.composio && server.composio.source === 'composio' && server.composio.appKey === appKey;
+    console.log('[DEBUG] Server check:', { server: server, hasComposio, appKey: server.composio?.appKey });
+    return hasComposio;
+  });
 }
 
 /**
@@ -305,11 +310,27 @@ export function isComposioServerInstalled(appKey) {
  */
 export function getInstalledComposioServers() {
   const config = configManager.getConfig();
-  if (!config || !config.mcpServers) return [];
+  if (!config || !config.mcpServers) {
+    console.log('[DEBUG] No config or mcpServers found');
+    return [];
+  }
   
-  return Object.values(config.mcpServers)
-    .filter(server => server.composio && server.composio.source === 'composio')
-    .map(server => server.composio.appKey);
+  console.log('[DEBUG] Getting installed Composio servers');
+  console.log('[DEBUG] All servers in config:', Object.entries(config.mcpServers));
+  
+  const composioServers = Object.values(config.mcpServers)
+    .filter(server => {
+      const isComposio = server.composio && server.composio.source === 'composio';
+      console.log('[DEBUG] Server filter check:', { server, isComposio, hasComposio: !!server.composio, source: server.composio?.source });
+      return isComposio;
+    })
+    .map(server => {
+      console.log('[DEBUG] Mapping server appKey:', server.composio.appKey);
+      return server.composio.appKey;
+    });
+    
+  console.log('[DEBUG] Found Composio servers:', composioServers);
+  return composioServers;
 }
 
 /**
