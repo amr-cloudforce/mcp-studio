@@ -98,7 +98,16 @@ function setupModalEventListeners() {
 export function showConfigurationModal(bundle) {
   console.log('Showing configuration modal for bundle:', bundle.name);
   
+  // Debug: Check if modal exists
   const modal = document.getElementById('bundle-configuration-modal');
+  console.log('Bundle modal element found:', !!modal);
+  
+  if (!modal) {
+    console.error('Bundle configuration modal not found in DOM!');
+    alert('Bundle configuration modal not initialized. Please refresh the page.');
+    return;
+  }
+  
   const title = document.getElementById('bundle-modal-title');
   const description = document.getElementById('bundle-modal-description');
   

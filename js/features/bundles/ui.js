@@ -72,13 +72,24 @@ export function showBundlesView() {
  * Hide all views
  */
 function hideAllViews() {
+  // Hide main server content
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) {
+    const children = mainContent.children;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (child.id !== 'bundles-view') {
+        child.style.display = 'none';
+      }
+    }
+  }
+  
+  // Hide marketplace views
   const views = [
-    'servers-view',
     'marketplace-view',
     'composio-marketplace-view',
     'apify-marketplace-view',
-    'smithery-marketplace-view',
-    'bundles-view'
+    'smithery-marketplace-view'
   ];
   
   views.forEach(viewId => {
@@ -169,6 +180,7 @@ function createBundleElement(bundle) {
   
   configureBtn.addEventListener('click', (e) => {
     e.stopPropagation();
+    console.log('Configure button clicked for bundle:', bundle.id);
     bundleModal.showConfigurationModal(bundle);
   });
   
