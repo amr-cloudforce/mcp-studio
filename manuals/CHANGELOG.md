@@ -15,3 +15,9 @@ All notable changes to this project will be documented in this file.
 - Filter Composio marketplace to show only OAuth-supported apps
 - Check both `auth_schemes` and `composio_managed_auth_schemes` contain "OAUTH2"
 - Hide apps that only support API keys or other non-OAuth auth methods
+
+## Restart Command Validation Fix
+- Fixed bug where restart command validation failed even with valid input
+- Added debug logging to identify validation issues
+- Added fallback to read from input field if stored command is invalid
+- Fixed variable reference bug using `finalCommand` instead of `restartCommand`

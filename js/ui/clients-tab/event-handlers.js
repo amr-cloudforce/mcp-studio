@@ -307,22 +307,39 @@ function handleRestartCommandChange(clientId, restartCommand) {
 async function handleRestartClientClick(clientId, clientsTab) {
   try {
     const restartCommand = ClientSync.getClientRestartCommand(clientId);
+    const inputFieldValue = document.getElementById(`restart-command-${clientId}`)?.value;
     
+    // Debug logging to identify the issue
+    console.log('[DEBUG] Restart command validation:');
+    console.log('  - Client ID:', clientId);
+    console.log('  - Input field value:', inputFieldValue);
+    console.log('  - Stored restart command:', restartCommand);
+    console.log('  - Command starts with #:', restartCommand?.startsWith('#'));
+    
+    // Use input field value as fallback if stored command is invalid
+    let finalCommand = restartCommand;
     if (!restartCommand || restartCommand.startsWith('#')) {
-      clientsTab.showNotification('Please enter a valid restart command first', 'warning');
-      return;
+      if (inputFieldValue && inputFieldValue.trim() && !inputFieldValue.trim().startsWith('#')) {
+        finalCommand = inputFieldValue.trim();
+        // Save the valid command from input field
+        ClientSync.setClientRestartCommand(clientId, finalCommand);
+        console.log('[DEBUG] Using input field value as restart command:', finalCommand);
+      } else {
+        clientsTab.showNotification('Please enter a valid restart command first', 'warning');
+        return;
+      }
     }
     
     let success;
     
     // Use existing restart-claude method for Claude (but show the actual command to user)
-    if (clientId === 'claude' && restartCommand === 'pkill -f \'Claude\' && sleep 2 && /Applications/Claude.app/Contents/MacOS/Claude') {
+    if (clientId === 'claude' && finalCommand === 'pkill -f \'Claude\' && sleep 2 && /Applications/Claude.app/Contents/MacOS/Claude') {
       success = await require('electron').ipcRenderer.invoke('restart-claude');
     } else {
       // Execute custom restart command via IPC
       success = await require('electron').ipcRenderer.invoke('execute-restart-command', {
         clientId,
-        command: restartCommand
+        command: finalCommand
       });
     }
     
