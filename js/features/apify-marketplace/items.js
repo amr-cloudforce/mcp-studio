@@ -83,7 +83,7 @@ export function createItemElement(item, showCategory = false) {
       <span class="author">by ${item.actor_username || 'Unknown'}</span>
     </div>
     <div class="marketplace-item-actions">
-      <button class="btn btn-primary view-details-btn" data-actor="${item.actor_id}">
+      <button  style="display:none" class="btn btn-primary view-details-btn" data-actor="${item.actor_id}">
         Details
       </button>
       <button class="btn ${isSelected ? 'btn-danger' : 'btn-primary'} add-remove-btn" data-actor-id="${item.actor_id}">
