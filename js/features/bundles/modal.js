@@ -82,7 +82,9 @@ function setupModalEventListeners() {
   
   // Click outside modal to close
   modal.addEventListener('click', (e) => {
+    console.log('Modal clicked! Target:', e.target, 'Modal:', modal, 'Same?', e.target === modal);
     if (e.target === modal) {
+      console.log('Closing modal due to outside click');
       closeModal();
     }
   });
@@ -129,7 +131,15 @@ export function showConfigurationModal(bundle) {
   modalUI.updateInstallButtonState(bundle);
   
   // Show modal
-  modal.style.display = 'block';
+  modal.style.display = 'flex';
+  modal.classList.add('open');
+  
+  // Debug: Check modal visibility
+  console.log('Modal display set to:', modal.style.display);
+  console.log('Modal computed style:', window.getComputedStyle(modal).display);
+  console.log('Modal visibility:', window.getComputedStyle(modal).visibility);
+  console.log('Modal opacity:', window.getComputedStyle(modal).opacity);
+  console.log('Modal z-index:', window.getComputedStyle(modal).zIndex);
 }
 
 /**
@@ -152,6 +162,7 @@ function setupToolEventListeners() {
  */
 function closeModal() {
   const modal = document.getElementById('bundle-configuration-modal');
+  modal.classList.remove('open');
   modal.style.display = 'none';
   currentBundle = null;
 }
