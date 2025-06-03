@@ -73,7 +73,7 @@ export function createItemElement(item, showCategory = false) {
       ${showCategory ? `<span class="item-category">${item.category || 'Apify Actors'}</span>` : ''}
     </div>
     <div class="item-title-row">
-      <h3>${item.actor_title || item.actor_name || item.repo_name}</h3>
+      <h3>${item.actor_title || item.actor_name || item.repo_name}${isSelected ? '<span class="installed-badge">✓ Installed</span>' : ''}</h3>
     </div>
     <p>${item.actor_description || item.summary_200_words ? (item.actor_description || item.summary_200_words).substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">

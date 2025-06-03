@@ -122,7 +122,7 @@ function createItemElement(item) {
         ${createdDate ? `<span class="created-date">${createdDate}</span>` : ''}
       </div>
     </div>
-    <p class="marketplace-item-description">${escapeHtml(item.description || 'No description available')}</p>
+    <p class="marketplace-item-description">${escapeHtml(item.description ? item.description.substring(0, 100) : 'No description available')}${item.description && item.description.length > 100 ? '...' : ''}</p>
     <div class="marketplace-item-actions">
       <button class="btn btn-primary view-details-btn" data-server="${escapeHtml(item.qualifiedName || item.name)}">
         Details

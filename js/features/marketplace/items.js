@@ -7,6 +7,7 @@ import { getCategoryColor } from './colors.js';
 import { getCategoryIcon } from './icons.js';
 import { formatRepoName } from './utils.js';
 import { showDetailsView } from './modal.js';
+import * as connector from './connector.js';
 
 // State variables
 let currentCategory = null;
@@ -66,13 +67,16 @@ export function createItemElement(item, showCategory = false) {
   // Format the repository name
   const formattedName = formatRepoName(item.repo_name);
   
+  // Check if installed
+  const isInstalled = connector.isLocalServerInstalled(item.repo_name);
+  
   // Create item content
   itemElement.innerHTML = `
     <div class="item-header">
       <span class="server-type">${item.server_types && item.server_types[0] ? item.server_types[0].toUpperCase() : (item.server_type ? item.server_type.toUpperCase() : 'UNKNOWN')}</span>
       ${showCategory ? `<span class="item-category" style="background: ${categoryColor}">${item.category || 'Uncategorized'}</span>` : ''}
     </div>
-    <h3>${formattedName}</h3>
+    <h3>${formattedName}${isInstalled ? '<span class="installed-badge">✓ Installed</span>' : ''}</h3>
     <p>${item.summary_50_words || item.summary_200_words ? (item.summary_50_words || item.summary_200_words).substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
