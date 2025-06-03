@@ -21,3 +21,9 @@ All notable changes to this project will be documented in this file.
 - Added debug logging to identify validation issues
 - Added fallback to read from input field if stored command is invalid
 - Fixed variable reference bug using `finalCommand` instead of `restartCommand`
+
+## Restart All Clients Button
+- Changed "Restart Claude" button to "Restart Clients" 
+- Updated functionality to restart all clients with valid restart commands
+- Added support for restarting multiple clients simultaneously
+- Shows summary of restart results for all clients

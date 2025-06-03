@@ -2,6 +2,8 @@
  * Notifications
  * Handles warnings and notifications
  */
+import ClientSync from '../config/client-sync.js';
+import ClientDetector from '../config/client-detector.js';
 
 class Notifications {
   constructor() {
@@ -13,7 +15,7 @@ class Notifications {
     this.installDockerBtn = document.getElementById('install-docker-btn');
     this.installNodejsBtn = document.getElementById('install-nodejs-btn');
     this.restartWarning = document.getElementById('restart-warning');
-    this.restartClaudeBtn = document.getElementById('restart-claude-btn');
+    this.restartClientsBtn = document.getElementById('restart-clients-btn');
   }
 
   /**
@@ -21,7 +23,7 @@ class Notifications {
    */
   initialize() {
     // Set up restart button
-    this.restartClaudeBtn.addEventListener('click', this.handleRestartClaude.bind(this));
+    this.restartClientsBtn.addEventListener('click', this.handleRestartAllClients.bind(this));
     
     // Set up install buttons
     this.installDockerBtn.addEventListener('click', async () => {
@@ -112,33 +114,94 @@ class Notifications {
   }
 
   /**
-   * Handle restart Claude button click
+   * Handle restart all clients button click
    */
-  async handleRestartClaude() {
+  async handleRestartAllClients() {
     try {
       // Temporarily change button state
-      this.restartClaudeBtn.textContent = 'Restarting...';
-      this.restartClaudeBtn.disabled = true;
+      this.restartClientsBtn.textContent = 'Restarting...';
+      this.restartClientsBtn.disabled = true;
       
       // Hide the warning immediately
       this.hideRestartWarning();
       
-      // Start the restart process but don't await it
-      // This way the function continues executing regardless of Claude restarting
-      require('electron').ipcRenderer.invoke('restart-claude').catch(error => {
-        console.error('Error in background restart:', error);
+      // Get all client configs
+      const clientConfigs = ClientSync.getAllClientConfigs();
+      const restartPromises = [];
+      const clientsToRestart = [];
+      
+      // Find clients with valid restart commands
+      for (const [clientId, config] of Object.entries(clientConfigs)) {
+        if (config.enabled) {
+          const restartCommand = ClientSync.getClientRestartCommand(clientId);
+          if (restartCommand && !restartCommand.startsWith('#')) {
+            clientsToRestart.push(clientId);
+            
+            // Use existing restart-claude method for Claude
+            if (clientId === 'claude' && restartCommand === 'pkill -f "Claude" && sleep 2 && /Applications/Claude.app/Contents/MacOS/Claude') {
+              restartPromises.push(
+                require('electron').ipcRenderer.invoke('restart-claude')
+                  .then(() => ({ clientId, success: true }))
+                  .catch(error => ({ clientId, success: false, error: error.message }))
+              );
+            } else {
+              // Execute custom restart command
+              restartPromises.push(
+                require('electron').ipcRenderer.invoke('execute-restart-command', {
+                  clientId,
+                  command: restartCommand
+                })
+                  .then(success => ({ clientId, success }))
+                  .catch(error => ({ clientId, success: false, error: error.message }))
+              );
+            }
+          }
+        }
+      }
+      
+      if (clientsToRestart.length === 0) {
+        alert('No clients with valid restart commands found.');
+        this.restartClientsBtn.textContent = 'Restart Clients';
+        this.restartClientsBtn.disabled = false;
+        return;
+      }
+      
+      // Execute all restart commands
+      const results = await Promise.allSettled(restartPromises);
+      
+      // Process results
+      let successCount = 0;
+      let failedClients = [];
+      
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value.success) {
+          successCount++;
+        } else {
+          const clientId = clientsToRestart[index];
+          const clientName = ClientDetector.getClientConfig(clientId)?.name || clientId;
+          failedClients.push(clientName);
+        }
       });
       
-      // Reset button state after a short delay
+      // Show results
+      if (successCount === clientsToRestart.length) {
+        alert(`Successfully restarted ${successCount} client(s).`);
+      } else if (successCount > 0) {
+        alert(`Restarted ${successCount} of ${clientsToRestart.length} clients. Failed: ${failedClients.join(', ')}`);
+      } else {
+        alert(`Failed to restart all clients: ${failedClients.join(', ')}`);
+      }
+      
+      // Reset button state
       setTimeout(() => {
-        this.restartClaudeBtn.textContent = 'Restart Claude';
-        this.restartClaudeBtn.disabled = false;
+        this.restartClientsBtn.textContent = 'Restart Clients';
+        this.restartClientsBtn.disabled = false;
       }, 500);
     } catch (error) {
-      console.error('Failed to restart Claude:', error);
-      alert('Failed to restart Claude. Please restart it manually.');
-      this.restartClaudeBtn.textContent = 'Restart Claude';
-      this.restartClaudeBtn.disabled = false;
+      console.error('Failed to restart clients:', error);
+      alert('Failed to restart clients. Please restart them manually.');
+      this.restartClientsBtn.textContent = 'Restart Clients';
+      this.restartClientsBtn.disabled = false;
     }
   }
 }
