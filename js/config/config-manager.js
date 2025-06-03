@@ -21,6 +21,7 @@
  * Configuration Manager
  * Handles reading and writing MCP server configurations
  */
+import ClientSync from './client-sync.js';
 
 // Default configuration
 const DEFAULT_CONFIG = {
@@ -75,14 +76,13 @@ class ConfigManager {
       
       // Auto-sync to enabled clients if auto-sync is enabled
       try {
-        const clientSync = require('./client-sync');
-        if (clientSync.isAutoSyncEnabled()) {
+        if (ClientSync.isAutoSyncEnabled()) {
           console.log('[CONFIG-MANAGER] Auto-syncing to enabled clients');
           const activeServers = this.config.mcpServers || {};
-          clientSync.syncAll(activeServers);
+          ClientSync.syncAll(activeServers);
         }
       } catch (syncError) {
-        console.warn('[CONFIG-MANAGER] Client sync not available:', syncError.message);
+        console.warn('[CONFIG-MANAGER] Client sync failed:', syncError.message);
       }
       
       this.notifyChangeListeners();

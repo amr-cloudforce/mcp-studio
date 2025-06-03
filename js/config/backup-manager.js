@@ -2,7 +2,7 @@
  * Backup Manager
  * Handles automatic backup creation and management for client configurations
  */
-
+const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -21,10 +21,6 @@ class BackupManager {
     fs.mkdirSync(backupDir, { recursive: true });
     
     // Read current config
-    if (!fs.existsSync(configPath)) {
-      throw new Error(`Configuration file not found: ${configPath}`);
-    }
-    
     const currentConfig = fs.readFileSync(configPath, 'utf8');
     
     // Create backup filename with timestamp
@@ -35,14 +31,13 @@ class BackupManager {
     
     // Write backup
     fs.writeFileSync(backupPath, currentConfig);
-    console.log(`[BACKUP] Created backup: ${backupPath}`);
     
     // Clean old backups (keep only 3 most recent)
     this.cleanOldBackups(backupDir, 3);
     
     return backupPath;
   }
-  
+
   /**
    * Clean old backups, keeping only the most recent ones
    * @param {string} backupDir - Directory containing backups
@@ -58,20 +53,20 @@ class BackupManager {
           mtime: fs.statSync(path.join(backupDir, file)).mtime
         }))
         .sort((a, b) => b.mtime - a.mtime); // Sort by modification time, newest first
-      
+
       // Remove old backups beyond the limit
       if (backupFiles.length > maxBackups) {
         const filesToDelete = backupFiles.slice(maxBackups);
         filesToDelete.forEach(file => {
           fs.unlinkSync(file.path);
-          console.log(`[BACKUP] Deleted old backup: ${file.name}`);
+          console.log(`Deleted old backup: ${file.name}`);
         });
       }
     } catch (error) {
-      console.warn(`[BACKUP] Failed to clean old backups: ${error.message}`);
+      console.warn(`Failed to clean old backups: ${error.message}`);
     }
   }
-  
+
   /**
    * List all available backups for a client
    * @param {string} clientId - Client identifier
@@ -83,7 +78,7 @@ class BackupManager {
     if (!fs.existsSync(backupDir)) {
       return [];
     }
-    
+
     try {
       return fs.readdirSync(backupDir)
         .filter(file => file.startsWith('config.backup.'))
@@ -93,19 +88,18 @@ class BackupManager {
           return {
             name: file,
             path: filePath,
-            mtime: stats.mtime,
+            created: stats.mtime,
             size: stats.size,
-            formattedDate: stats.mtime.toLocaleString(),
             formattedSize: this.formatFileSize(stats.size)
           };
         })
-        .sort((a, b) => b.mtime - a.mtime);
+        .sort((a, b) => b.created - a.created); // Sort by creation time, newest first
     } catch (error) {
-      console.error(`[BACKUP] Failed to list backups for ${clientId}: ${error.message}`);
+      console.error(`Failed to list backups for ${clientId}:`, error.message);
       return [];
     }
   }
-  
+
   /**
    * Restore a backup to the target configuration file
    * @param {string} clientId - Client identifier
@@ -114,19 +108,19 @@ class BackupManager {
    * @returns {boolean} True if restore was successful
    */
   static restoreBackup(clientId, backupFilename, targetPath) {
-    const backupDir = path.join(os.homedir(), '.config', 'mcp-studio', 'backups', clientId);
-    const backupPath = path.join(backupDir, backupFilename);
-    
-    if (!fs.existsSync(backupPath)) {
-      throw new Error(`Backup file not found: ${backupFilename}`);
-    }
-    
     try {
+      const backupDir = path.join(os.homedir(), '.config', 'mcp-studio', 'backups', clientId);
+      const backupPath = path.join(backupDir, backupFilename);
+
+      if (!fs.existsSync(backupPath)) {
+        throw new Error(`Backup file not found: ${backupFilename}`);
+      }
+
       // Create backup of current config before restore (safety measure)
       if (fs.existsSync(targetPath)) {
         this.createBackup(clientId, targetPath);
       }
-      
+
       // Restore from backup
       const backupContent = fs.readFileSync(backupPath, 'utf8');
       
@@ -135,15 +129,14 @@ class BackupManager {
       fs.mkdirSync(targetDir, { recursive: true });
       
       fs.writeFileSync(targetPath, backupContent);
-      console.log(`[BACKUP] Restored backup ${backupFilename} to ${targetPath}`);
-      
+
       return true;
     } catch (error) {
-      console.error(`[BACKUP] Failed to restore backup: ${error.message}`);
-      throw error;
+      console.error(`Failed to restore backup ${backupFilename}:`, error.message);
+      return false;
     }
   }
-  
+
   /**
    * Delete a specific backup file
    * @param {string} clientId - Client identifier
@@ -151,23 +144,22 @@ class BackupManager {
    * @returns {boolean} True if deletion was successful
    */
   static deleteBackup(clientId, backupFilename) {
-    const backupDir = path.join(os.homedir(), '.config', 'mcp-studio', 'backups', clientId);
-    const backupPath = path.join(backupDir, backupFilename);
-    
-    if (!fs.existsSync(backupPath)) {
-      throw new Error(`Backup file not found: ${backupFilename}`);
-    }
-    
     try {
+      const backupDir = path.join(os.homedir(), '.config', 'mcp-studio', 'backups', clientId);
+      const backupPath = path.join(backupDir, backupFilename);
+
+      if (!fs.existsSync(backupPath)) {
+        throw new Error(`Backup file not found: ${backupFilename}`);
+      }
+
       fs.unlinkSync(backupPath);
-      console.log(`[BACKUP] Deleted backup: ${backupFilename}`);
       return true;
     } catch (error) {
-      console.error(`[BACKUP] Failed to delete backup: ${error.message}`);
-      throw error;
+      console.error(`Failed to delete backup ${backupFilename}:`, error.message);
+      return false;
     }
   }
-  
+
   /**
    * Get the content of a backup file
    * @param {string} clientId - Client identifier
@@ -175,21 +167,21 @@ class BackupManager {
    * @returns {string} Content of the backup file
    */
   static getBackupContent(clientId, backupFilename) {
-    const backupDir = path.join(os.homedir(), '.config', 'mcp-studio', 'backups', clientId);
-    const backupPath = path.join(backupDir, backupFilename);
-    
-    if (!fs.existsSync(backupPath)) {
-      throw new Error(`Backup file not found: ${backupFilename}`);
-    }
-    
     try {
+      const backupDir = path.join(os.homedir(), '.config', 'mcp-studio', 'backups', clientId);
+      const backupPath = path.join(backupDir, backupFilename);
+
+      if (!fs.existsSync(backupPath)) {
+        throw new Error(`Backup file not found: ${backupFilename}`);
+      }
+
       return fs.readFileSync(backupPath, 'utf8');
     } catch (error) {
-      console.error(`[BACKUP] Failed to read backup content: ${error.message}`);
-      throw error;
+      console.error(`Failed to read backup ${backupFilename}:`, error.message);
+      return '';
     }
   }
-  
+
   /**
    * Get backup count for a client
    * @param {string} clientId - Client identifier
@@ -198,7 +190,7 @@ class BackupManager {
   static getBackupCount(clientId) {
     return this.listBackups(clientId).length;
   }
-  
+
   /**
    * Format file size in human-readable format
    * @param {number} bytes - File size in bytes
@@ -213,7 +205,7 @@ class BackupManager {
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
-  
+
   /**
    * Create a manual backup (for UI "Create Manual Backup" button)
    * @param {string} clientId - Client identifier
@@ -221,8 +213,25 @@ class BackupManager {
    * @returns {string} Path to the created backup file
    */
   static createManualBackup(clientId, configPath) {
-    console.log(`[BACKUP] Creating manual backup for ${clientId}`);
-    return this.createBackup(clientId, configPath);
+    // Same as createBackup but with a different naming convention
+    const backupDir = path.join(os.homedir(), '.config', 'mcp-studio', 'backups', clientId);
+    
+    // Ensure backup directory exists
+    fs.mkdirSync(backupDir, { recursive: true });
+    
+    // Read current config
+    const currentConfig = fs.readFileSync(configPath, 'utf8');
+    
+    // Create backup filename with timestamp and "manual" prefix
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const extension = path.extname(configPath);
+    const backupFilename = `config.backup.manual.${timestamp}${extension}`;
+    const backupPath = path.join(backupDir, backupFilename);
+    
+    // Write backup
+    fs.writeFileSync(backupPath, currentConfig);
+    
+    return backupPath;
   }
 }
 

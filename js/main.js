@@ -24,6 +24,7 @@ import apifyMarketplace from './features/apify-marketplace/index.js';
 import smitheryMarketplace from './features/smithery-marketplace/index.js';
 import elementDebugger from './utils/element-debugger.js';
 import modalLoader from './utils/modal-loader.js';
+import clientsTab from './ui/clients-tab.js';
 
 // Make global objects available
 window.quickAddTemplates = quickAddTemplates;
@@ -43,6 +44,7 @@ const exportBtn = document.getElementById('export-json-btn');
 const revealBtn = document.getElementById('reveal-btn');
 const aboutBtn = document.getElementById('about-btn');
 const logsBtn = document.getElementById('logs-btn');
+const clientsBtn = document.getElementById('clients-btn');
 
 // Initialize application
 async function initializeApp() {
@@ -71,6 +73,58 @@ async function initializeApp() {
     // Initialize Quick Add after modals are loaded
     quickAdd.initialize();
     
+    // View switching function
+    window.showView = function(viewName) {
+      const mainContent = document.querySelector('.main-content');
+      const mainTitle = mainContent.querySelector('h2');
+      const contentHeader = mainContent.querySelector('.content-header');
+      const basicTable = document.getElementById('basic-table');
+      const clientsContainer = document.getElementById('clients-container');
+      const enhancedTable = document.getElementById('enhanced-table');
+      const serverListEnhanced = document.querySelector('.enhanced-server-list');
+      const paginationContainer = document.querySelector('.pagination-container');
+      const prerequisitesWarning = document.getElementById('prerequisites-warning');
+      const restartWarning = document.getElementById('restart-warning');
+      
+      if (viewName === 'clients') {
+        // Update title
+        mainTitle.textContent = 'Client Synchronization';
+        
+        // Hide ALL server-related content
+        if (contentHeader) contentHeader.style.display = 'none';
+        if (basicTable) basicTable.style.display = 'none';
+        if (enhancedTable) enhancedTable.style.display = 'none';
+        if (serverListEnhanced) serverListEnhanced.style.display = 'none';
+        if (paginationContainer) paginationContainer.style.display = 'none';
+        if (prerequisitesWarning) prerequisitesWarning.style.display = 'none';
+        if (restartWarning) restartWarning.style.display = 'none';
+        
+        // Show ONLY clients container
+        clientsContainer.style.display = 'block';
+        
+        // Initialize clients tab if not already done
+        if (!clientsTab.isInitialized) {
+          clientsTab.initialize(clientsContainer);
+        } else {
+          clientsTab.refresh();
+        }
+      } else {
+        // Default to servers view
+        mainTitle.textContent = 'MCP Servers';
+        
+        // Show server-related content
+        if (contentHeader) contentHeader.style.display = 'block';
+        if (enhancedTable) enhancedTable.style.display = 'table';
+        if (serverListEnhanced) serverListEnhanced.style.display = 'block';
+        if (paginationContainer) paginationContainer.style.display = 'block';
+        if (prerequisitesWarning) prerequisitesWarning.style.display = 'block';
+        if (restartWarning) restartWarning.style.display = 'block';
+        
+        // Hide clients container
+        clientsContainer.style.display = 'none';
+      }
+    };
+
     // Register event handlers
     serverList.on('edit', ({ name, section }) => {
       serverForm.openModal(name);
@@ -99,6 +153,7 @@ async function initializeApp() {
     revealBtn.addEventListener('click', () => require('electron').ipcRenderer.invoke('reveal-config'));
     aboutBtn.addEventListener('click', () => aboutModal.openModal());
     logsBtn.addEventListener('click', () => logViewer.openModal());
+    clientsBtn.addEventListener('click', () => showView('clients'));
     
     // Load configuration
     await configManager.loadConfig();

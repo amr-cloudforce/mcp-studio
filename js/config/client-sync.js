@@ -2,377 +2,384 @@
  * Client Sync Manager
  * Handles synchronization of MCP server configurations to client applications
  */
-
+const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+
 import ClientDetector from './client-detector.js';
 import BackupManager from './backup-manager.js';
 import ClaudeFormatter from './formatters/claude-formatter.js';
 import LibreChatFormatter from './formatters/librechat-formatter.js';
 
 class ClientSync {
-  constructor() {
-    this.formatters = new Map([
-      ['claude', ClaudeFormatter],
-      ['librechat', LibreChatFormatter]
-    ]);
-    
-    this.clientConfig = this.loadClientConfig();
-  }
-  
+  static CLIENT_CONFIG_PATH = path.join(os.homedir(), '.config', 'mcp-studio', 'client-paths.json');
+
   /**
    * Load client configuration from file
    * @returns {Object} Client configuration
    */
-  loadClientConfig() {
-    const configPath = path.join(os.homedir(), '.config', 'mcp-studio', 'client-paths.json');
-    
+  static loadClientConfig() {
     try {
-      if (fs.existsSync(configPath)) {
-        const content = fs.readFileSync(configPath, 'utf8');
+      if (fs.existsSync(this.CLIENT_CONFIG_PATH)) {
+        const content = fs.readFileSync(this.CLIENT_CONFIG_PATH, 'utf8');
         return JSON.parse(content);
       }
     } catch (error) {
-      console.warn(`[CLIENT-SYNC] Failed to load client config: ${error.message}`);
+      console.warn('Failed to load client configuration:', error.message);
     }
     
     // Return default configuration
     return this.createDefaultClientConfig();
   }
-  
+
   /**
    * Save client configuration to file
    */
-  saveClientConfig() {
-    const configPath = path.join(os.homedir(), '.config', 'mcp-studio', 'client-paths.json');
-    
+  static saveClientConfig(config) {
     try {
       // Ensure directory exists
-      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      const configDir = path.dirname(this.CLIENT_CONFIG_PATH);
+      fs.mkdirSync(configDir, { recursive: true });
       
-      fs.writeFileSync(configPath, JSON.stringify(this.clientConfig, null, 2));
-      console.log(`[CLIENT-SYNC] Saved client configuration to ${configPath}`);
+      fs.writeFileSync(this.CLIENT_CONFIG_PATH, JSON.stringify(config, null, 2));
     } catch (error) {
-      console.error(`[CLIENT-SYNC] Failed to save client config: ${error.message}`);
+      console.error('Failed to save client configuration:', error.message);
     }
   }
-  
+
   /**
    * Create default client configuration
    * @returns {Object} Default client configuration
    */
-  createDefaultClientConfig() {
+  static createDefaultClientConfig() {
     const detected = ClientDetector.detectClients();
     const config = {};
-    
-    for (const [clientId, clientInfo] of Object.entries(detected)) {
+
+    for (const [clientId, detectedInfo] of Object.entries(detected)) {
       config[clientId] = {
-        enabled: clientId === 'claude', // Enable Claude by default
-        autoSync: clientId === 'claude',
+        enabled: clientId === 'claude', // Enable Claude by default for backward compatibility
+        autoSync: clientId === 'claude', // Enable auto-sync for Claude by default
         customPath: null,
-        detectedPath: clientInfo.detectedPath,
+        detectedPath: detectedInfo.detectedPath,
         lastSync: null
       };
     }
-    
+
     return config;
   }
-  
+
   /**
    * Refresh client detection and update configuration
    */
-  refreshDetection() {
+  static refreshDetection() {
+    const config = this.loadClientConfig();
     const detected = ClientDetector.detectClients();
-    
-    for (const [clientId, clientInfo] of Object.entries(detected)) {
-      if (!this.clientConfig[clientId]) {
-        this.clientConfig[clientId] = {
+
+    for (const [clientId, detectedInfo] of Object.entries(detected)) {
+      if (config[clientId]) {
+        // Update detected path
+        config[clientId].detectedPath = detectedInfo.detectedPath;
+      } else {
+        // Add new client
+        config[clientId] = {
           enabled: false,
           autoSync: false,
           customPath: null,
-          detectedPath: clientInfo.detectedPath,
+          detectedPath: detectedInfo.detectedPath,
           lastSync: null
         };
-      } else {
-        // Update detected path
-        this.clientConfig[clientId].detectedPath = clientInfo.detectedPath;
       }
     }
-    
-    this.saveClientConfig();
+
+    this.saveClientConfig(config);
+    return config;
   }
-  
+
   /**
    * Get formatter for a specific client
    * @param {string} clientId - Client identifier
    * @returns {Object} Formatter class
    */
-  getFormatter(clientId) {
-    const formatter = this.formatters.get(clientId);
-    if (!formatter) {
-      throw new Error(`No formatter found for client: ${clientId}`);
+  static getFormatter(clientId) {
+    switch (clientId) {
+      case 'claude':
+        return ClaudeFormatter;
+      case 'librechat':
+        return LibreChatFormatter;
+      default:
+        throw new Error(`No formatter available for client: ${clientId}`);
     }
-    return formatter;
   }
-  
+
   /**
    * Get the configuration path for a client
    * @param {string} clientId - Client identifier
    * @returns {string|null} Configuration file path
    */
-  getClientPath(clientId) {
-    const config = this.clientConfig[clientId];
-    if (!config) return null;
+  static getClientPath(clientId) {
+    const config = this.loadClientConfig();
+    const clientConfig = config[clientId];
     
-    return config.customPath || config.detectedPath;
+    if (!clientConfig) {
+      return null;
+    }
+
+    return clientConfig.customPath || clientConfig.detectedPath;
   }
-  
+
   /**
    * Read client configuration file
    * @param {string} clientPath - Path to client configuration file
    * @returns {string} Configuration file content
    */
-  readClientConfig(clientPath) {
-    if (!fs.existsSync(clientPath)) {
-      return '';
-    }
-    
+  static readClientConfig(clientPath) {
     try {
       return fs.readFileSync(clientPath, 'utf8');
     } catch (error) {
-      console.error(`[CLIENT-SYNC] Failed to read client config: ${error.message}`);
+      console.warn(`Failed to read client config at ${clientPath}:`, error.message);
       return '';
     }
   }
-  
+
   /**
    * Write client configuration file
    * @param {string} clientPath - Path to client configuration file
    * @param {string} content - Configuration content
    */
-  writeClientConfig(clientPath, content) {
+  static writeClientConfig(clientPath, content) {
     try {
       // Ensure directory exists
-      fs.mkdirSync(path.dirname(clientPath), { recursive: true });
+      const configDir = path.dirname(clientPath);
+      fs.mkdirSync(configDir, { recursive: true });
       
       fs.writeFileSync(clientPath, content);
-      console.log(`[CLIENT-SYNC] Updated client config: ${clientPath}`);
     } catch (error) {
-      console.error(`[CLIENT-SYNC] Failed to write client config: ${error.message}`);
-      throw error;
+      throw new Error(`Failed to write client config to ${clientPath}: ${error.message}`);
     }
   }
-  
+
   /**
    * Sync MCP servers to a specific client
    * @param {string} clientId - Client identifier
    * @param {Object} servers - Server configurations
    * @returns {boolean} True if sync was successful
    */
-  syncToClient(clientId, servers) {
-    const clientConfig = this.clientConfig[clientId];
-    if (!clientConfig || !clientConfig.enabled) {
-      console.log(`[CLIENT-SYNC] Client ${clientId} is disabled, skipping sync`);
-      return false;
-    }
-    
-    const clientPath = this.getClientPath(clientId);
-    if (!clientPath) {
-      console.warn(`[CLIENT-SYNC] No path configured for client ${clientId}`);
-      return false;
-    }
-    
+  static syncToClient(clientId, servers) {
     try {
-      const formatter = this.getFormatter(clientId);
+      const config = this.loadClientConfig();
+      const clientConfig = config[clientId];
       
+      if (!clientConfig || !clientConfig.enabled) {
+        return false;
+      }
+
+      const formatter = this.getFormatter(clientId);
+      const clientPath = this.getClientPath(clientId);
+      
+      if (!clientPath) {
+        throw new Error(`No configuration path found for ${clientId}`);
+      }
+
       // Create backup before making changes
       try {
-        if (fs.existsSync(clientPath)) {
-          const backupPath = BackupManager.createBackup(clientId, clientPath);
-          console.log(`[CLIENT-SYNC] Created backup: ${backupPath}`);
-        }
-      } catch (backupError) {
-        console.warn(`[CLIENT-SYNC] Failed to create backup for ${clientId}: ${backupError.message}`);
+        const backupPath = BackupManager.createBackup(clientId, clientPath);
+        console.log(`Created backup: ${backupPath}`);
+      } catch (error) {
+        console.warn(`Failed to create backup for ${clientId}:`, error.message);
         // Continue with sync even if backup fails
       }
-      
+
       // Read existing config
       const existingContent = this.readClientConfig(clientPath);
+      let existing = {};
       
-      // Merge only mcpServers section
-      let updatedContent;
-      if (formatter.mergeMcpServers) {
-        if (clientId === 'claude') {
-          const updated = formatter.mergeMcpServers(existingContent, servers);
-          updatedContent = formatter.stringify(updated);
-        } else {
-          // For YAML clients like LibreChat, mergeMcpServers returns a string
-          updatedContent = formatter.mergeMcpServers(existingContent, servers);
+      if (existingContent) {
+        try {
+          existing = formatter.parseConfig(existingContent);
+        } catch (error) {
+          console.warn(`Failed to parse existing config for ${clientId}, using default:`, error.message);
+          existing = formatter.createDefaultConfig ? formatter.createDefaultConfig() : {};
         }
       } else {
-        throw new Error(`Formatter for ${clientId} does not support mergeMcpServers`);
+        existing = formatter.createDefaultConfig ? formatter.createDefaultConfig() : {};
       }
+
+      // Merge only mcpServers section
+      const updated = formatter.mergeMcpServers(existing, servers);
+      
+      // Convert to string if needed (for YAML clients like LibreChat)
+      const updatedContent = typeof updated === 'string' ? updated : formatter.stringifyConfig(updated);
       
       // Validate the updated content
-      if (!formatter.validate(updatedContent)) {
-        throw new Error(`Generated configuration is invalid for ${clientId}`);
+      if (!formatter.validateConfig(updatedContent)) {
+        throw new Error(`Generated invalid configuration for ${clientId}`);
       }
-      
+
       // Write back
       this.writeClientConfig(clientPath, updatedContent);
       
       // Update last sync timestamp
       this.updateLastSyncTime(clientId);
       
-      console.log(`[CLIENT-SYNC] Successfully synced to ${clientId}`);
       return true;
-      
     } catch (error) {
-      console.error(`[CLIENT-SYNC] Failed to sync to ${clientId}: ${error.message}`);
+      console.error(`Failed to sync to ${clientId}:`, error.message);
       return false;
     }
   }
-  
+
   /**
    * Sync MCP servers to all enabled clients
    * @param {Object} servers - Server configurations
    * @returns {Object} Sync results for each client
    */
-  syncAll(servers) {
+  static syncAll(servers) {
+    const config = this.loadClientConfig();
     const results = {};
-    
-    for (const clientId of Object.keys(this.clientConfig)) {
-      results[clientId] = this.syncToClient(clientId, servers);
+
+    for (const [clientId, clientConfig] of Object.entries(config)) {
+      if (clientConfig.enabled && clientConfig.autoSync) {
+        try {
+          results[clientId] = this.syncToClient(clientId, servers);
+        } catch (error) {
+          console.error(`Failed to sync to ${clientId}:`, error.message);
+          results[clientId] = false;
+        }
+      } else {
+        results[clientId] = null; // Not enabled or auto-sync disabled
+      }
     }
-    
+
     return results;
   }
-  
+
   /**
    * Update last sync timestamp for a client
    * @param {string} clientId - Client identifier
    */
-  updateLastSyncTime(clientId) {
-    if (this.clientConfig[clientId]) {
-      this.clientConfig[clientId].lastSync = new Date().toISOString();
-      this.saveClientConfig();
+  static updateLastSyncTime(clientId) {
+    const config = this.loadClientConfig();
+    if (config[clientId]) {
+      config[clientId].lastSync = new Date().toISOString();
+      this.saveClientConfig(config);
     }
   }
-  
+
   /**
    * Enable or disable a client
    * @param {string} clientId - Client identifier
    * @param {boolean} enabled - Whether to enable the client
    */
-  setClientEnabled(clientId, enabled) {
-    if (this.clientConfig[clientId]) {
-      this.clientConfig[clientId].enabled = enabled;
-      this.saveClientConfig();
+  static setClientEnabled(clientId, enabled) {
+    const config = this.loadClientConfig();
+    if (config[clientId]) {
+      config[clientId].enabled = enabled;
+      this.saveClientConfig(config);
     }
   }
-  
+
   /**
    * Enable or disable auto-sync for a client
    * @param {string} clientId - Client identifier
    * @param {boolean} autoSync - Whether to enable auto-sync
    */
-  setClientAutoSync(clientId, autoSync) {
-    if (this.clientConfig[clientId]) {
-      this.clientConfig[clientId].autoSync = autoSync;
-      this.saveClientConfig();
+  static setClientAutoSync(clientId, autoSync) {
+    const config = this.loadClientConfig();
+    if (config[clientId]) {
+      config[clientId].autoSync = autoSync;
+      this.saveClientConfig(config);
     }
   }
-  
+
   /**
    * Set custom path for a client
    * @param {string} clientId - Client identifier
    * @param {string} customPath - Custom configuration file path
    */
-  setClientCustomPath(clientId, customPath) {
-    if (this.clientConfig[clientId]) {
-      this.clientConfig[clientId].customPath = customPath;
-      this.saveClientConfig();
+  static setClientCustomPath(clientId, customPath) {
+    const config = this.loadClientConfig();
+    if (config[clientId]) {
+      config[clientId].customPath = customPath;
+      this.saveClientConfig(config);
     }
   }
-  
+
   /**
    * Get enabled clients
    * @returns {Array} Array of enabled client IDs
    */
-  getEnabledClients() {
-    return Object.keys(this.clientConfig).filter(
-      clientId => this.clientConfig[clientId].enabled
-    );
+  static getEnabledClients() {
+    const config = this.loadClientConfig();
+    return Object.keys(config).filter(clientId => config[clientId].enabled);
   }
-  
+
   /**
    * Get clients with auto-sync enabled
    * @returns {Array} Array of auto-sync enabled client IDs
    */
-  getAutoSyncClients() {
-    return Object.keys(this.clientConfig).filter(
-      clientId => this.clientConfig[clientId].enabled && this.clientConfig[clientId].autoSync
+  static getAutoSyncClients() {
+    const config = this.loadClientConfig();
+    return Object.keys(config).filter(clientId => 
+      config[clientId].enabled && config[clientId].autoSync
     );
   }
-  
+
   /**
    * Check if auto-sync is enabled for any client
    * @returns {boolean} True if any client has auto-sync enabled
    */
-  isAutoSyncEnabled() {
+  static isAutoSyncEnabled() {
     return this.getAutoSyncClients().length > 0;
   }
-  
+
   /**
    * Get client configuration
    * @param {string} clientId - Client identifier
    * @returns {Object|null} Client configuration
    */
-  getClientConfig(clientId) {
-    return this.clientConfig[clientId] || null;
+  static getClientConfig(clientId) {
+    const config = this.loadClientConfig();
+    return config[clientId] || null;
   }
-  
+
   /**
    * Get all client configurations
    * @returns {Object} All client configurations
    */
-  getAllClientConfigs() {
-    return { ...this.clientConfig };
+  static getAllClientConfigs() {
+    return this.loadClientConfig();
   }
-  
+
   /**
    * Test if a client path is valid
    * @param {string} clientId - Client identifier
    * @param {string} testPath - Path to test
    * @returns {Object} Test result with success and message
    */
-  testClientPath(clientId, testPath) {
+  static testClientPath(clientId, testPath) {
     try {
-      const formatter = this.getFormatter(clientId);
-      
       if (!fs.existsSync(testPath)) {
         return {
           success: false,
           message: 'File does not exist'
         };
       }
-      
+
+      const formatter = this.getFormatter(clientId);
       const content = fs.readFileSync(testPath, 'utf8');
-      const isValid = formatter.validate(content);
       
-      if (!isValid) {
+      if (!formatter.validateConfig(content)) {
         return {
           success: false,
-          message: `Invalid ${formatter.getExtension().substring(1).toUpperCase()} format`
+          message: 'Invalid configuration format'
         };
       }
-      
+
       return {
         success: true,
         message: 'Valid configuration file'
       };
-      
     } catch (error) {
       return {
         success: false,
@@ -382,6 +389,4 @@ class ClientSync {
   }
 }
 
-// Create and export a singleton instance
-const clientSync = new ClientSync();
-export default clientSync;
+export default ClientSync;
