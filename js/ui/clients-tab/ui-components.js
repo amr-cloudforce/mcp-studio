@@ -56,6 +56,7 @@ export function renderClientCard(clientId, clientConfig, detectedClient) {
   const isAutoSync = clientConfig?.autoSync || false;
   const detectedPath = clientConfig?.detectedPath || detectedClient?.detectedPath;
   const customPath = clientConfig?.customPath || '';
+  const restartCommand = clientConfig?.restartCommand || getDefaultRestartCommand(clientId);
   const lastSync = clientConfig?.lastSync;
   const backupCount = BackupManager.getBackupCount(clientId);
 
@@ -99,6 +100,17 @@ export function renderClientCard(clientId, clientConfig, detectedClient) {
         </div>
       </div>
 
+      <div class="client-restart">
+        <label for="restart-command-${clientId}">Restart command:</label>
+        <div class="restart-input-group">
+          <input type="text" id="restart-command-${clientId}" class="restart-command" 
+                 value="${restartCommand}" placeholder="Enter restart command for this client">
+          <button class="btn btn-small restart-client" data-client-id="${clientId}">
+            <i class="fas fa-power-off"></i> Restart
+          </button>
+        </div>
+      </div>
+
       <div class="client-actions">
         <button class="btn btn-small test-path" data-client-id="${clientId}">
           <i class="fas fa-check"></i> Test Path
@@ -115,6 +127,23 @@ export function renderClientCard(clientId, clientConfig, detectedClient) {
       </div>
     </div>
   `;
+}
+
+/**
+ * Get default restart command for a client
+ * @param {string} clientId - Client identifier
+ * @returns {string} Default restart command
+ */
+function getDefaultRestartCommand(clientId) {
+  const defaultCommands = {
+    'claude': 'pkill -f \'Claude\' && sleep 2 && /Applications/Claude.app/Contents/MacOS/Claude',
+    'cursor': 'osascript -e "tell application \"Cursor\" to quit" && sleep 2 && open -a "Cursor"',
+    'zed': 'osascript -e "tell application \"Zed\" to quit" && sleep 2 && open -a "Zed"',
+    'continue': 'osascript -e "tell application \"Continue\" to quit" && sleep 2 && open -a "Continue"',
+    'windsurf': 'osascript -e "tell application \"Windsurf\" to quit" && sleep 2 && open -a "Windsurf"'
+  };
+  
+  return defaultCommands[clientId] || `# Enter restart command for ${clientId}`;
 }
 
 /**

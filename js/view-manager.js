@@ -52,8 +52,7 @@ export function initializeViewSwitching() {
       if (enhancedTable) enhancedTable.style.display = 'table';
       if (serverListEnhanced) serverListEnhanced.style.display = 'block';
       if (paginationContainer) paginationContainer.style.display = 'block';
-      if (prerequisitesWarning) prerequisitesWarning.style.display = 'block';
-      if (restartWarning) restartWarning.style.display = 'block';
+      // Note: prerequisitesWarning and restartWarning visibility is managed by notifications.js
       
       // Hide clients container
       clientsContainer.style.display = 'none';

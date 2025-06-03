@@ -306,6 +306,29 @@ class ClientSync {
   }
 
   /**
+   * Set restart command for a client
+   * @param {string} clientId - Client identifier
+   * @param {string} restartCommand - Restart command
+   */
+  static setClientRestartCommand(clientId, restartCommand) {
+    const config = this.loadClientConfig();
+    if (config[clientId]) {
+      config[clientId].restartCommand = restartCommand;
+      this.saveClientConfig(config);
+    }
+  }
+
+  /**
+   * Get restart command for a client
+   * @param {string} clientId - Client identifier
+   * @returns {string|null} Restart command
+   */
+  static getClientRestartCommand(clientId) {
+    const config = this.loadClientConfig();
+    return config[clientId]?.restartCommand || null;
+  }
+
+  /**
    * Get enabled clients
    * @returns {Array} Array of enabled client IDs
    */

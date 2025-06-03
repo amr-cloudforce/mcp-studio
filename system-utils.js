@@ -56,7 +56,7 @@ function setupSystemHandlers(app) {
     };
   });
 
-  // Restart Claude handler
+  // Restart Claude handler (existing method)
   ipcMain.handle('restart-claude', async () => {
     return new Promise((resolve, reject) => {
       const claudePath = process.platform === 'darwin' 
@@ -86,6 +86,25 @@ function setupSystemHandlers(app) {
       }).catch(err => {
         console.error('Claude executable not found:', claudePath);
         reject(new Error('Claude executable not found'));
+      });
+    });
+  });
+
+  // Execute custom restart command handler (new method)
+  ipcMain.handle('execute-restart-command', async (_, { clientId, command }) => {
+    return new Promise((resolve, reject) => {
+      console.log(`Executing restart command for ${clientId}:`, command);
+      
+      exec(command, { shell: true }, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Restart command failed for ${clientId}:`, error);
+          console.error('stderr:', stderr);
+          reject(error);
+        } else {
+          console.log(`Restart command succeeded for ${clientId}`);
+          if (stdout) console.log('stdout:', stdout);
+          resolve(true);
+        }
       });
     });
   });

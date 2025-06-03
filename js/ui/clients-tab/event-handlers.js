@@ -85,6 +85,22 @@ export function attachEventListeners(container, clientsTab) {
     });
   });
 
+  // Restart command inputs
+  container.querySelectorAll('.restart-command').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const clientId = e.target.id.replace('restart-command-', '');
+      handleRestartCommandChange(clientId, e.target.value);
+    });
+  });
+
+  // Restart client buttons
+  container.querySelectorAll('.restart-client').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const clientId = e.target.closest('button').dataset.clientId;
+      handleRestartClientClick(clientId, clientsTab);
+    });
+  });
+
   // Refresh detection button
   const refreshBtn = container.querySelector('#refresh-detection-btn');
   if (refreshBtn) {
@@ -272,6 +288,52 @@ function handleRefreshDetectionClick(clientsTab) {
   clientsTab.render();
   clientsTab.attachEventListeners();
   clientsTab.showNotification('Client detection refreshed', 'success');
+}
+
+/**
+ * Handle restart command change
+ * @param {string} clientId - Client identifier
+ * @param {string} restartCommand - Restart command value
+ */
+function handleRestartCommandChange(clientId, restartCommand) {
+  ClientSync.setClientRestartCommand(clientId, restartCommand.trim() || null);
+}
+
+/**
+ * Handle restart client button click
+ * @param {string} clientId - Client identifier
+ * @param {Object} clientsTab - Reference to the clients tab instance
+ */
+async function handleRestartClientClick(clientId, clientsTab) {
+  try {
+    const restartCommand = ClientSync.getClientRestartCommand(clientId);
+    
+    if (!restartCommand || restartCommand.startsWith('#')) {
+      clientsTab.showNotification('Please enter a valid restart command first', 'warning');
+      return;
+    }
+    
+    let success;
+    
+    // Use existing restart-claude method for Claude (but show the actual command to user)
+    if (clientId === 'claude' && restartCommand === 'pkill -f \'Claude\' && sleep 2 && /Applications/Claude.app/Contents/MacOS/Claude') {
+      success = await require('electron').ipcRenderer.invoke('restart-claude');
+    } else {
+      // Execute custom restart command via IPC
+      success = await require('electron').ipcRenderer.invoke('execute-restart-command', {
+        clientId,
+        command: restartCommand
+      });
+    }
+    
+    if (success) {
+      clientsTab.showNotification(`Successfully restarted ${ClientDetector.getClientConfig(clientId)?.name}`, 'success');
+    } else {
+      clientsTab.showNotification(`Failed to restart ${ClientDetector.getClientConfig(clientId)?.name}`, 'error');
+    }
+  } catch (error) {
+    clientsTab.showNotification(`Restart failed: ${error.message}`, 'error');
+  }
 }
 
 /**
