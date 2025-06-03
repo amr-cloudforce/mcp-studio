@@ -50,24 +50,22 @@ export function createItemElement(item, showCategory = false) {
       <span class="stars">⭐ ${item.stars || 0}</span>
       ${item.tools_count ? `<span class="toolkit-name">${item.tools_count} tools</span>` : ''}
     </div>
+    <div class="marketplace-item-actions">
+      <button class="btn btn-primary view-details-btn" data-app="${item.app_key}">
+        Details
+      </button>
+    </div>
     ${!item.available ? `<div class="unavailable-overlay">
       <span class="unavailable-reason">${item.unavailableReason}</span>
     </div>` : ''}
   `;
   
-  // Add click event for the item (show details)
+  // Add click event for details button
   if (item.available) {
-    const itemTitle = itemElement.querySelector('h3');
-    const itemDesc = itemElement.querySelector('p');
-    
-    if (itemTitle) {
-      itemTitle.addEventListener('click', () => {
-        showItemDetails(item);
-      });
-    }
-    
-    if (itemDesc) {
-      itemDesc.addEventListener('click', () => {
+    const detailsBtn = itemElement.querySelector('.view-details-btn');
+    if (detailsBtn) {
+      detailsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         showItemDetails(item);
       });
     }

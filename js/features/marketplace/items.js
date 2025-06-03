@@ -77,16 +77,25 @@ export function createItemElement(item, showCategory = false) {
     <div class="item-footer">
       <span class="stars">⭐ ${item.stars || 0}</span>
     </div>
+    <div class="marketplace-item-actions">
+      <button class="btn btn-primary view-details-btn" data-repo="${item.repo_name}">
+        Details
+      </button>
+    </div>
     ${!item.available ? `<div class="unavailable-overlay">
       <span class="unavailable-reason">${item.unavailableReason}</span>
     </div>` : ''}
   `;
   
-  // Add click event
+  // Add click event for details button
   if (item.available) {
-    itemElement.addEventListener('click', () => {
-      showItemDetails(item);
-    });
+    const detailsBtn = itemElement.querySelector('.view-details-btn');
+    if (detailsBtn) {
+      detailsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showItemDetails(item);
+      });
+    }
   }
   
   // Add the item to the wrapper

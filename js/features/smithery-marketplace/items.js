@@ -125,7 +125,7 @@ function createItemElement(item) {
     <p class="marketplace-item-description">${escapeHtml(item.description || 'No description available')}</p>
     <div class="marketplace-item-actions">
       <button class="btn btn-primary view-details-btn" data-server="${escapeHtml(item.qualifiedName || item.name)}">
-        View Details
+        Details
       </button>
       ${isInstalled ? 
         '<button class="btn btn-secondary" disabled>Already Installed</button>' :

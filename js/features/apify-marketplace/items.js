@@ -80,7 +80,10 @@ export function createItemElement(item, showCategory = false) {
       <span class="stars">⭐ ${item.stars || 0}</span>
       <span class="author">by ${item.actor_username || 'Unknown'}</span>
     </div>
-    <div class="item-actions">
+    <div class="marketplace-item-actions">
+      <button class="btn btn-primary view-details-btn" data-actor="${item.actor_id}">
+        Details
+      </button>
       <button class="btn ${isSelected ? 'btn-danger' : 'btn-primary'} add-remove-btn" data-actor-id="${item.actor_id}">
         ${isSelected ? 'Remove' : 'Add'}
       </button>
@@ -90,19 +93,13 @@ export function createItemElement(item, showCategory = false) {
     </div>` : ''}
   `;
   
-  // Add click event for the item (show details)
+  // Add click event for buttons
   if (item.available) {
-    const itemTitle = itemElement.querySelector('h3');
-    const itemDesc = itemElement.querySelector('p');
-    
-    if (itemTitle) {
-      itemTitle.addEventListener('click', () => {
-        showItemDetails(item);
-      });
-    }
-    
-    if (itemDesc) {
-      itemDesc.addEventListener('click', () => {
+    // Details button
+    const detailsBtn = itemElement.querySelector('.view-details-btn');
+    if (detailsBtn) {
+      detailsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         showItemDetails(item);
       });
     }
