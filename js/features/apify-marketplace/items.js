@@ -10,6 +10,7 @@ import * as connector from './connector.js';
 let currentCategory = null;
 let allItems = [];
 let selectedActors = new Set();
+let showOnlyInstalled = false;
 
 /**
  * Set all items
@@ -63,6 +64,7 @@ export function createItemElement(item, showCategory = false) {
   // Create the actual item element
   const itemElement = document.createElement('div');
   const isSelected = selectedActors.has(item.actor_id);
+  const isInstalled = selectedActors.has(item.actor_id); // For Apify, selected = installed
   itemElement.className = `marketplace-item ${!item.available ? 'unavailable' : ''} ${isSelected ? 'selected' : ''}`;
   itemElement.dataset.actorId = item.actor_id;
   
@@ -73,7 +75,7 @@ export function createItemElement(item, showCategory = false) {
       ${showCategory ? `<span class="item-category">${item.category || 'Apify Actors'}</span>` : ''}
     </div>
     <div class="item-title-row">
-      <h3>${item.actor_title || item.actor_name || item.repo_name}${isSelected ? '<span class="installed-badge">✓ Installed</span>' : ''}</h3>
+      <h3>${item.actor_title || item.actor_name || item.repo_name}${isInstalled ? '<span class="installed-badge">✓ Installed</span>' : ''}</h3>
     </div>
     <p>${item.actor_description || item.summary_200_words ? (item.actor_description || item.summary_200_words).substring(0, 100) : 'No description available'}...</p>
     <div class="item-footer">
@@ -307,4 +309,95 @@ export function isActorSelected(actorId) {
  */
 export function getSelectedActors() {
   return Array.from(selectedActors);
+}
+
+/**
+ * Set filter for installed actors
+ * @param {boolean} showInstalled - Whether to show only installed actors
+ */
+export function setInstalledFilter(showInstalled) {
+  console.log('[DEBUG] Apify filter toggled:', showInstalled);
+  console.log('[DEBUG] Selected actors:', Array.from(selectedActors));
+  showOnlyInstalled = showInstalled;
+  applyFilters();
+}
+
+/**
+ * Apply current filters to the items
+ */
+function applyFilters() {
+  let items = allItems;
+  
+  if (showOnlyInstalled) {
+    items = items.filter(item => selectedActors.has(item.actor_id));
+  }
+  
+  console.log('[DEBUG] Filtered items count:', items.length);
+  showFilteredItems(items);
+}
+
+/**
+ * Show filtered items
+ * @param {Array} items - Filtered items to display
+ */
+function showFilteredItems(items) {
+  const itemsContainer = document.getElementById('apify-marketplace-items-container');
+  
+  // Clear items container
+  itemsContainer.innerHTML = '';
+  
+  // Filter for available items only
+  const availableItems = items.filter(item => item.available);
+  
+  // Create items
+  if (availableItems.length > 0) {
+    availableItems.forEach(item => {
+      const itemElement = createItemElement(item);
+      itemsContainer.appendChild(itemElement);
+    });
+  } else {
+    // Show no items message
+    const noItems = document.createElement('div');
+    noItems.className = 'no-items';
+    noItems.textContent = showOnlyInstalled ? 'No installed Apify actors' : 'No available Apify actors';
+    itemsContainer.appendChild(noItems);
+  }
+}
+
+/**
+ * Show search results as a list of items
+ * @param {Array} items - Matching items
+ * @param {string} query - Search query
+ */
+export function showSearchResults(items, query) {
+  // Apply installed filter if active
+  let filteredItems = items;
+  if (showOnlyInstalled) {
+    filteredItems = items.filter(item => selectedActors.has(item.actor_id));
+  }
+  
+  const itemsContainer = document.getElementById('apify-marketplace-items-container');
+  
+  // Clear items container
+  itemsContainer.innerHTML = '';
+  
+  // Filter for available items only
+  const availableItems = filteredItems.filter(item => item.available);
+  
+  // Create items with category labels
+  if (availableItems.length > 0) {
+    availableItems.forEach(item => {
+      const itemElement = createItemElement(item, true);
+      itemsContainer.appendChild(itemElement);
+    });
+  } else {
+    // Show no results message
+    const noResults = document.createElement('div');
+    noResults.className = 'no-items';
+    noResults.id = 'apify-no-search-results';
+    noResults.textContent = showOnlyInstalled ? 
+      `No installed actors matching "${query}"` : 
+      `No available actors matching "${query}"`;
+    itemsContainer.appendChild(noResults);
+  }
 }

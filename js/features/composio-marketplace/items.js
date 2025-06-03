@@ -62,15 +62,18 @@ export function setInstalledFilter(showInstalled) {
  * Apply current filters to the items
  */
 function applyFilters() {
+  console.log('[DEBUG] Composio applyFilters called, showOnlyInstalled:', showOnlyInstalled);
   let items = allItems;
   
   if (showOnlyInstalled) {
     const installedApps = connector.getInstalledComposioServers();
+    console.log('[DEBUG] Installed Composio apps:', installedApps);
     items = items.filter(item => 
       installedApps.includes(item.app_key)
     );
   }
   
+  console.log('[DEBUG] Filtered Composio items count:', items.length);
   filteredItems = items;
   showFilteredItems(filteredItems, showOnlyInstalled);
 }

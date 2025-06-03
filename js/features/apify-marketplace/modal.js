@@ -49,9 +49,13 @@ export function createModal() {
           
           <div class="marketplace-container">
             <div class="marketplace-search">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <input type="text" id="apify-marketplace-search-input" placeholder="Search Apify actors...">
-                <button id="apify-api-key-settings" class="btn btn-reveal" style="margin-left: 10px; white-space: nowrap;">API Key Settings</button>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                <input type="text" id="apify-marketplace-search-input" placeholder="Search Apify actors..." style="flex: 1;">
+                <label class="filter-toggle" style="white-space: nowrap; font-size: 0.85rem;">
+                  <input type="checkbox" id="apify-filter-installed">
+                  <span class="filter-label">Installed only</span>
+                </label>
+                <button id="apify-api-key-settings" class="btn btn-reveal" style="white-space: nowrap;">API Key Settings</button>
               </div>
             </div>
             <div id="apify-marketplace-items-view">

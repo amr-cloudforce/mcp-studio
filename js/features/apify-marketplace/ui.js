@@ -53,6 +53,14 @@ function setupEventListeners() {
       modalModule.showApiKeyForm();
     });
   }
+  
+  // Filter checkbox
+  const filterCheckbox = document.getElementById('apify-filter-installed');
+  if (filterCheckbox) {
+    filterCheckbox.addEventListener('change', () => {
+      itemsModule.setInstalledFilter(filterCheckbox.checked);
+    });
+  }
 }
 
 /**
