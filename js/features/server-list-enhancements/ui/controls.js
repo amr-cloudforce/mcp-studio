@@ -67,6 +67,7 @@ export class ServerListControls {
           <button id="select-all" class="bulk-btn">Select All</button>
           <button id="bulk-activate" class="bulk-btn">Activate Selected</button>
           <button id="bulk-deactivate" class="bulk-btn">Deactivate Selected</button>
+          <button id="deactivate-all" class="bulk-btn btn-warning">Deactivate All Active</button>
           <button id="bulk-delete" class="bulk-btn btn-danger">Delete Selected</button>
         </div>
       </div>

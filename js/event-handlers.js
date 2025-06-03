@@ -30,6 +30,7 @@ export function setupEventListeners() {
   const aboutBtn = document.getElementById('about-btn');
   const logsBtn = document.getElementById('logs-btn');
   const clientsBtn = document.getElementById('clients-btn');
+  const showAllServersBtn = document.getElementById('show-all-servers-btn');
 
   // Set up event listeners
   addServerBtn.addEventListener('click', () => addServerModal.openModal());
@@ -51,4 +52,5 @@ export function setupEventListeners() {
   aboutBtn.addEventListener('click', () => aboutModal.openModal());
   logsBtn.addEventListener('click', () => logViewer.openModal());
   clientsBtn.addEventListener('click', () => showView('clients'));
+  showAllServersBtn.addEventListener('click', () => showAllServers());
 }

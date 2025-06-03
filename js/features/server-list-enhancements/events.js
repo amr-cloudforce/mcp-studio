@@ -144,6 +144,10 @@ export class ServerListEvents {
     document.getElementById('bulk-delete').addEventListener('click', () => {
       this.bulkDelete();
     });
+
+    document.getElementById('deactivate-all').addEventListener('click', () => {
+      this.deactivateAllActive();
+    });
   }
 
   /**
@@ -257,6 +261,29 @@ export class ServerListEvents {
       const row = document.querySelector(`[data-server-name="${serverName}"]`);
       const section = row.dataset.serverStatus;
       configManager.deleteServer(serverName, section);
+    });
+
+    await configManager.saveConfig();
+    notifications.showRestartWarning();
+    this.ui.refreshEnhancedList();
+  }
+
+  /**
+   * Deactivate all active servers
+   */
+  async deactivateAllActive() {
+    const config = configManager.getConfig();
+    const activeServers = Object.keys(config.mcpServers || {});
+    
+    if (activeServers.length === 0) {
+      alert('No active servers to deactivate.');
+      return;
+    }
+
+    if (!confirm(`Deactivate all ${activeServers.length} active servers?`)) return;
+
+    activeServers.forEach(serverName => {
+      configManager.moveServer(serverName, 'inactive');
     });
 
     await configManager.saveConfig();

@@ -59,4 +59,17 @@ export function initializeViewSwitching() {
       clientsContainer.style.display = 'none';
     }
   };
+
+  // Show all servers function
+  window.showAllServers = function() {
+    // Switch to servers view
+    showView('servers');
+    
+    // Set status filter to show all servers
+    const statusFilter = document.getElementById('status-filter');
+    if (statusFilter) {
+      statusFilter.value = 'all';
+      statusFilter.dispatchEvent(new Event('change'));
+    }
+  };
 }
