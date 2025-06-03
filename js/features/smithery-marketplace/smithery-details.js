@@ -204,6 +204,18 @@ function showDetailsModal(title, content, server = null) {
   // Set the content
   detailsContainer.innerHTML = content;
   
+  // Add documentation link event listener
+  const docLink = detailsContainer.querySelector('.doc-link');
+  if (docLink) {
+    docLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = docLink.dataset.url;
+      if (url) {
+        require('electron').ipcRenderer.invoke('open-url', url);
+      }
+    });
+  }
+  
   // Set up event listeners after DOM is updated (only if server is provided)
   if (server) {
     // Use setTimeout to ensure DOM is fully updated

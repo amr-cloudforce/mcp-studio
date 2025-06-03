@@ -43,8 +43,14 @@ export function showItemDetails(item) {
   // Get the details container
   const detailsContainer = document.getElementById('composio-marketplace-details-container');
   
+  // Create documentation URL for Composio
+  const docUrl = `https://mcp.composio.dev/${item.toolkit_slug || item.app_key}/`;
+  
   // Populate details
   detailsContainer.innerHTML = `
+    <div class="doc-link" data-url="${docUrl}">
+      📖 Documentation ↗️
+    </div>
     <div class="details-header">
       <div class="details-header-top">
         <h2>${item.repo_name}</h2>
@@ -81,6 +87,18 @@ export function showItemDetails(item) {
   document.getElementById('composio-connect-btn').addEventListener('click', () => {
     connectToApp(item);
   });
+  
+  // Add documentation link event listener
+  const docLink = detailsContainer.querySelector('.doc-link');
+  if (docLink) {
+    docLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = docLink.dataset.url;
+      if (url) {
+        require('electron').ipcRenderer.invoke('open-url', url);
+      }
+    });
+  }
   
   // Create containers
   createExistingConnectionsContainer(detailsContainer, item);

@@ -30,12 +30,20 @@ All notable changes to this project will be documented in this file.
 
 ## Documentation Links in Marketplaces
 - Added documentation links at top of each marketplace item
+- Added documentation links in details/modal views for all marketplaces
 - Consistent design with 📖 icon across all marketplaces
 - Links open in external browser, not in-app
 - URL patterns: Smithery (smithery.ai), Composio (mcp.composio.dev), Apify (apify.com)
+- Available in both listing view and details view
 
 ## Restart All Clients Button
 - Added "Restart All Clients" button to main MCP Servers view
 - Restarts all configured MCP clients (Claude, LibreChat, etc.)
 - Uses existing restart clients functionality
 - Positioned in header of servers table view
+
+## Documentation Links in Details Views
+- Added documentation links to all marketplace details/modal views
+- Consistent with listing view design using 📖 icon
+- Links open in external browser from details modals
+- Available in Composio, Apify, and Smithery details views

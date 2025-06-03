@@ -33,7 +33,13 @@ async function populateDetailsContent(item) {
   const buttonText = isSelected ? 'Remove from Server' : 'Add to Server';
   const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
   
+  // Create documentation URL for Apify
+  const docUrl = `https://apify.com/${item.actor_id}`;
+  
   detailsContent.innerHTML = `
+    <div class="doc-link" data-url="${docUrl}">
+      📖 Documentation ↗️
+    </div>
     <div class="actor-details">
       <div class="actor-header">
         <h2 class="actor-title">${escapeHtml(item.actor_title || item.actor_name)}</h2>
@@ -91,6 +97,18 @@ async function populateDetailsContent(item) {
   if (toggleButton) {
     toggleButton.addEventListener('click', async () => {
       await toggleActorFromDetails(item.actor_id, toggleButton);
+    });
+  }
+  
+  // Add documentation link event listener
+  const docLink = detailsContent.querySelector('.doc-link');
+  if (docLink) {
+    docLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = docLink.dataset.url;
+      if (url) {
+        require('electron').ipcRenderer.invoke('open-url', url);
+      }
     });
   }
 }

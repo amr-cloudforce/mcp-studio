@@ -28,7 +28,13 @@ export function renderServerDetails(server) {
   
   console.log('[DEBUG] About to render template with hasHttp:', hasHttp, 'hasStdio:', hasStdio);
   
+  // Create documentation URL for Smithery
+  const docUrl = server.url || `https://smithery.ai/server/${server.qualifiedName}`;
+  
   const htmlContent = `
+    <div class="doc-link" data-url="${escapeHtml(docUrl)}">
+      📖 Documentation ↗️
+    </div>
     <div class="server-details">
       <div class="server-header">
         <h2 class="smithery-server-title">${escapeHtml(server.displayName || server.qualifiedName)}</h2>
