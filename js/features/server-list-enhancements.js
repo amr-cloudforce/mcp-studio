@@ -21,8 +21,13 @@ class ServerListEnhancements {
    * Initialize the enhanced server list
    */
   initialize() {
+    console.time('⚡ Enhanced UI Creation');
     this.ui.createEnhancedUI();
+    console.timeEnd('⚡ Enhanced UI Creation');
+    
+    console.time('⚡ Enhanced Event Handlers');
     this.ui.wireEventHandlers();
+    console.timeEnd('⚡ Enhanced Event Handlers');
     return this;
   }
 
@@ -37,7 +42,10 @@ class ServerListEnhancements {
    * Refresh the enhanced server list
    */
   refreshEnhancedList() {
-    return this.ui.refreshEnhancedList();
+    console.time('🎯 Enhanced List UI Refresh');
+    const result = this.ui.refreshEnhancedList();
+    console.timeEnd('🎯 Enhanced List UI Refresh');
+    return result;
   }
 }
 

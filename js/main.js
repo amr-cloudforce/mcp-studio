@@ -33,29 +33,46 @@ window.modalManager = modalManager;
 // Initialize application
 async function initializeApp() {
   try {
+    console.time('🚀 Total App Initialization');
+    
+    console.time('📁 Modal Loading');
     // Load modal HTML files first
     await modalLoader.loadModals();
+    console.timeEnd('📁 Modal Loading');
     
+    console.time('🎨 Basic UI Components');
     // Initialize UI components
     modalManager;
     serverForm.initialize();
     serverList.initialize();
+    console.timeEnd('🎨 Basic UI Components');
     
+    console.time('⚡ Enhanced Server List');
     // Initialize enhanced server list after basic components
     serverListEnhancements.initialize();
+    console.timeEnd('⚡ Enhanced Server List');
+    
+    console.time('🔧 Other UI Components');
     jsonEditor.initialize();
     pasteModal.initialize();
     aboutModal.initialize();
     notifications.initialize();
     logViewer.initialize();
+    console.timeEnd('🔧 Other UI Components');
+    
+    console.time('🛒 Marketplace Initialization');
     marketplace.initialize();
     composioMarketplace.initialize();
     apifyMarketplace.initialize();
     smitheryMarketplace.initialize();
+    console.timeEnd('🛒 Marketplace Initialization');
     
+    console.time('➕ Quick Add');
     // Initialize Quick Add after modals are loaded
     quickAdd.initialize();
+    console.timeEnd('➕ Quick Add');
     
+    console.time('🔄 View & Event Setup');
     // Initialize view switching
     initializeViewSwitching();
 
@@ -70,10 +87,14 @@ async function initializeApp() {
     
     // Set up event listeners
     setupEventListeners();
+    console.timeEnd('🔄 View & Event Setup');
     
+    console.time('📋 Config Loading');
     // Load configuration
     await configManager.loadConfig();
+    console.timeEnd('📋 Config Loading');
     
+    console.time('📊 Server List Refresh');
     // Refresh server list
     serverList.refreshList();
     
@@ -82,10 +103,14 @@ async function initializeApp() {
     if (basicTable) {
       basicTable.style.display = 'none';
     }
+    console.timeEnd('📊 Server List Refresh');
     
+    console.time('🎯 Enhanced List Render');
     // Refresh enhanced list after all initialization is complete
     setTimeout(() => {
       serverListEnhancements.refreshEnhancedList();
+      console.timeEnd('🎯 Enhanced List Render');
+      console.timeEnd('🚀 Total App Initialization');
     }, 100);
     
     // Show add server dialog if no servers are configured

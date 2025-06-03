@@ -75,19 +75,36 @@ export class ServerListUI {
    * Refresh the enhanced server list
    */
   refreshEnhancedList() {
+    console.time('🔍 Get All Servers');
     const allServers = this.core.getAllServers();
+    console.timeEnd('🔍 Get All Servers');
+    
+    console.time('🔍 Filter Servers');
     const filteredServers = this.core.filterServers(allServers);
+    console.timeEnd('🔍 Filter Servers');
+    
+    console.time('🔍 Sort Servers');
     const sortedServers = this.core.sortServers(filteredServers);
+    console.timeEnd('🔍 Sort Servers');
+    
+    console.time('🔍 Group Servers');
     const groupedServers = this.core.groupServers(sortedServers);
+    console.timeEnd('🔍 Group Servers');
 
+    console.time('📊 Update Stats');
     // Update stats
     this.controls.updateStats(allServers, filteredServers);
+    console.timeEnd('📊 Update Stats');
 
+    console.time('🎨 Render Table');
     // Render table
     this.tableRenderer.renderServerList(groupedServers, this.events);
+    console.timeEnd('🎨 Render Table');
 
+    console.time('📄 Update Pagination');
     // Update pagination
     this.controls.updatePagination();
+    console.timeEnd('📄 Update Pagination');
   }
 
   /**
