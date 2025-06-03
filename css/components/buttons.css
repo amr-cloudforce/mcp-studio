@@ -18,43 +18,7 @@
 }
 
 /* Quick Add button - more prominent */
-#quick-add-btn {
-  background: linear-gradient(135deg, var(--quick-add), var(--quick-add-light));
-  font-size: 0.95rem;
-  padding: 0.8em 1.6em;
-  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
-  position: relative;
-  overflow: hidden;
-  animation: pulse 2s infinite;
-}
-
-#quick-add-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4);
-  animation: none;
-}
-
-#quick-add-btn:after {
-  content: "★";
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  font-size: 0.8em;
-  opacity: 0.8;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(255, 140, 0, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0);
-  }
-}
+/* Quick Add button styling removed to match other sidebar buttons */
 
 .btn-add {
   background: linear-gradient(135deg, var(--success), var(--success-light));
