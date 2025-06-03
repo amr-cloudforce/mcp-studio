@@ -47,3 +47,9 @@ All notable changes to this project will be documented in this file.
 - Consistent with listing view design using 📖 icon
 - Links open in external browser from details modals
 - Available in Composio, Apify, and Smithery details views
+
+## Fixed Directory Selection Bug
+- Fixed "Cannot read properties of undefined (reading 'selectDirectory')" error
+- Updated preload.js to properly expose window.api object
+- Added all required IPC methods: selectDirectory, openUrl, fetchUrl, etc.
+- Browse buttons in Quick Add and server forms now work correctly
