@@ -30,16 +30,40 @@ import { setupEventListeners } from './event-handlers.js';
 window.quickAddTemplates = quickAddTemplates;
 window.modalManager = modalManager;
 
+// Loading progress helper
+function updateLoadingProgress(progress, text, details = '') {
+  const progressFill = document.getElementById('progress-fill');
+  const loadingText = document.getElementById('loading-text');
+  const loadingDetails = document.getElementById('loading-details');
+  
+  if (progressFill) progressFill.style.width = `${progress}%`;
+  if (loadingText) loadingText.textContent = text;
+  if (loadingDetails) loadingDetails.textContent = details;
+}
+
+// Hide loading overlay
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.classList.add('fade-out');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 300);
+  }
+}
+
 // Initialize application
 async function initializeApp() {
   try {
     console.time('🚀 Total App Initialization');
     
+    updateLoadingProgress(5, 'Loading modals...', 'Setting up user interface components');
     console.time('📁 Modal Loading');
     // Load modal HTML files first
     await modalLoader.loadModals();
     console.timeEnd('📁 Modal Loading');
     
+    updateLoadingProgress(15, 'Initializing UI...', 'Setting up basic components');
     console.time('🎨 Basic UI Components');
     // Initialize UI components
     modalManager;
@@ -47,11 +71,13 @@ async function initializeApp() {
     serverList.initialize();
     console.timeEnd('🎨 Basic UI Components');
     
+    updateLoadingProgress(25, 'Setting up server list...', 'Configuring enhanced table view');
     console.time('⚡ Enhanced Server List');
     // Initialize enhanced server list after basic components
     serverListEnhancements.initialize();
     console.timeEnd('⚡ Enhanced Server List');
     
+    updateLoadingProgress(35, 'Loading editors...', 'JSON editor and modal components');
     console.time('🔧 Other UI Components');
     jsonEditor.initialize();
     pasteModal.initialize();
@@ -60,6 +86,7 @@ async function initializeApp() {
     logViewer.initialize();
     console.timeEnd('🔧 Other UI Components');
     
+    updateLoadingProgress(50, 'Initializing marketplaces...', 'Setting up server repositories');
     console.time('🛒 Marketplace Initialization');
     marketplace.initialize();
     composioMarketplace.initialize();
@@ -67,11 +94,13 @@ async function initializeApp() {
     smitheryMarketplace.initialize();
     console.timeEnd('🛒 Marketplace Initialization');
     
+    updateLoadingProgress(65, 'Loading templates...', 'Quick Add server templates');
     console.time('➕ Quick Add');
     // Initialize Quick Add after modals are loaded
     quickAdd.initialize();
     console.timeEnd('➕ Quick Add');
     
+    updateLoadingProgress(75, 'Setting up events...', 'Configuring user interactions');
     console.time('🔄 View & Event Setup');
     // Initialize view switching
     initializeViewSwitching();
@@ -89,11 +118,13 @@ async function initializeApp() {
     setupEventListeners();
     console.timeEnd('🔄 View & Event Setup');
     
+    updateLoadingProgress(85, 'Loading configuration...', 'Reading MCP server settings');
     console.time('📋 Config Loading');
     // Load configuration
     await configManager.loadConfig();
     console.timeEnd('📋 Config Loading');
     
+    updateLoadingProgress(95, 'Rendering servers...', 'Building server list display');
     console.time('📊 Server List Refresh');
     // Refresh server list
     serverList.refreshList();
@@ -105,22 +136,28 @@ async function initializeApp() {
     }
     console.timeEnd('📊 Server List Refresh');
     
+    updateLoadingProgress(100, 'Finalizing...', 'Almost ready!');
     console.time('🎯 Enhanced List Render');
     // Refresh enhanced list after all initialization is complete
     setTimeout(() => {
       serverListEnhancements.refreshEnhancedList();
       console.timeEnd('🎯 Enhanced List Render');
       console.timeEnd('🚀 Total App Initialization');
+      
+      // Hide loading overlay
+      hideLoadingOverlay();
+      
+      // Show add server dialog if no servers are configured
+      if (!configManager.hasServers()) {
+        setTimeout(() => addServerModal.openModal(), 500);
+      }
     }, 100);
-    
-    // Show add server dialog if no servers are configured
-    if (!configManager.hasServers()) {
-      setTimeout(() => addServerModal.openModal(), 500);
-    }
     
     console.log('MCP Studio initialized successfully');
   } catch (error) {
     console.error('Failed to initialize MCP Studio:', error);
+    updateLoadingProgress(100, 'Error occurred', 'Check console for details');
+    setTimeout(hideLoadingOverlay, 2000);
   }
 }
 

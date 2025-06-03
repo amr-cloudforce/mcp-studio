@@ -89,3 +89,86 @@ small {
   display: block;
   margin-top: 5px;
 }
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.3s ease;
+}
+
+.loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-content {
+  text-align: center;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.loading-logo {
+  margin-bottom: 2rem;
+}
+
+.loading-logo img {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+.loading-logo h2 {
+  color: var(--primary);
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.loading-progress {
+  width: 100%;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.loading-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.loading-details {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  min-height: 1.2rem;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
