@@ -8,7 +8,6 @@
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  color: #fff;
   transition: var(--transition);
   box-shadow: var(--shadow-sm);
   text-transform: uppercase;
