@@ -75,9 +75,21 @@ export async function loadComposioApps() {
         return [];
       }
       
-      // Transform toolkits to match marketplace item format
-      console.log('[DEBUG] Transforming toolkits data. First toolkit:', toolkits[0]);
-      const formattedApps = toolkits.map(toolkit => {
+      // Filter toolkits to only include OAuth-supported apps
+      console.log('[DEBUG] Filtering toolkits for OAuth support. Total toolkits:', toolkits.length);
+      const oauthToolkits = toolkits.filter(toolkit => {
+        const hasOAuth = toolkit.auth_schemes?.includes('OAUTH2') && 
+                        toolkit.composio_managed_auth_schemes?.includes('OAUTH2');
+        if (!hasOAuth) {
+          console.log('[DEBUG] Filtering out non-OAuth toolkit:', toolkit.name, 'auth_schemes:', toolkit.auth_schemes);
+        }
+        return hasOAuth;
+      });
+      console.log('[DEBUG] OAuth-supported toolkits:', oauthToolkits.length, 'out of', toolkits.length);
+      
+      // Transform OAuth toolkits to match marketplace item format
+      console.log('[DEBUG] Transforming OAuth toolkits data. First toolkit:', oauthToolkits[0]);
+      const formattedApps = oauthToolkits.map(toolkit => {
         const formattedApp = {
           repo_name: toolkit.name || toolkit.slug,
           summary_200_words: toolkit.meta?.description || 'No description available',
