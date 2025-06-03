@@ -158,12 +158,20 @@ export class ServerListControls {
     const checkboxes = document.querySelectorAll('.server-checkbox');
     const checkedBoxes = document.querySelectorAll('.server-checkbox:checked');
     
+    console.log('[DEBUG] updateBulkActions:', {
+      totalCheckboxes: checkboxes.length,
+      checkedBoxes: checkedBoxes.length,
+      willShowBulkActions: checkboxes.length > 0
+    });
+    
     const bulkActions = document.querySelector('.bulk-actions');
     if (bulkActions) {
-      if (checkedBoxes.length > 0) {
+      if (checkboxes.length > 0) {
         bulkActions.style.display = 'flex';
+        console.log('[DEBUG] Showing bulk actions bar');
       } else {
         bulkActions.style.display = 'none';
+        console.log('[DEBUG] Hiding bulk actions bar');
       }
     }
 
@@ -172,8 +180,10 @@ export class ServerListControls {
     if (selectAllBtn) {
       if (checkedBoxes.length === checkboxes.length && checkboxes.length > 0) {
         selectAllBtn.textContent = 'Deselect All';
+        console.log('[DEBUG] Button text set to: Deselect All');
       } else {
         selectAllBtn.textContent = 'Select All';
+        console.log('[DEBUG] Button text set to: Select All');
       }
     }
   }
@@ -185,6 +195,13 @@ export class ServerListControls {
     const checkboxes = document.querySelectorAll('.server-checkbox');
     const checkedBoxes = document.querySelectorAll('.server-checkbox:checked');
     const shouldCheck = checkedBoxes.length !== checkboxes.length;
+
+    console.log('[DEBUG] toggleSelectAll:', {
+      totalCheckboxes: checkboxes.length,
+      checkedBoxes: checkedBoxes.length,
+      shouldCheck: shouldCheck,
+      action: shouldCheck ? 'CHECK_ALL' : 'UNCHECK_ALL'
+    });
 
     checkboxes.forEach(checkbox => {
       checkbox.checked = shouldCheck;

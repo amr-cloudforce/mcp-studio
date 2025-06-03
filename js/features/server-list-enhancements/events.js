@@ -14,18 +14,28 @@ export class ServerListEvents {
     this.ui = ui;
     this.eventListeners = {};
     this.bulkActions = new BulkActions(core, ui);
+    this.handlersAttached = false;
   }
 
   /**
    * Wire up event handlers for enhanced functionality
    */
   wireEventHandlers() {
+    // Prevent duplicate event listeners
+    if (this.handlersAttached) {
+      console.log('[DEBUG] Event handlers already attached, skipping');
+      return;
+    }
+    
     // Check if elements exist before adding listeners
     const serverSearch = document.getElementById('server-search');
     if (!serverSearch) {
       console.warn('Enhanced UI elements not found, skipping event handlers');
       return;
     }
+    
+    console.log('[DEBUG] Attaching event handlers for the first time');
+    this.handlersAttached = true;
     
     // Search
     serverSearch.addEventListener('input', (e) => {
